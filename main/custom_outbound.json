@@ -1,0 +1,28 @@
+[
+    {
+        "tag": "IPv4_out",
+        "protocol": "freedom",
+        "settings": {}
+    },
+    {
+        "tag": "IPv6_out",
+        "protocol": "freedom",
+        "settings": {
+            "domainStrategy": "UseIPv6"
+        }
+    },
+    {
+        "tag": "socks5-warp",
+        "protocol": "socks",
+        "settings": {
+            "servers": [{
+                "address": "127.0.0.1",
+                "port": 40000
+            }]
+        }
+    },
+    {
+        "protocol": "blackhole",
+        "tag": "block"
+    }
+]
