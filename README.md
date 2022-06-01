@@ -1,11 +1,11 @@
-# XrayR
+# V2bX
 
 [![](https://img.shields.io/badge/TgChat-@XrayR讨论-blue.svg)](https://t.me/XrayR_project)
 [![](https://img.shields.io/badge/Channel-@XrayR通知-blue.svg)](https://t.me/XrayR_channel)
 
 A Xray backend framework that can easily support many panels.
 
-一个基于Xray的后端框架，支持V2ay,Trojan,Shadowsocks协议，极易扩展，支持多面板对接。
+一个基于Xray的后端框架，支持V2ay,Trojan,Shadowsocks协议。
 
 如果您喜欢本项目，可以右上角点个star+watch，持续关注本项目的进展。
 
