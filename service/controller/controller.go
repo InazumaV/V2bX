@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"reflect"
 	"time"
 
 	"github.com/Yuzuki616/V2bX/api"
@@ -65,6 +64,9 @@ func (c *Controller) Start() error {
 	}
 	//sync controller userList
 	c.userList = userInfo
+	if err := c.AddInboundLimiter(c.Tag, 0, userInfo); err != nil {
+		log.Print(err)
+	}
 	// Add Rule Manager
 	if !c.config.DisableGetRule {
 		if ruleList, err := c.apiClient.GetNodeRule(); err != nil {
@@ -124,7 +126,6 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		log.Print(err)
 		return nil
 	}
-
 	// Update User
 	newUserInfo, err := c.apiClient.GetUserList()
 	if err != nil {
@@ -134,17 +135,10 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 
 	var nodeInfoChanged = false
 	// If nodeInfo changed
-	if !reflect.DeepEqual(c.nodeInfo, newNodeInfo) {
+	if newNodeInfo != nil {
 		// Remove old tag
 		oldtag := c.Tag
 		err := c.removeOldTag(oldtag)
-		if err != nil {
-			log.Print(err)
-			return nil
-		}
-		if c.nodeInfo.NodeType == "Shadowsocks-Plugin" {
-			err = c.removeOldTag(fmt.Sprintf("dokodemo-door_%s+1", c.Tag))
-		}
 		if err != nil {
 			log.Print(err)
 			return nil
@@ -188,7 +182,9 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			log.Print(err)
 		}
 	}
-
+	if newUserInfo == nil {
+		return nil
+	}
 	if nodeInfoChanged {
 		err = c.addNewUser(newUserInfo, newNodeInfo)
 		if err != nil {
@@ -199,8 +195,10 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		deleted, added := compareUserList(c.userList, newUserInfo)
 		if len(deleted) > 0 {
 			deletedEmail := make([]string, len(deleted))
-			for i, u := range deleted {
-				deletedEmail[i] = fmt.Sprintf("%s|%d|%d", c.Tag, c.nodeInfo.NodeId, u.UID)
+			for i := range deleted {
+				deletedEmail[i] = fmt.Sprintf("%s|%s|%d", c.Tag,
+					(*c.userList)[deleted[i]].GetUserEmail(),
+					(*c.userList)[deleted[i]].UID)
 			}
 			err := c.removeUsers(deletedEmail, c.Tag)
 			if err != nil {
@@ -208,12 +206,17 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			}
 		}
 		if len(added) > 0 {
-			err = c.addNewUser(&added, c.nodeInfo)
+			err = c.addNewUserFromIndex(newUserInfo, &added, c.nodeInfo)
 			if err != nil {
 				log.Print(err)
 			}
+			// Add Limiter
+			if err := c.AddInboundLimiter(c.Tag, 0, newUserInfo); err != nil {
+				log.Print(err)
+				return nil
+			}
 			// Update Limiter
-			if err := c.UpdateInboundLimiter(c.Tag, &added); err != nil {
+			if err := c.UpdateInboundLimiter(c.Tag, newUserInfo, &added); err != nil {
 				log.Print(err)
 			}
 		}
@@ -263,21 +266,21 @@ func (c *Controller) addNewUser(userInfo *[]api.UserInfo, nodeInfo *api.NodeInfo
 	users := make([]*protocol.User, 0)
 	if nodeInfo.NodeType == "V2ray" {
 		if nodeInfo.EnableVless {
-			users = c.buildVlessUser(userInfo)
+			users = c.buildVlessUsers(userInfo)
 		} else {
 			alterID := 0
 			alterID = (*userInfo)[0].V2rayUser.AlterId
 			if alterID >= 0 && alterID < math.MaxUint16 {
-				users = c.buildVmessUser(userInfo, uint16(alterID))
+				users = c.buildVmessUsers(userInfo, uint16(alterID))
 			} else {
-				users = c.buildVmessUser(userInfo, 0)
+				users = c.buildVmessUsers(userInfo, 0)
 				return fmt.Errorf("AlterID should between 0 to 1<<16 - 1, set it to 0 for now")
 			}
 		}
 	} else if nodeInfo.NodeType == "Trojan" {
-		users = c.buildTrojanUser(userInfo)
+		users = c.buildTrojanUsers(userInfo)
 	} else if nodeInfo.NodeType == "Shadowsocks" {
-		users = c.buildSSUser(userInfo, nodeInfo.SS.CypherMethod)
+		users = c.buildSSUsers(userInfo, nodeInfo.SS.CypherMethod)
 	} else {
 		return fmt.Errorf("unsupported node type: %s", nodeInfo.NodeType)
 	}
@@ -289,28 +292,59 @@ func (c *Controller) addNewUser(userInfo *[]api.UserInfo, nodeInfo *api.NodeInfo
 	return nil
 }
 
-func compareUserList(old, new *[]api.UserInfo) (deleted, added []api.UserInfo) {
+func (c *Controller) addNewUserFromIndex(userInfo *[]api.UserInfo, userIndex *[]int, nodeInfo *api.NodeInfo) (err error) {
+	users := make([]*protocol.User, 0, len(*userIndex))
+	for _, v := range *userIndex {
+		if nodeInfo.NodeType == "V2ray" {
+			if nodeInfo.EnableVless {
+				users = append(users, c.buildVlessUser(&(*userInfo)[v]))
+			} else {
+				alterID := 0
+				alterID = (*userInfo)[0].V2rayUser.AlterId
+				if alterID >= 0 && alterID < math.MaxUint16 {
+					users = append(users, c.buildVmessUser(&(*userInfo)[v], uint16(alterID)))
+				} else {
+					users = append(users, c.buildVmessUser(&(*userInfo)[v], 0))
+					return fmt.Errorf("AlterID should between 0 to 1<<16 - 1, set it to 0 for now")
+				}
+			}
+		} else if nodeInfo.NodeType == "Trojan" {
+			users = append(users, c.buildTrojanUser(&(*userInfo)[v]))
+		} else if nodeInfo.NodeType == "Shadowsocks" {
+			users = append(users, c.buildSSUser(&(*userInfo)[v], nodeInfo.SS.CypherMethod))
+		} else {
+			return fmt.Errorf("unsupported node type: %s", nodeInfo.NodeType)
+		}
+	}
+	err = c.addUsers(users, c.Tag)
+	if err != nil {
+		return err
+	}
+	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(*userIndex))
+	return nil
+}
+
+func compareUserList(old, new *[]api.UserInfo) (deleted, added []int) {
 	tmp := map[int]int{}
+	tmp2 := map[int]int{}
 	for i := range *old {
 		tmp[(*old)[i].UID] = i
 	}
 	l := len(tmp)
 	for i := range *new {
 		tmp[(*new)[i].UID] = i
+		tmp2[(*new)[i].UID] = i
 		if l != len(tmp) {
-			tmp[(*new)[i].UID] = i
-			added = append(added, (*new)[i])
+			added = append(added, i)
 			l++
-		} else {
-			delete(tmp, (*new)[i].UID)
-			l--
 		}
 	}
+	tmp = nil
+	l = len(tmp2)
 	for i := range *old {
-		tmp[(*old)[i].UID] = i
-		if l == len(tmp) {
-			deleted = append(deleted, (*old)[i])
-		} else {
+		tmp2[(*old)[i].UID] = i
+		if l != len(tmp2) {
+			deleted = append(deleted, i)
 			l++
 		}
 	}

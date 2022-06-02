@@ -59,14 +59,18 @@ type TrojanUserInfo struct {
 	Password string `json:"password"`
 }
 type UserInfo struct {
-	UID         int             `json:"id"`
 	DeviceLimit int             `json:"device_limit"`
 	SpeedLimit  uint64          `json:"speed_limit"`
+	UID         int             `json:"id"`
 	Port        int             `json:"port"`
 	Cipher      string          `json:"cipher"`
 	Secret      string          `json:"secret"`
 	V2rayUser   *V2RayUserInfo  `json:"v2ray_user"`
 	TrojanUser  *TrojanUserInfo `json:"trojan_user"`
+}
+type UserListBody struct {
+	//Msg  string `json:"msg"`
+	Data []UserInfo `json:"data"`
 }
 
 func (p *UserInfo) GetUserEmail() string {
@@ -79,14 +83,16 @@ func (p *UserInfo) GetUserEmail() string {
 }
 
 type NodeInfo struct {
-	NodeType    string
-	NodeId      int
-	TLSType     string
-	EnableVless bool
-	EnableTls   bool
-	V2ray       *V2rayConfig
-	Trojan      *TrojanConfig
-	SS          *SSConfig
+	RspMd5       string
+	NodeType     string
+	NodeId       int
+	TLSType      string
+	EnableVless  bool
+	EnableTls    bool
+	EnableSS2022 bool
+	V2ray        *V2rayConfig
+	Trojan       *TrojanConfig
+	SS           *SSConfig
 }
 
 type SSConfig struct {

@@ -54,18 +54,18 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeSpeedLimit uint64, userList 
 	return nil
 }
 
-func (l *Limiter) UpdateInboundLimiter(tag string, updatedUserList *[]api.UserInfo) error {
+func (l *Limiter) UpdateInboundLimiter(tag string, updatedUserList *[]api.UserInfo, usersIndex *[]int) error {
 
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		// Update User info
-		for _, u := range *updatedUserList {
-			inboundInfo.UserInfo.Store(fmt.Sprintf("%s|%s|%d", tag, u.GetUserEmail(), u.UID), UserInfo{
-				UID:         u.UID,
-				SpeedLimit:  u.SpeedLimit,
-				DeviceLimit: u.DeviceLimit,
+		for _, u := range *usersIndex {
+			inboundInfo.UserInfo.Store(fmt.Sprintf("%s|%s|%d", tag, (*updatedUserList)[u].GetUserEmail(), (*updatedUserList)[u].UID), UserInfo{
+				UID:         (*updatedUserList)[u].UID,
+				SpeedLimit:  (*updatedUserList)[u].SpeedLimit,
+				DeviceLimit: (*updatedUserList)[u].DeviceLimit,
 			})
-			inboundInfo.BucketHub.Delete(fmt.Sprintf("%s|%s|%d", tag, u.GetUserEmail(), u.UID)) // Delete old limiter bucket
+			inboundInfo.BucketHub.Delete(fmt.Sprintf("%s|%s|%d", tag, (*updatedUserList)[u].GetUserEmail(), (*updatedUserList)[u].UID)) // Delete old limiter bucket
 		}
 	} else {
 		return fmt.Errorf("no such inbound in limiter: %s", tag)
@@ -142,7 +142,7 @@ func (l *Limiter) GetUserBucket(tag string, email string, ip string) (limiter *r
 		}
 		limit := determineRate(nodeLimit, userLimit) // If need the Speed limit
 		if limit > 0 {
-			limiter := ratelimit.NewBucketWithQuantum(time.Duration(time.Second), int64(limit), int64(limit)) // Byte/s
+			limiter := ratelimit.NewBucketWithQuantum(time.Second, int64(limit), int64(limit)) // Byte/s
 			if v, ok := inboundInfo.BucketHub.LoadOrStore(email, limiter); ok {
 				bucket := v.(*ratelimit.Bucket)
 				return bucket, true, false

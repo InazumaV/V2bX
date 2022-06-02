@@ -62,8 +62,7 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 		nodeInfo.V2ray.Inbounds[0].StreamSetting = &conf.StreamConfig{Network: &t}
 	} else if nodeInfo.NodeType == "Shadowsocks" {
 		nodeInfo.V2ray = &api.V2rayConfig{}
-		nodeInfo.V2ray.Inbounds = make([]conf.InboundDetourConfig, 1)
-		nodeInfo.V2ray.Inbounds[0].Protocol = "shadowsocks"
+		nodeInfo.V2ray.Inbounds = []conf.InboundDetourConfig{{Protocol: "shadowsocks"}}
 		proxySetting = &conf.ShadowsocksServerConfig{}
 		randomPasswd := uuid.New()
 		defaultSSuser := &conf.ShadowsocksUserConfig{
@@ -82,7 +81,9 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 		}
 		t := conf.TransportProtocol(nodeInfo.SS.TransportProtocol)
 		nodeInfo.V2ray.Inbounds[0].StreamSetting = &conf.StreamConfig{Network: &t}
-	} else if nodeInfo.NodeType == "dokodemo-door" {
+	} else {
+		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks, and Shadowsocks-Plugin", nodeInfo.NodeType)
+	} /*else if nodeInfo.NodeType == "dokodemo-door" {
 		nodeInfo.V2ray = &api.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = make([]conf.InboundDetourConfig, 1)
 		nodeInfo.V2ray.Inbounds[0].Protocol = "dokodemo-door"
@@ -93,9 +94,7 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 			Host:        "v1.mux.cool",
 			NetworkList: []string{"tcp", "udp"},
 		}
-	} else {
-		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks, and Shadowsocks-Plugin", nodeInfo.NodeType)
-	}
+	}*/
 	// Build Listen IP address
 	ipAddress := net.ParseAddress(config.ListenIP)
 	nodeInfo.V2ray.Inbounds[0].ListenOn = &conf.Address{Address: ipAddress}
@@ -120,13 +119,15 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 	if *nodeInfo.V2ray.Inbounds[0].StreamSetting.Network == "tcp" {
 		if nodeInfo.NodeType == "V2ray" {
 			nodeInfo.V2ray.Inbounds[0].StreamSetting.TCPSettings.AcceptProxyProtocol = config.EnableProxyProtocol
+		} else {
+			tcpSetting := &conf.TCPConfig{
+				AcceptProxyProtocol: config.EnableProxyProtocol,
+			}
+			nodeInfo.V2ray.Inbounds[0].StreamSetting.TCPSettings = tcpSetting
 		}
-		tcpSetting := &conf.TCPConfig{
-			AcceptProxyProtocol: config.EnableProxyProtocol,
-		}
-		nodeInfo.V2ray.Inbounds[0].StreamSetting.TCPSettings = tcpSetting
-	} else if *nodeInfo.V2ray.Inbounds[0].StreamSetting.Network == "websocket" {
-		nodeInfo.V2ray.Inbounds[0].StreamSetting.WSSettings.AcceptProxyProtocol = config.EnableProxyProtocol
+	} else if *nodeInfo.V2ray.Inbounds[0].StreamSetting.Network == "ws" {
+		nodeInfo.V2ray.Inbounds[0].StreamSetting.WSSettings = &conf.WebSocketConfig{
+			AcceptProxyProtocol: config.EnableProxyProtocol}
 	}
 	// Build TLS and XTLS settings
 	if nodeInfo.EnableTls && config.CertConfig.CertMode != "none" {
@@ -162,8 +163,8 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 		}
 		nodeInfo.V2ray.Inbounds[0].StreamSetting.SocketSettings = sockoptConfig
 	}
-	*nodeInfo.V2ray.Inbounds[0].Settings = setting
-
+	nodeInfo.V2ray.Inbounds[0].Settings = &setting
+	nodeInfo.V2ray.Inbounds[0].Tag = tag
 	return nodeInfo.V2ray.Inbounds[0].Build()
 }
 

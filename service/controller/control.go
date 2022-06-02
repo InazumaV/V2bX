@@ -63,7 +63,7 @@ func (c *Controller) addUsers(users []*protocol.User, tag string) error {
 	inboundManager := c.server.GetFeature(inbound.ManagerType()).(inbound.Manager)
 	handler, err := inboundManager.GetHandler(context.Background(), tag)
 	if err != nil {
-		return fmt.Errorf("No such inbound tag: %s", err)
+		return fmt.Errorf("no such inbound tag: %s", err)
 	}
 	inboundInstance, ok := handler.(proxy.GetInbound)
 	if !ok {
@@ -91,7 +91,7 @@ func (c *Controller) removeUsers(users []string, tag string) error {
 	inboundManager := c.server.GetFeature(inbound.ManagerType()).(inbound.Manager)
 	handler, err := inboundManager.GetHandler(context.Background(), tag)
 	if err != nil {
-		return fmt.Errorf("No such inbound tag: %s", err)
+		return fmt.Errorf("no such inbound tag: %s", err)
 	}
 	inboundInstance, ok := handler.(proxy.GetInbound)
 	if !ok {
@@ -135,9 +135,9 @@ func (c *Controller) AddInboundLimiter(tag string, nodeSpeedLimit uint64, userLi
 	return err
 }
 
-func (c *Controller) UpdateInboundLimiter(tag string, updatedUserList *[]api.UserInfo) error {
+func (c *Controller) UpdateInboundLimiter(tag string, updatedUserList *[]api.UserInfo, usersIndex *[]int) error {
 	dispather := c.server.GetFeature(routing.DispatcherType()).(*mydispatcher.DefaultDispatcher)
-	err := dispather.Limiter.UpdateInboundLimiter(tag, updatedUserList)
+	err := dispather.Limiter.UpdateInboundLimiter(tag, updatedUserList, usersIndex)
 	return err
 }
 
