@@ -3,8 +3,6 @@ module github.com/Yuzuki616/V2bX
 go 1.18
 
 require (
-	github.com/bitly/go-simplejson v0.5.0
-	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/deckarep/golang-set v1.8.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-acme/lego/v4 v4.6.0
@@ -25,7 +23,7 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
-require github.com/goccy/go-json v0.9.6
+require github.com/goccy/go-json v0.9.7
 
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
