@@ -16,7 +16,7 @@ type Config struct {
 }
 
 type NodesConfig struct {
-	PanelType        string             `mapstructure:"PanelType"`
+	//PanelType        string             `mapstructure:"PanelType"`
 	ApiConfig        *api.Config        `mapstructure:"ApiConfig"`
 	ControllerConfig *controller.Config `mapstructure:"ControllerConfig"`
 }

@@ -18,7 +18,6 @@ func (c *Client) Debug() {
 func (c *Client) assembleURL(path string) string {
 	return c.APIHost + path
 }
-
 func (c *Client) checkResponse(res *resty.Response, path string, err error) error {
 	if err != nil {
 		return fmt.Errorf("request %s failed: %s", c.assembleURL(path), err)
