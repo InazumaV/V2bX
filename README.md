@@ -84,7 +84,7 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 * [V2Fly](https://github.com/v2fly)
 * [VNet-V2ray](https://github.com/ProxyPanel/VNet-V2ray)
 * [Air-Universe](https://github.com/crossfw/Air-Universe)
-* [XraR](https://github.com/Misaka-blog/XrayR)
+* [XrayR](https://github.com/Misaka-blog/XrayR)
 
 ## Licence
 
