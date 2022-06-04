@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/common/legocmd"
+	"github.com/Yuzuki616/V2bX/common/legoCmd"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/task"
 	"github.com/xtls/xray-core/core"
@@ -168,7 +168,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	// Check Cert
 	if c.nodeInfo.EnableTls && c.config.CertConfig.CertMode != "none" &&
 		(c.config.CertConfig.CertMode == "dns" || c.config.CertConfig.CertMode == "http") {
-		lego, err := legocmd.New()
+		lego, err := legoCmd.New()
 		if err != nil {
 			log.Print(err)
 		}

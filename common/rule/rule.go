@@ -12,19 +12,19 @@ import (
 	mapset "github.com/deckarep/golang-set"
 )
 
-type RuleManager struct {
+type Rule struct {
 	InboundRule         *sync.Map // Key: Tag, Value: []api.DetectRule
 	InboundDetectResult *sync.Map // key: Tag, Value: mapset.NewSet []api.DetectResult
 }
 
-func New() *RuleManager {
-	return &RuleManager{
+func New() *Rule {
+	return &Rule{
 		InboundRule:         new(sync.Map),
 		InboundDetectResult: new(sync.Map),
 	}
 }
 
-func (r *RuleManager) UpdateRule(tag string, newRuleList []api.DetectRule) error {
+func (r *Rule) UpdateRule(tag string, newRuleList []api.DetectRule) error {
 	if value, ok := r.InboundRule.LoadOrStore(tag, newRuleList); ok {
 		oldRuleList := value.([]api.DetectRule)
 		if !reflect.DeepEqual(oldRuleList, newRuleList) {
@@ -34,7 +34,7 @@ func (r *RuleManager) UpdateRule(tag string, newRuleList []api.DetectRule) error
 	return nil
 }
 
-func (r *RuleManager) GetDetectResult(tag string) (*[]api.DetectResult, error) {
+func (r *Rule) GetDetectResult(tag string) (*[]api.DetectResult, error) {
 	detectResult := make([]api.DetectResult, 0)
 	if value, ok := r.InboundDetectResult.LoadAndDelete(tag); ok {
 		resultSet := value.(mapset.Set)
@@ -46,9 +46,9 @@ func (r *RuleManager) GetDetectResult(tag string) (*[]api.DetectResult, error) {
 	return &detectResult, nil
 }
 
-func (r *RuleManager) Detect(tag string, destination string, email string) (reject bool) {
+func (r *Rule) Detect(tag string, destination string, email string) (reject bool) {
 	reject = false
-	var hitRuleID int = -1
+	var hitRuleID = -1
 	// If we have some rule for this inbound
 	if value, ok := r.InboundRule.Load(tag); ok {
 		ruleList := value.([]api.DetectRule)

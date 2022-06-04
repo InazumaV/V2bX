@@ -1,11 +1,11 @@
-//Package generate the InbounderConfig used by add inbound
+// Package controller the InbounderConfig used by add inbound
 package controller
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/common/legocmd"
+	"github.com/Yuzuki616/V2bX/common/legoCmd"
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/common/uuid"
 	"github.com/xtls/xray-core/core"
@@ -178,7 +178,7 @@ func getCertFile(certConfig *CertConfig) (certFile string, keyFile string, err e
 		}
 		return certConfig.CertFile, certConfig.KeyFile, nil
 	} else if certConfig.CertMode == "dns" {
-		lego, err := legocmd.New()
+		lego, err := legoCmd.New()
 		if err != nil {
 			return "", "", err
 		}
@@ -188,7 +188,7 @@ func getCertFile(certConfig *CertConfig) (certFile string, keyFile string, err e
 		}
 		return certPath, keyPath, err
 	} else if certConfig.CertMode == "http" {
-		lego, err := legocmd.New()
+		lego, err := legoCmd.New()
 		if err != nil {
 			return "", "", err
 		}

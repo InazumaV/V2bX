@@ -98,7 +98,7 @@ type DefaultDispatcher struct {
 	dns         dns.Client
 	fdns        dns.FakeDNSEngine
 	Limiter     *limiter.Limiter
-	RuleManager *rule.RuleManager
+	RuleManager *rule.Rule
 }
 
 func init() {

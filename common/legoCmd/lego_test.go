@@ -1,20 +1,20 @@
-package legocmd_test
+package legoCmd_test
 
 import (
 	"testing"
 
-	"github.com/Yuzuki616/V2bX/common/legocmd"
+	"github.com/Yuzuki616/V2bX/common/legoCmd"
 )
 
 func TestLegoClient(t *testing.T) {
-	_, err := legocmd.New()
+	_, err := legoCmd.New()
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestLegoDNSCert(t *testing.T) {
-	lego, err := legocmd.New()
+	lego, err := legoCmd.New()
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,7 +36,7 @@ func TestLegoDNSCert(t *testing.T) {
 }
 
 func TestLegoHTTPCert(t *testing.T) {
-	lego, err := legocmd.New()
+	lego, err := legoCmd.New()
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,7 +53,7 @@ func TestLegoHTTPCert(t *testing.T) {
 }
 
 func TestLegoRenewCert(t *testing.T) {
-	lego, err := legocmd.New()
+	lego, err := legoCmd.New()
 	if err != nil {
 		t.Error(err)
 	}

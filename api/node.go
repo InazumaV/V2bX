@@ -196,11 +196,11 @@ func (c *Client) ParseSSNodeResponse() (*NodeInfo, error) {
 		return nil, err
 	}
 	node := &NodeInfo{
-		SpeedLimit:   uint64(c.SpeedLimit * 1000000 / 8),
-		DeviceLimit:  c.DeviceLimit,
-		EnableSS2022: c.EnableSS2022,
-		NodeType:     c.NodeType,
-		NodeId:       c.NodeID,
+		SpeedLimit:  uint64(c.SpeedLimit * 1000000 / 8),
+		DeviceLimit: c.DeviceLimit,
+		//EnableSS2022: c.EnableSS2022,
+		NodeType: c.NodeType,
+		NodeId:   c.NodeID,
 		SS: &SSConfig{
 			Port:              port,
 			TransportProtocol: "tcp",

@@ -19,11 +19,11 @@ func OutboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.
 	// Build Send IP address
 	if config.SendIP != "" {
 		ipAddress := net.ParseAddress(config.SendIP)
-		outboundDetourConfig.SendThrough = &conf.Address{ipAddress}
+		outboundDetourConfig.SendThrough = &conf.Address{Address: ipAddress}
 	}
 
 	// Freedom Protocol setting
-	var domainStrategy string = "Asis"
+	var domainStrategy = "Asis"
 	if config.EnableDNS {
 		if config.DNSType != "" {
 			domainStrategy = config.DNSType
@@ -41,7 +41,7 @@ func OutboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.
 	var setting json.RawMessage
 	setting, err := json.Marshal(proxySetting)
 	if err != nil {
-		return nil, fmt.Errorf("Marshal proxy %s config fialed: %s", nodeInfo.NodeType, err)
+		return nil, fmt.Errorf("marshal proxy %s config fialed: %s", nodeInfo.NodeType, err)
 	}
 	outboundDetourConfig.Settings = &setting
 	return outboundDetourConfig.Build()

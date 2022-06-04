@@ -1,6 +1,6 @@
-// Let's Encrypt client to go!
+// Package legocmd Let's Encrypt client to go!
 // CLI application for generating Let's Encrypt certificates using the ACME package.
-package legocmd
+package legoCmd
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Yuzuki616/V2bX/common/legocmd/cmd"
+	"github.com/Yuzuki616/V2bX/common/legoCmd/cmd"
 	"github.com/urfave/cli"
 )
 
@@ -34,18 +34,18 @@ func New() (*LegoCMD, error) {
 		fmt.Printf("lego version %s %s/%s\n", c.App.Version, runtime.GOOS, runtime.GOARCH)
 	}
 
-	// Set default path to configPath/cert
-	var path string = ""
+	// Set default pathTemp to configPath/cert
+	var pathTemp = ""
 	configPath := os.Getenv("XRAY_LOCATION_CONFIG")
 	if configPath != "" {
-		path = configPath
+		pathTemp = configPath
 	} else if cwd, err := os.Getwd(); err == nil {
-		path = cwd
+		pathTemp = cwd
 	} else {
-		path = "."
+		pathTemp = "."
 	}
 
-	defaultPath = filepath.Join(path, "cert")
+	defaultPath = filepath.Join(pathTemp, "cert")
 
 	app.Flags = cmd.CreateFlags(defaultPath)
 
@@ -121,8 +121,8 @@ func (l *LegoCMD) HTTPCert(domain, email string) (CertPath string, KeyPath strin
 	if err == nil {
 		return CertPath, KeyPath, err
 	}
-	argstring := fmt.Sprintf("lego -a -d %s -m %s --http run", domain, email)
-	err = l.cmdClient.Run(strings.Split(argstring, " "))
+	argString := fmt.Sprintf("lego -a -d %s -m %s --http run", domain, email)
+	err = l.cmdClient.Run(strings.Split(argString, " "))
 
 	if err != nil {
 		return "", "", err
@@ -146,7 +146,7 @@ func (l *LegoCMD) RenewCert(domain, email, certMode, provider string, DNSEnv map
 			case error:
 				err = x
 			default:
-				err = errors.New("unknow panic")
+				err = errors.New("unknown panic")
 			}
 			return "", "", err
 		}
@@ -161,7 +161,7 @@ func (l *LegoCMD) RenewCert(domain, email, certMode, provider string, DNSEnv map
 		}
 		argstring = fmt.Sprintf("lego -a -d %s -m %s --dns %s renew --days 30", domain, email, provider)
 	} else {
-		return "", "", fmt.Errorf("Unsupport cert mode: %s", certMode)
+		return "", "", fmt.Errorf("unsupport cert mode: %s", certMode)
 	}
 	err = l.cmdClient.Run(strings.Split(argstring, " "))
 
@@ -178,10 +178,10 @@ func checkCertfile(domain string) (string, string, error) {
 	keyPath := path.Join(defaultPath, "certificates", fmt.Sprintf("%s.key", domain))
 	certPath := path.Join(defaultPath, "certificates", fmt.Sprintf("%s.crt", domain))
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
-		return "", "", fmt.Errorf("Cert key failed: %s", domain)
+		return "", "", fmt.Errorf("cert key failed: %s", domain)
 	}
 	if _, err := os.Stat(certPath); os.IsNotExist(err) {
-		return "", "", fmt.Errorf("Cert cert failed: %s", domain)
+		return "", "", fmt.Errorf("cert cert failed: %s", domain)
 	}
 	absKeyPath, _ := filepath.Abs(keyPath)
 	absCertPath, _ := filepath.Abs(certPath)
