@@ -5,7 +5,7 @@
 
 A V2board backend based on Xray-core
 
-一个基于Xray的后端框架，支持V2ay,Trojan,Shadowsocks协议。
+一个基于Xray的V2board节点服务端，支持V2ay,Trojan,Shadowsocks协议。
 
 如果您喜欢本项目，可以右上角点个star+watch，持续关注本项目的进展。
 
@@ -36,7 +36,6 @@ A V2board backend based on Xray-core
 | 获取节点信息    | √     | √      | √           |
 | 获取用户信息    | √     | √      | √           |
 | 用户流量统计    | √     | √      | √           |
-| 服务器信息上报  | √     | √      | √           |
 | 自动申请tls证书 | √     | √      | √           |
 | 自动续签tls证书 | √     | √      | √           |
 | 在线人数统计    | √     | √      | √           |
@@ -65,10 +64,6 @@ A V2board backend based on Xray-core
 ```
 wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh && bash install.sh
 ```
-
-### 使用Docker部署
-
-[Docker部署教程](https://crackair.gitbook.io/xrayr-project/xrayr-xia-zai-he-an-zhuang/install/docker)
 
 ### 手动安装
 
