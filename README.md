@@ -3,9 +3,9 @@
 [![](https://img.shields.io/badge/TgChat-@XrayR讨论-blue.svg)](https://t.me/XrayR_project)
 [![](https://img.shields.io/badge/Channel-@XrayR通知-blue.svg)](https://t.me/XrayR_channel)
 
-A V2board backend base on Xray
+A V2board backend based on Xray-core
 
-一个基于Xray的后端框架，支持V2ay,Trojan,Shadowsocks协议。
+一个基于Xray的V2board节点服务端，支持V2ay,Trojan,Shadowsocks协议。
 
 如果您喜欢本项目，可以右上角点个star+watch，持续关注本项目的进展。
 
@@ -36,7 +36,6 @@ A V2board backend base on Xray
 | 获取节点信息    | √     | √      | √           |
 | 获取用户信息    | √     | √      | √           |
 | 用户流量统计    | √     | √      | √           |
-| 服务器信息上报  | √     | √      | √           |
 | 自动申请tls证书 | √     | √      | √           |
 | 自动续签tls证书 | √     | √      | √           |
 | 在线人数统计    | √     | √      | √           |
@@ -54,7 +53,9 @@ A V2board backend base on Xray
 
 ## TODO
 
-* 支持WARP Socks5代理模式分流
+* 进一步优化内存占用
+* 增加SS2022支持
+* 优化源码目录结构
 
 ## 软件安装
 
@@ -63,10 +64,6 @@ A V2board backend base on Xray
 ```
 wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh && bash install.sh
 ```
-
-### 使用Docker部署
-
-[Docker部署教程](https://crackair.gitbook.io/xrayr-project/xrayr-xia-zai-he-an-zhuang/install/docker)
 
 ### 手动安装
 
@@ -82,6 +79,7 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 * [V2Fly](https://github.com/v2fly)
 * [VNet-V2ray](https://github.com/ProxyPanel/VNet-V2ray)
 * [Air-Universe](https://github.com/crossfw/Air-Universe)
+* [XrayR](https://github.com/Misaka-blog/XrayR)
 
 ## Licence
 
@@ -89,9 +87,6 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 
 ## Telgram
 
-[XrayR后端讨论](https://t.me/XrayR_project)
-
-[XrayR通知](https://t.me/XrayR_channel)
 
 ## Stars 增长记录
 
