@@ -2,7 +2,6 @@ package controller_test
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/v2board"
 	"github.com/xtls/xray-core/proxy/shadowsocks_2022"
 	"os"
 	"os/signal"
