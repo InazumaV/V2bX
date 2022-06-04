@@ -54,7 +54,9 @@ A V2board backend base on Xray
 
 ## TODO
 
-* 支持WARP Socks5代理模式分流
+* 进一步优化内存占用
+* 增加SS2022支持
+* 优化源码目录结构
 
 ## 软件安装
 
@@ -82,6 +84,7 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 * [V2Fly](https://github.com/v2fly)
 * [VNet-V2ray](https://github.com/ProxyPanel/VNet-V2ray)
 * [Air-Universe](https://github.com/crossfw/Air-Universe)
+* [XraR](https://github.com/Misaka-blog/XrayR)
 
 ## Licence
 
@@ -89,9 +92,6 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 
 ## Telgram
 
-[XrayR后端讨论](https://t.me/XrayR_project)
-
-[XrayR通知](https://t.me/XrayR_channel)
 
 ## Stars 增长记录
 
