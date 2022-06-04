@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/api/v2board"
 	_ "github.com/Yuzuki616/V2bX/main/distro/all"
 	"github.com/Yuzuki616/V2bX/service"
 	"github.com/Yuzuki616/V2bX/service/controller"
@@ -158,7 +157,7 @@ func (p *Panel) Start() {
 	p.Server = server
 	// Load Nodes config
 	for _, nodeConfig := range p.panelConfig.NodesConfig {
-		var apiClient api.API = v2board.New(nodeConfig.ApiConfig)
+		var apiClient = api.New(nodeConfig.ApiConfig)
 		var controllerService service.Service
 		// Register controller service
 		controllerConfig := getDefaultControllerConfig()

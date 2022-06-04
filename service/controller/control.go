@@ -129,15 +129,15 @@ func (c *Controller) getTraffic(email string) (up int64, down int64) {
 
 }
 
-func (c *Controller) AddInboundLimiter(tag string, nodeSpeedLimit uint64, userList *[]api.UserInfo) error {
+func (c *Controller) AddInboundLimiter(tag string, userList *[]api.UserInfo) error {
 	dispather := c.server.GetFeature(routing.DispatcherType()).(*mydispatcher.DefaultDispatcher)
-	err := dispather.Limiter.AddInboundLimiter(tag, nodeSpeedLimit, userList)
+	err := dispather.Limiter.AddInboundLimiter(tag, c.nodeInfo, userList)
 	return err
 }
 
 func (c *Controller) UpdateInboundLimiter(tag string, updatedUserList *[]api.UserInfo, usersIndex *[]int) error {
 	dispather := c.server.GetFeature(routing.DispatcherType()).(*mydispatcher.DefaultDispatcher)
-	err := dispather.Limiter.UpdateInboundLimiter(tag, updatedUserList, usersIndex)
+	err := dispather.Limiter.UpdateInboundLimiter(tag, c.nodeInfo, updatedUserList, usersIndex)
 	return err
 }
 

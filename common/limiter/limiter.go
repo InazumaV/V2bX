@@ -34,19 +34,25 @@ func New() *Limiter {
 	}
 }
 
-func (l *Limiter) AddInboundLimiter(tag string, nodeSpeedLimit uint64, userList *[]api.UserInfo) error {
+func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList *[]api.UserInfo) error {
 	inboundInfo := &InboundInfo{
 		Tag:            tag,
-		NodeSpeedLimit: nodeSpeedLimit,
+		NodeSpeedLimit: nodeInfo.SpeedLimit,
 		BucketHub:      new(sync.Map),
 		UserOnlineIP:   new(sync.Map),
 	}
 	userMap := new(sync.Map)
-	for _, u := range *userList {
-		userMap.Store(fmt.Sprintf("%s|%d|%d", tag, u.Port, u.UID), UserInfo{
-			UID:         u.UID,
-			SpeedLimit:  u.SpeedLimit,
-			DeviceLimit: u.DeviceLimit,
+	for i := range *userList {
+		if (*userList)[i].SpeedLimit == 0 {
+			(*userList)[i].SpeedLimit = nodeInfo.SpeedLimit
+		}
+		if (*userList)[i].DeviceLimit == 0 {
+			(*userList)[i].DeviceLimit = nodeInfo.DeviceLimit
+		}
+		userMap.Store(fmt.Sprintf("%s|%d|%d", tag, (*userList)[i].Port, (*userList)[i].UID), UserInfo{
+			UID:         (*userList)[i].UID,
+			SpeedLimit:  (*userList)[i].SpeedLimit,
+			DeviceLimit: (*userList)[i].DeviceLimit,
 		})
 	}
 	inboundInfo.UserInfo = userMap
@@ -54,12 +60,18 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeSpeedLimit uint64, userList 
 	return nil
 }
 
-func (l *Limiter) UpdateInboundLimiter(tag string, updatedUserList *[]api.UserInfo, usersIndex *[]int) error {
+func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *api.NodeInfo, updatedUserList *[]api.UserInfo, usersIndex *[]int) error {
 
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		// Update User info
 		for _, u := range *usersIndex {
+			if (*updatedUserList)[u].SpeedLimit == 0 {
+				(*updatedUserList)[u].SpeedLimit = nodeInfo.SpeedLimit
+			}
+			if (*updatedUserList)[u].DeviceLimit == 0 {
+				(*updatedUserList)[u].DeviceLimit = nodeInfo.DeviceLimit
+			}
 			inboundInfo.UserInfo.Store(fmt.Sprintf("%s|%s|%d", tag, (*updatedUserList)[u].GetUserEmail(), (*updatedUserList)[u].UID), UserInfo{
 				UID:         (*updatedUserList)[u].UID,
 				SpeedLimit:  (*updatedUserList)[u].SpeedLimit,

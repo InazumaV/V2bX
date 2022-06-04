@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"runtime"
 	"time"
 
 	"github.com/Yuzuki616/V2bX/api"
@@ -64,7 +65,7 @@ func (c *Controller) Start() error {
 	}
 	//sync controller userList
 	c.userList = userInfo
-	if err := c.AddInboundLimiter(c.Tag, 0, userInfo); err != nil {
+	if err := c.AddInboundLimiter(c.Tag, userInfo); err != nil {
 		log.Print(err)
 	}
 	// Add Rule Manager
@@ -126,12 +127,6 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		log.Print(err)
 		return nil
 	}
-	// Update User
-	newUserInfo, err := c.apiClient.GetUserList()
-	if err != nil {
-		log.Print(err)
-		return nil
-	}
 
 	var nodeInfoChanged = false
 	// If nodeInfo changed
@@ -171,23 +166,39 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	}
 
 	// Check Cert
-	if c.nodeInfo.V2ray.Inbounds[0].StreamSetting.Security == "tls" && (c.config.CertConfig.CertMode == "dns" || c.config.CertConfig.CertMode == "http") {
+	if c.nodeInfo.EnableTls && c.config.CertConfig.CertMode != "none" &&
+		(c.config.CertConfig.CertMode == "dns" || c.config.CertConfig.CertMode == "http") {
 		lego, err := legocmd.New()
 		if err != nil {
 			log.Print(err)
 		}
 		// Xray-core supports the OcspStapling certification hot renew
-		_, _, err = lego.RenewCert(c.config.CertConfig.CertDomain, c.config.CertConfig.Email, c.config.CertConfig.CertMode, c.config.CertConfig.Provider, c.config.CertConfig.DNSEnv)
+		_, _, err = lego.RenewCert(c.config.CertConfig.CertDomain, c.config.CertConfig.Email,
+			c.config.CertConfig.CertMode, c.config.CertConfig.Provider, c.config.CertConfig.DNSEnv)
 		if err != nil {
 			log.Print(err)
 		}
+	}
+	// Update User
+	newUserInfo, err := c.apiClient.GetUserList()
+	if err != nil {
+		log.Print(err)
+		return nil
 	}
 	if newUserInfo == nil {
 		return nil
 	}
 	if nodeInfoChanged {
+		if newUserInfo != nil {
+			c.userList = newUserInfo
+		}
 		err = c.addNewUser(newUserInfo, newNodeInfo)
 		if err != nil {
+			log.Print(err)
+			return nil
+		}
+		// Add Limiter
+		if err := c.AddInboundLimiter(c.Tag, newUserInfo); err != nil {
 			log.Print(err)
 			return nil
 		}
@@ -210,11 +221,6 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			if err != nil {
 				log.Print(err)
 			}
-			// Add Limiter
-			if err := c.AddInboundLimiter(c.Tag, 0, newUserInfo); err != nil {
-				log.Print(err)
-				return nil
-			}
 			// Update Limiter
 			if err := c.UpdateInboundLimiter(c.Tag, newUserInfo, &added); err != nil {
 				log.Print(err)
@@ -222,8 +228,9 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		}
 		log.Printf("[%s: %d] %d user deleted, %d user added", c.nodeInfo.NodeType, c.nodeInfo.NodeId,
 			len(deleted), len(added))
+		c.userList = newUserInfo
 	}
-	c.userList = newUserInfo
+	runtime.GC()
 	return nil
 }
 
@@ -325,15 +332,15 @@ func (c *Controller) addNewUserFromIndex(userInfo *[]api.UserInfo, userIndex *[]
 }
 
 func compareUserList(old, new *[]api.UserInfo) (deleted, added []int) {
-	tmp := map[int]int{}
-	tmp2 := map[int]int{}
+	tmp := map[int]struct{}{}
+	tmp2 := map[int]struct{}{}
 	for i := range *old {
-		tmp[(*old)[i].UID] = i
+		tmp[(*old)[i].UID] = struct{}{}
 	}
 	l := len(tmp)
 	for i := range *new {
-		tmp[(*new)[i].UID] = i
-		tmp2[(*new)[i].UID] = i
+		tmp[(*new)[i].UID] = struct{}{}
+		tmp2[(*new)[i].UID] = struct{}{}
 		if l != len(tmp) {
 			added = append(added, i)
 			l++
@@ -342,7 +349,7 @@ func compareUserList(old, new *[]api.UserInfo) (deleted, added []int) {
 	tmp = nil
 	l = len(tmp2)
 	for i := range *old {
-		tmp2[(*old)[i].UID] = i
+		tmp2[(*old)[i].UID] = struct{}{}
 		if l != len(tmp2) {
 			deleted = append(deleted, i)
 			l++
@@ -359,7 +366,6 @@ func (c *Controller) userInfoMonitor() (err error) {
 		if up > 0 || down > 0 {
 			userTraffic = append(userTraffic, api.UserTraffic{
 				UID:      user.UID,
-				Email:    user.V2rayUser.Email,
 				Upload:   up,
 				Download: down})
 		}
