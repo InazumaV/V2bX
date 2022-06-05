@@ -77,7 +77,7 @@ type SSConfig struct {
 type V2rayConfig struct {
 	Inbounds []conf.InboundDetourConfig `json:"inbounds"`
 	Routing  *struct {
-		Rules *json.RawMessage `json:"rules"`
+		Rules []json.RawMessage `json:"rules"`
 	} `json:"routing"`
 }
 
@@ -222,7 +222,11 @@ func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule boo
 		return nil, fmt.Errorf("unmarshal nodeinfo error: %s", err)
 	}
 	if parseRule {
-		json.Unmarshal(*node.V2ray.Routing.Rules, c.RemoteRuleCache)
+		c.RemoteRuleCache = &Rule{}
+		err := json.Unmarshal(node.V2ray.Routing.Rules[1], c.RemoteRuleCache)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	node.V2ray.Routing = nil
 	if notParseNode {
