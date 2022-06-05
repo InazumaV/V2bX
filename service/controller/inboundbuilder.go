@@ -16,7 +16,9 @@ import (
 func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
 	var proxySetting interface{}
 	if nodeInfo.NodeType == "V2ray" {
-		defer func() { nodeInfo.V2ray = nil }()
+		defer func() {
+			nodeInfo.V2ray = nil
+		}()
 		if nodeInfo.EnableVless {
 			nodeInfo.V2ray.Inbounds[0].Protocol = "vless"
 			// Enable fallback
@@ -40,7 +42,10 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 			proxySetting = &conf.VMessInboundConfig{}
 		}
 	} else if nodeInfo.NodeType == "Trojan" {
-		defer func() { nodeInfo.V2ray = nil; nodeInfo.Trojan = nil }()
+		defer func() {
+			nodeInfo.V2ray = nil
+			nodeInfo.Trojan = nil
+		}()
 		nodeInfo.V2ray = &api.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = make([]conf.InboundDetourConfig, 1)
 		nodeInfo.V2ray.Inbounds[0].Protocol = "trojan"
@@ -63,6 +68,10 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 		t := conf.TransportProtocol(nodeInfo.SS.TransportProtocol)
 		nodeInfo.V2ray.Inbounds[0].StreamSetting = &conf.StreamConfig{Network: &t}
 	} else if nodeInfo.NodeType == "Shadowsocks" {
+		defer func() {
+			nodeInfo.V2ray = nil
+			nodeInfo.SS = nil
+		}()
 		defer func() { nodeInfo.V2ray = nil; nodeInfo.SS = nil }()
 		nodeInfo.V2ray = &api.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = []conf.InboundDetourConfig{{Protocol: "shadowsocks"}}

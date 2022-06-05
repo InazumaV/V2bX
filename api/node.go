@@ -2,6 +2,7 @@ package api
 
 import (
 	"bufio"
+	"bytes"
 	md52 "crypto/md5"
 	"fmt"
 	"github.com/go-resty/resty/v2"
@@ -76,7 +77,7 @@ type SSConfig struct {
 type V2rayConfig struct {
 	Inbounds []conf.InboundDetourConfig `json:"inbounds"`
 	Routing  *struct {
-		Rules []Rule `json:"rules"`
+		Rules *json.RawMessage `json:"rules"`
 	} `json:"routing"`
 }
 
@@ -104,10 +105,6 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	switch c.NodeType {
 	case "V2ray":
 		path = "/api/v1/server/Deepbwork/config"
-		res, err = c.client.R().
-			SetQueryParam("local_port", "1").
-			ForceContentType("application/json").
-			Get(path)
 	case "Trojan":
 		path = "/api/v1/server/TrojanTidalab/config"
 	case "Shadowsocks":
@@ -119,13 +116,6 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	default:
 		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
 	}
-	md := md52.Sum(res.Body())
-	if c.NodeInfoRspMd5 != [16]byte{} {
-		if c.NodeInfoRspMd5 == md {
-			return nil, nil
-		}
-	}
-	c.NodeInfoRspMd5 = md
 	res, err = c.client.R().
 		SetQueryParam("local_port", "1").
 		ForceContentType("application/json").
@@ -134,12 +124,25 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	if err != nil {
 		return nil, err
 	}
+	i := bytes.Index(res.Body(), []byte("outbo"))
+	md := md52.Sum(res.Body()[:i])
+	nodeIsNotChange := false
+	if c.NodeInfoRspMd5 != [16]byte{} {
+		if c.NodeInfoRspMd5 == md {
+			nodeIsNotChange = true
+		}
+	}
+	c.NodeInfoRspMd5 = md
 	c.access.Lock()
 	defer c.access.Unlock()
 	switch c.NodeType {
 	case "V2ray":
-		nodeInfo, err = c.ParseV2rayNodeResponse(res.Body())
+		md2 := md52.Sum(res.Body()[i:])
+		nodeInfo, err = c.ParseV2rayNodeResponse(res.Body(), nodeIsNotChange, c.NodeRuleRspMd5 != md2)
 	case "Trojan":
+		if nodeIsNotChange {
+			return nil, nil
+		}
 		nodeInfo, err = c.ParseTrojanNodeResponse(res.Body())
 	}
 	return nodeInfo, nil
@@ -147,7 +150,7 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 
 func (c *Client) GetNodeRule() (*[]DetectRule, error) {
 	ruleList := c.LocalRuleList
-	if c.NodeType != "V2ray" {
+	if c.NodeType != "V2ray" || c.RemoteRuleCache == nil {
 		return &ruleList, nil
 	}
 
@@ -162,6 +165,7 @@ func (c *Client) GetNodeRule() (*[]DetectRule, error) {
 		}
 		ruleList = append(ruleList, ruleListItem)
 	}
+	c.RemoteRuleCache = nil
 	return &ruleList, nil
 }
 
@@ -211,18 +215,24 @@ func (c *Client) ParseSSNodeResponse() (*NodeInfo, error) {
 }
 
 // ParseV2rayNodeResponse parse the response for the given nodeinfor format
-func (c *Client) ParseV2rayNodeResponse(body []byte) (*NodeInfo, error) {
+func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule bool) (*NodeInfo, error) {
 	node := &NodeInfo{V2ray: &V2rayConfig{}}
 	err := json.Unmarshal(body, node.V2ray)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal nodeinfo error: %s", err)
 	}
+	if parseRule {
+		json.Unmarshal(*node.V2ray.Routing.Rules, c.RemoteRuleCache)
+	}
+	node.V2ray.Routing = nil
+	if notParseNode {
+		return nil, nil
+	}
 	node.SpeedLimit = uint64(c.SpeedLimit * 1000000 / 8)
 	node.DeviceLimit = c.DeviceLimit
 	node.NodeType = c.NodeType
 	node.NodeId = c.NodeID
-	c.RemoteRuleCache = &node.V2ray.Routing.Rules[0]
-	node.V2ray.Routing = nil
+
 	if c.EnableXTLS {
 		node.TLSType = "xtls"
 	} else {

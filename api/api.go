@@ -50,6 +50,7 @@ type Client struct {
 	RemoteRuleCache  *Rule
 	access           sync.Mutex
 	NodeInfoRspMd5   [16]byte
+	NodeRuleRspMd5   [16]byte
 	UserListCheckNum int
 }
 

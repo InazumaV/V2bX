@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -99,6 +100,7 @@ func (c *Controller) Start() error {
 		time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
 		_ = c.userReportPeriodic.Start()
 	}()
+	runtime.GC()
 	return nil
 }
 
@@ -131,26 +133,28 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	var nodeInfoChanged = false
 	// If nodeInfo changed
 	if newNodeInfo != nil {
-		// Remove old tag
-		oldtag := c.Tag
-		err := c.removeOldTag(oldtag)
-		if err != nil {
-			log.Print(err)
-			return nil
-		}
-		// Add new tag
-		c.nodeInfo = newNodeInfo
-		c.Tag = c.buildNodeTag()
-		err = c.addNewTag(newNodeInfo)
-		if err != nil {
-			log.Print(err)
-			return nil
-		}
-		nodeInfoChanged = true
-		// Remove Old limiter
-		if err = c.DeleteInboundLimiter(oldtag); err != nil {
-			log.Print(err)
-			return nil
+		if !reflect.DeepEqual(c.nodeInfo, newNodeInfo) {
+			// Remove old tag
+			oldtag := c.Tag
+			err := c.removeOldTag(oldtag)
+			if err != nil {
+				log.Print(err)
+				return nil
+			}
+			// Add new tag
+			c.nodeInfo = newNodeInfo
+			c.Tag = c.buildNodeTag()
+			err = c.addNewTag(newNodeInfo)
+			if err != nil {
+				log.Print(err)
+				return nil
+			}
+			nodeInfoChanged = true
+			// Remove Old limiter
+			if err = c.DeleteInboundLimiter(oldtag); err != nil {
+				log.Print(err)
+				return nil
+			}
 		}
 	}
 
@@ -158,7 +162,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	if !c.config.DisableGetRule {
 		if ruleList, err := c.apiClient.GetNodeRule(); err != nil {
 			log.Printf("Get rule list filed: %s", err)
-		} else if len(*ruleList) > 0 {
+		} else if ruleList != nil {
 			if err := c.UpdateRule(c.Tag, *ruleList); err != nil {
 				log.Print(err)
 			}
@@ -185,9 +189,6 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		log.Print(err)
 		return nil
 	}
-	if newUserInfo == nil {
-		return nil
-	}
 	if nodeInfoChanged {
 		if newUserInfo != nil {
 			c.userList = newUserInfo
@@ -197,12 +198,15 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			log.Print(err)
 			return nil
 		}
+		newNodeInfo = nil
 		// Add Limiter
 		if err := c.AddInboundLimiter(c.Tag, newUserInfo); err != nil {
 			log.Print(err)
 			return nil
 		}
-	} else {
+		newUserInfo = nil
+		runtime.GC()
+	} else if newUserInfo != nil {
 		deleted, added := compareUserList(c.userList, newUserInfo)
 		if len(deleted) > 0 {
 			deletedEmail := make([]string, len(deleted))
@@ -229,8 +233,9 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		log.Printf("[%s: %d] %d user deleted, %d user added", c.nodeInfo.NodeType, c.nodeInfo.NodeId,
 			len(deleted), len(added))
 		c.userList = newUserInfo
+		newUserInfo = nil
+		runtime.GC()
 	}
-	runtime.GC()
 	return nil
 }
 
@@ -361,11 +366,11 @@ func compareUserList(old, new *[]api.UserInfo) (deleted, added []int) {
 func (c *Controller) userInfoMonitor() (err error) {
 	// Get User traffic
 	userTraffic := make([]api.UserTraffic, 0)
-	for _, user := range *c.userList {
-		up, down := c.getTraffic(c.buildUserTag(&user))
+	for i := range *c.userList {
+		up, down := c.getTraffic(c.buildUserTag(&(*c.userList)[i]))
 		if up > 0 || down > 0 {
 			userTraffic = append(userTraffic, api.UserTraffic{
-				UID:      user.UID,
+				UID:      (*c.userList)[i].UID,
 				Upload:   up,
 				Download: down})
 		}
@@ -389,6 +394,8 @@ func (c *Controller) userInfoMonitor() (err error) {
 	} else {
 		log.Printf("[%s: %d] Report %d illegal behaviors", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(*detectResult))
 	}
+	userTraffic = nil
+	runtime.GC()
 	return nil
 }
 
