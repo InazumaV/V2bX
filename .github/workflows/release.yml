@@ -169,12 +169,12 @@ jobs:
       - name: Change the name
         run: |
           mv build_assets XrayR-$ASSET_NAME
-      - name: Upload files to Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: XrayR-${{ steps.get_filename.outputs.ASSET_NAME }}
-          path: |
-            ./XrayR-${{ steps.get_filename.outputs.ASSET_NAME }}/*
+     # - name: Upload files to Artifacts
+     #   uses: actions/upload-artifact@v2
+     #   with:
+     #     name: XrayR-${{ steps.get_filename.outputs.ASSET_NAME }}
+     #     path: |
+     #       ./XrayR-${{ steps.get_filename.outputs.ASSET_NAME }}/*
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         if: github.event_name == 'release'
