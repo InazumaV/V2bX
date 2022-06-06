@@ -193,18 +193,18 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		if newUserInfo != nil {
 			c.userList = newUserInfo
 		}
-		err = c.addNewUser(newUserInfo, newNodeInfo)
+		newUserInfo = nil
+		err = c.addNewUser(c.userList, newNodeInfo)
 		if err != nil {
 			log.Print(err)
 			return nil
 		}
 		newNodeInfo = nil
 		// Add Limiter
-		if err := c.AddInboundLimiter(c.Tag, newUserInfo); err != nil {
+		if err := c.AddInboundLimiter(c.Tag, c.userList); err != nil {
 			log.Print(err)
 			return nil
 		}
-		newUserInfo = nil
 		runtime.GC()
 	} else if newUserInfo != nil {
 		deleted, added := compareUserList(c.userList, newUserInfo)
