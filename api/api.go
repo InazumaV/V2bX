@@ -78,7 +78,7 @@ func New(apiConfig *Config) API {
 	})
 	// Read local rule list
 	localRuleList := readLocalRuleList(apiConfig.RuleListPath)
-	apiClient := &Client{
+	return &Client{
 		client:   client,
 		NodeID:   apiConfig.NodeID,
 		Key:      apiConfig.Key,
@@ -91,5 +91,4 @@ func New(apiConfig *Config) API {
 		DeviceLimit:   apiConfig.DeviceLimit,
 		LocalRuleList: localRuleList,
 	}
-	return apiClient
 }

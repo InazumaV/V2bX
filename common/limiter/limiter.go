@@ -125,8 +125,8 @@ func (l *Limiter) GetUserBucket(tag string, email string, ip string) (limiter *r
 		inboundInfo := value.(*InboundInfo)
 		nodeLimit := inboundInfo.NodeSpeedLimit
 		var userLimit uint64 = 0
-		var deviceLimit int = 0
-		var uid int = 0
+		var deviceLimit = 0
+		var uid = 0
 		if v, ok := inboundInfo.UserInfo.Load(email); ok {
 			u := v.(UserInfo)
 			uid = u.UID

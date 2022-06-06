@@ -124,25 +124,34 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	if err != nil {
 		return nil, err
 	}
-	i := bytes.Index(res.Body(), []byte("outbo"))
-	md := md52.Sum(res.Body()[:i])
-	nodeIsNotChange := false
-	if c.NodeInfoRspMd5 != [16]byte{} {
-		if c.NodeInfoRspMd5 == md {
-			nodeIsNotChange = true
-		}
-	}
-	c.NodeInfoRspMd5 = md
 	c.access.Lock()
 	defer c.access.Unlock()
 	switch c.NodeType {
 	case "V2ray":
-		md2 := md52.Sum(res.Body()[i:])
-		nodeInfo, err = c.ParseV2rayNodeResponse(res.Body(), nodeIsNotChange, c.NodeRuleRspMd5 != md2)
-	case "Trojan":
-		if nodeIsNotChange {
-			return nil, nil
+		i := bytes.Index(res.Body(), []byte("outbo"))
+		md := md52.Sum(res.Body()[:i])
+		nodeIsNotChange := true
+		if c.NodeInfoRspMd5 != [16]byte{} {
+			if c.NodeInfoRspMd5 != md {
+				nodeIsNotChange = false
+				c.NodeInfoRspMd5 = md
+			}
 		}
+		md2 := md52.Sum(res.Body()[i:])
+		ruleIsChange := false
+		if c.NodeRuleRspMd5 != md2 {
+			ruleIsChange = true
+			c.NodeRuleRspMd5 = md2
+		}
+		nodeInfo, err = c.ParseV2rayNodeResponse(res.Body(), nodeIsNotChange, ruleIsChange)
+	case "Trojan":
+		md := md52.Sum(res.Body())
+		if c.NodeInfoRspMd5 != [16]byte{} {
+			if c.NodeInfoRspMd5 == md {
+				return nil, nil
+			}
+		}
+		c.NodeInfoRspMd5 = md
 		nodeInfo, err = c.ParseTrojanNodeResponse(res.Body())
 	}
 	return nodeInfo, nil
