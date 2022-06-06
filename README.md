@@ -56,6 +56,8 @@ A V2board node server based on Xray-core, modified from XrayR
 * 进一步优化内存占用
 * 增加SS2022支持
 * 优化源码目录结构
+* 跨节点限制在线IP
+* 限制特定用户IP数及速率
 
 ## 软件安装
 
