@@ -3,7 +3,7 @@
 [![](https://img.shields.io/badge/TgChat-@XrayR讨论-blue.svg)](https://t.me/XrayR_project)
 [![](https://img.shields.io/badge/Channel-@XrayR通知-blue.svg)](https://t.me/XrayR_channel)
 
-A V2board backend based on Xray-core, modified from XrayR
+A V2board node server based on Xray-core, modified from XrayR
 
 一个基于Xray-core的V2board节点服务端，修改自XrayR，支持V2ay,Trojan,Shadowsocks协议。
 

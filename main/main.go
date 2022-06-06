@@ -23,7 +23,7 @@ var (
 )
 
 var (
-	version  = "v0.0.1"
+	version  = "v0.0.2"
 	codename = "V2bX"
 	intro    = "A V2board backend based on Xray"
 )
