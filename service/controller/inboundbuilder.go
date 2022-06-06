@@ -94,7 +94,7 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 		t := conf.TransportProtocol(nodeInfo.SS.TransportProtocol)
 		nodeInfo.V2ray.Inbounds[0].StreamSetting = &conf.StreamConfig{Network: &t}
 	} else {
-		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks, and Shadowsocks-Plugin", nodeInfo.NodeType)
+		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks", nodeInfo.NodeType)
 	} /*else if nodeInfo.NodeType == "dokodemo-door" {
 		nodeInfo.V2ray = &api.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = make([]conf.InboundDetourConfig, 1)

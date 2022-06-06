@@ -2,7 +2,6 @@ package controller_test
 
 import (
 	"fmt"
-	"github.com/xtls/xray-core/proxy/shadowsocks_2022"
 	"os"
 	"os/signal"
 	"runtime"
@@ -61,7 +60,7 @@ func TestController(t *testing.T) {
 		NodeID:   41,
 		NodeType: "V2ray",
 	}
-	apiclient := v2board.New(apiConfig)
+	apiclient := api.New(apiConfig)
 	c := New(server, apiclient, controlerconfig)
 	fmt.Println("Sleep 1s")
 	err = c.Start()
@@ -76,6 +75,4 @@ func TestController(t *testing.T) {
 		signal.Notify(osSignals, os.Interrupt, os.Kill, syscall.SIGTERM)
 		<-osSignals
 	}
-	test := shadowsocks_2022.MultiUserServerConfig{}
-	test.Network
 }
