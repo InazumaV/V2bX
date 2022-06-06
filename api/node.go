@@ -56,17 +56,17 @@ func readLocalRuleList(path string) (LocalRuleList []DetectRule) {
 }
 
 type NodeInfo struct {
-	DeviceLimit  int
-	SpeedLimit   uint64
-	NodeType     string
-	NodeId       int
-	TLSType      string
-	EnableVless  bool
-	EnableTls    bool
-	EnableSS2022 bool
-	V2ray        *V2rayConfig
-	Trojan       *TrojanConfig
-	SS           *SSConfig
+	DeviceLimit int
+	SpeedLimit  uint64
+	NodeType    string
+	NodeId      int
+	TLSType     string
+	EnableVless bool
+	EnableTls   bool
+	//EnableSS2022 bool
+	V2ray  *V2rayConfig
+	Trojan *TrojanConfig
+	SS     *SSConfig
 }
 
 type SSConfig struct {
@@ -130,10 +130,13 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	case "V2ray":
 		i := bytes.Index(res.Body(), []byte("outbo"))
 		md := md52.Sum(res.Body()[:i])
-		nodeIsNotChange := true
-		if c.NodeInfoRspMd5 != [16]byte{} {
+		nodeNotIsChange := true
+		if c.NodeInfoRspMd5 == [16]byte{} {
+			nodeNotIsChange = false
+			c.NodeInfoRspMd5 = md
+		} else {
 			if c.NodeInfoRspMd5 != md {
-				nodeIsNotChange = false
+				nodeNotIsChange = false
 				c.NodeInfoRspMd5 = md
 			}
 		}
@@ -143,7 +146,7 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 			ruleIsChange = true
 			c.NodeRuleRspMd5 = md2
 		}
-		nodeInfo, err = c.ParseV2rayNodeResponse(res.Body(), nodeIsNotChange, ruleIsChange)
+		nodeInfo, err = c.ParseV2rayNodeResponse(res.Body(), nodeNotIsChange, ruleIsChange)
 	case "Trojan":
 		md := md52.Sum(res.Body())
 		if c.NodeInfoRspMd5 != [16]byte{} {
@@ -189,6 +192,7 @@ func (c *Client) ParseTrojanNodeResponse(body []byte) (*NodeInfo, error) {
 	node.DeviceLimit = c.DeviceLimit
 	node.NodeId = c.NodeID
 	node.NodeType = c.NodeType
+	node.Trojan.TransportProtocol = "tcp"
 	return node, nil
 }
 
@@ -225,7 +229,7 @@ func (c *Client) ParseSSNodeResponse() (*NodeInfo, error) {
 
 // ParseV2rayNodeResponse parse the response for the given nodeinfor format
 func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule bool) (*NodeInfo, error) {
-	if notParseNode && (!parseRule) {
+	if notParseNode && !parseRule {
 		return nil, nil
 	}
 	node := &NodeInfo{V2ray: &V2rayConfig{}}

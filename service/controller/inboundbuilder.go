@@ -65,7 +65,7 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 		nodeInfo.V2ray.Inbounds[0].PortList = &conf.PortList{
 			Range: []conf.PortRange{{From: uint32(nodeInfo.Trojan.LocalPort), To: uint32(nodeInfo.Trojan.LocalPort)}},
 		}
-		t := conf.TransportProtocol(nodeInfo.SS.TransportProtocol)
+		t := conf.TransportProtocol(nodeInfo.Trojan.TransportProtocol)
 		nodeInfo.V2ray.Inbounds[0].StreamSetting = &conf.StreamConfig{Network: &t}
 	} else if nodeInfo.NodeType == "Shadowsocks" {
 		defer func() {

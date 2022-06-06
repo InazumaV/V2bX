@@ -77,7 +77,7 @@ func (c *Controller) buildTrojanUsers(userInfo *[]api.UserInfo) (users []*protoc
 	users = make([]*protocol.User, len(*userInfo))
 	for i, user := range *userInfo {
 		trojanAccount := &trojan.Account{
-			Password: user.V2rayUser.Uuid,
+			Password: user.TrojanUser.Password,
 			Flow:     "xtls-rprx-direct",
 		}
 		users[i] = &protocol.User{
@@ -91,7 +91,7 @@ func (c *Controller) buildTrojanUsers(userInfo *[]api.UserInfo) (users []*protoc
 
 func (c *Controller) buildTrojanUser(userInfo *api.UserInfo) (user *protocol.User) {
 	trojanAccount := &trojan.Account{
-		Password: userInfo.V2rayUser.Uuid,
+		Password: userInfo.TrojanUser.Password,
 		Flow:     "xtls-rprx-direct",
 	}
 	user = &protocol.User{
