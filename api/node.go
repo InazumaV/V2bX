@@ -225,6 +225,9 @@ func (c *Client) ParseSSNodeResponse() (*NodeInfo, error) {
 
 // ParseV2rayNodeResponse parse the response for the given nodeinfor format
 func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule bool) (*NodeInfo, error) {
+	if notParseNode && (!parseRule) {
+		return nil, nil
+	}
 	node := &NodeInfo{V2ray: &V2rayConfig{}}
 	err := json.Unmarshal(body, node.V2ray)
 	if err != nil {
@@ -236,16 +239,15 @@ func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule boo
 		if err != nil {
 			log.Println(err)
 		}
+		if notParseNode {
+			return nil, nil
+		}
 	}
 	node.V2ray.Routing = nil
-	if notParseNode {
-		return nil, nil
-	}
 	node.SpeedLimit = uint64(c.SpeedLimit * 1000000 / 8)
 	node.DeviceLimit = c.DeviceLimit
 	node.NodeType = c.NodeType
 	node.NodeId = c.NodeID
-
 	if c.EnableXTLS {
 		node.TLSType = "xtls"
 	} else {
