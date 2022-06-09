@@ -320,7 +320,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 	}
 	switch {
 	case !sniffingRequest.Enabled:
-		go d.routedDispatch(ctx, outbound, destination, "")
+		go d.routedDispatch(ctx, outbound, destination)
 	case destination.Network != net.Network_TCP:
 		// Only metadata sniff will be used for non tcp connection
 		result, err := sniffer(ctx, nil, true)
@@ -337,7 +337,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 				}
 			}
 		}
-		go d.routedDispatch(ctx, outbound, destination, result.Protocol())
+		go d.routedDispatch(ctx, outbound, destination)
 	default:
 		go func() {
 			cReader := &cachedReader{
@@ -358,7 +358,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 					ob.Target = destination
 				}
 			}
-			d.routedDispatch(ctx, outbound, destination, result.Protocol())
+			d.routedDispatch(ctx, outbound, destination)
 		}()
 	}
 	return inbound, nil
@@ -381,7 +381,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 	sniffingRequest := content.SniffingRequest
 	switch {
 	case !sniffingRequest.Enabled:
-		go d.routedDispatch(ctx, outbound, destination, "")
+		go d.routedDispatch(ctx, outbound, destination)
 	case destination.Network != net.Network_TCP:
 		// Only metadata sniff will be used for non tcp connection
 		result, err := sniffer(ctx, nil, true)
@@ -398,7 +398,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 				}
 			}
 		}
-		go d.routedDispatch(ctx, outbound, destination, result.Protocol())
+		go d.routedDispatch(ctx, outbound, destination)
 	default:
 		go func() {
 			cReader := &cachedReader{
@@ -419,7 +419,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 					ob.Target = destination
 				}
 			}
-			d.routedDispatch(ctx, outbound, destination, result.Protocol())
+			d.routedDispatch(ctx, outbound, destination)
 		}()
 	}
 	return nil
@@ -471,7 +471,7 @@ func sniffer(ctx context.Context, cReader *cachedReader, metadataOnly bool) (Sni
 	return contentResult, contentErr
 }
 
-func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.Link, destination net.Destination, protocol string) {
+func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.Link, destination net.Destination) {
 	ob := session.OutboundFromContext(ctx)
 	if hosts, ok := d.dns.(dns.HostsLookup); ok && destination.Address.Family().IsDomain() {
 		proxied := hosts.LookupHosts(ob.Target.String())
