@@ -42,16 +42,15 @@ type Client struct {
 	Key      string
 	NodeType string
 	//EnableSS2022     bool
-	EnableVless      bool
-	EnableXTLS       bool
-	SpeedLimit       float64
-	DeviceLimit      int
-	LocalRuleList    []DetectRule
-	RemoteRuleCache  *Rule
-	access           sync.Mutex
-	NodeInfoRspMd5   [16]byte
-	NodeRuleRspMd5   [16]byte
-	UserListCheckNum int
+	EnableVless     bool
+	EnableXTLS      bool
+	SpeedLimit      float64
+	DeviceLimit     int
+	LocalRuleList   []DetectRule
+	RemoteRuleCache *Rule
+	access          sync.Mutex
+	NodeInfoRspMd5  [16]byte
+	NodeRuleRspMd5  [16]byte
 }
 
 func New(apiConfig *Config) API {

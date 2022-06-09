@@ -190,9 +190,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		return nil
 	}
 	if nodeInfoChanged {
-		if newUserInfo != nil {
-			c.userList = newUserInfo
-		}
+		c.userList = newUserInfo
 		newUserInfo = nil
 		err = c.addNewUser(c.userList, newNodeInfo)
 		if err != nil {
@@ -206,7 +204,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			return nil
 		}
 		runtime.GC()
-	} else if newUserInfo != nil {
+	} else {
 		deleted, added := compareUserList(c.userList, newUserInfo)
 		if len(deleted) > 0 {
 			deletedEmail := make([]string, len(deleted))
@@ -337,15 +335,15 @@ func (c *Controller) addNewUserFromIndex(userInfo *[]api.UserInfo, userIndex *[]
 }
 
 func compareUserList(old, new *[]api.UserInfo) (deleted, added []int) {
-	tmp := map[int]struct{}{}
-	tmp2 := map[int]struct{}{}
+	tmp := map[string]struct{}{}
+	tmp2 := map[string]struct{}{}
 	for i := range *old {
-		tmp[(*old)[i].UID] = struct{}{}
+		tmp[(*old)[i].GetUserEmail()] = struct{}{}
 	}
 	l := len(tmp)
 	for i := range *new {
-		tmp[(*new)[i].UID] = struct{}{}
-		tmp2[(*new)[i].UID] = struct{}{}
+		tmp[(*old)[i].GetUserEmail()] = struct{}{}
+		tmp2[(*new)[i].GetUserEmail()] = struct{}{}
 		if l != len(tmp) {
 			added = append(added, i)
 			l++
@@ -354,7 +352,7 @@ func compareUserList(old, new *[]api.UserInfo) (deleted, added []int) {
 	tmp = nil
 	l = len(tmp2)
 	for i := range *old {
-		tmp2[(*old)[i].UID] = struct{}{}
+		tmp2[(*old)[i].GetUserEmail()] = struct{}{}
 		if l != len(tmp2) {
 			deleted = append(deleted, i)
 			l++
