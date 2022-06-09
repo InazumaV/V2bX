@@ -342,8 +342,9 @@ func compareUserList(old, new *[]api.UserInfo) (deleted, added []int) {
 	}
 	l := len(tmp)
 	for i := range *new {
-		tmp[(*old)[i].GetUserEmail()] = struct{}{}
-		tmp2[(*new)[i].GetUserEmail()] = struct{}{}
+		e := (*new)[i].GetUserEmail()
+		tmp[e] = struct{}{}
+		tmp2[e] = struct{}{}
 		if l != len(tmp) {
 			added = append(added, i)
 			l++
