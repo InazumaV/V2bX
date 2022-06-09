@@ -12,7 +12,7 @@ require (
 	github.com/juju/ratelimit v1.0.1
 	github.com/r3labs/diff/v2 v2.15.1
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	github.com/urfave/cli v1.22.9
 	github.com/xtls/xray-core v1.5.7
 	golang.org/x/net v0.0.0-20220531201128-c960675eff93
