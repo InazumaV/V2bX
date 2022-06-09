@@ -70,17 +70,15 @@ func (c *Client) GetUserList() (UserList *[]UserInfo, err error) {
 		return nil, fmt.Errorf("unmarshal userlist error: %s", err)
 	}
 	l := len(userList.Data)
-	checkNum := userList.Data[l-1].UID +
-		userList.Data[l/2-1].UID +
-		userList.Data[0].UID
+	checkNum := userList.Data[l-1].UID + userList.Data[l/2-1].UID +
+		userList.Data[l/3-1].UID + userList.Data[l/4-1].UID +
+		userList.Data[l/5-1].UID + userList.Data[0].UID
 	if c.UserListCheckNum != 0 {
 		if c.UserListCheckNum == checkNum {
 			return nil, nil
 		}
 	}
-	c.UserListCheckNum = userList.Data[l-1].UID +
-		userList.Data[l/2-1].UID +
-		userList.Data[0].UID
+	c.UserListCheckNum = checkNum
 	return &userList.Data, nil
 }
 
