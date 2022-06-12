@@ -49,7 +49,7 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList
 		if (*userList)[i].DeviceLimit == 0 {
 			(*userList)[i].DeviceLimit = nodeInfo.DeviceLimit
 		}
-		userMap.Store(fmt.Sprintf("%s|%d|%d", tag, (*userList)[i].Port, (*userList)[i].UID), UserInfo{
+		userMap.Store(fmt.Sprintf("%s|%s|%d", tag, (*userList)[i].GetUserEmail(), (*userList)[i].UID), UserInfo{
 			UID:         (*userList)[i].UID,
 			SpeedLimit:  (*userList)[i].SpeedLimit,
 			DeviceLimit: (*userList)[i].DeviceLimit,

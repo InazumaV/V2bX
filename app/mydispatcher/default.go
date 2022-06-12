@@ -5,10 +5,6 @@ package mydispatcher
 import (
 	"context"
 	"fmt"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/Yuzuki616/V2bX/common/limiter"
 	"github.com/Yuzuki616/V2bX/common/rule"
 	"github.com/xtls/xray-core/common"
@@ -26,6 +22,9 @@ import (
 	"github.com/xtls/xray-core/features/stats"
 	"github.com/xtls/xray-core/transport"
 	"github.com/xtls/xray-core/transport/pipe"
+	"strings"
+	"sync"
+	"time"
 )
 
 var errSniffingTimeout = newError("timeout on sniffing")
@@ -320,7 +319,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 	}
 	switch {
 	case !sniffingRequest.Enabled:
-		go d.routedDispatch(ctx, outbound, destination)
+		go d.routedDispatch(ctx, outbound, destination, "")
 	case destination.Network != net.Network_TCP:
 		// Only metadata sniff will be used for non tcp connection
 		result, err := sniffer(ctx, nil, true)
@@ -337,7 +336,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 				}
 			}
 		}
-		go d.routedDispatch(ctx, outbound, destination)
+		go d.routedDispatch(ctx, outbound, destination, content.Protocol)
 	default:
 		go func() {
 			cReader := &cachedReader{
@@ -358,7 +357,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 					ob.Target = destination
 				}
 			}
-			d.routedDispatch(ctx, outbound, destination)
+			d.routedDispatch(ctx, outbound, destination, content.Protocol)
 		}()
 	}
 	return inbound, nil
@@ -381,7 +380,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 	sniffingRequest := content.SniffingRequest
 	switch {
 	case !sniffingRequest.Enabled:
-		go d.routedDispatch(ctx, outbound, destination)
+		go d.routedDispatch(ctx, outbound, destination, "")
 	case destination.Network != net.Network_TCP:
 		// Only metadata sniff will be used for non tcp connection
 		result, err := sniffer(ctx, nil, true)
@@ -398,7 +397,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 				}
 			}
 		}
-		go d.routedDispatch(ctx, outbound, destination)
+		go d.routedDispatch(ctx, outbound, destination, content.Protocol)
 	default:
 		go func() {
 			cReader := &cachedReader{
@@ -419,7 +418,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 					ob.Target = destination
 				}
 			}
-			d.routedDispatch(ctx, outbound, destination)
+			d.routedDispatch(ctx, outbound, destination, content.Protocol)
 		}()
 	}
 	return nil
@@ -471,7 +470,7 @@ func sniffer(ctx context.Context, cReader *cachedReader, metadataOnly bool) (Sni
 	return contentResult, contentErr
 }
 
-func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.Link, destination net.Destination) {
+func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.Link, destination net.Destination, protocol string) {
 	ob := session.OutboundFromContext(ctx)
 	if hosts, ok := d.dns.(dns.HostsLookup); ok && destination.Address.Family().IsDomain() {
 		proxied := hosts.LookupHosts(ob.Target.String())
@@ -499,6 +498,13 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 		return
 	}*/
 	if sessionInbound.User != nil {
+		if d.RuleManager.ProtocolDetect(sessionInbound.Tag, protocol) {
+			newError(fmt.Sprintf("User %s access %s reject by protocol rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()
+			newError("destination is reject by protocol rule")
+			common.Close(link.Writer)
+			common.Interrupt(link.Reader)
+			return
+		}
 		if d.RuleManager.Detect(sessionInbound.Tag, destination.String(), sessionInbound.User.Email) {
 			newError(fmt.Sprintf("User %s access %s reject by rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()
 			newError("destination is reject by rule")
@@ -539,7 +545,7 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	}
 
 	if handler == nil {
-		handler = d.ohm.GetHandler(inTag) // Default outbound hander tag should be as same as the inbound tag
+		handler = d.ohm.GetHandler(inTag) // Default outbound handier tag should be as same as the inbound tag
 	}
 
 	// If there is no outbound with tag as same as the inbound tag

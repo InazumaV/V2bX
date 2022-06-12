@@ -47,7 +47,7 @@ type Client struct {
 	SpeedLimit      float64
 	DeviceLimit     int
 	LocalRuleList   []DetectRule
-	RemoteRuleCache *Rule
+	RemoteRuleCache *[]Rule
 	access          sync.Mutex
 	NodeInfoRspMd5  [16]byte
 	NodeRuleRspMd5  [16]byte

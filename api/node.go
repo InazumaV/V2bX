@@ -77,7 +77,7 @@ type SSConfig struct {
 type V2rayConfig struct {
 	Inbounds []conf.InboundDetourConfig `json:"inbounds"`
 	Routing  *struct {
-		Rules []json.RawMessage `json:"rules"`
+		Rules json.RawMessage `json:"rules"`
 	} `json:"routing"`
 }
 
@@ -160,25 +160,32 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	return nodeInfo, nil
 }
 
-func (c *Client) GetNodeRule() (*[]DetectRule, error) {
+func (c *Client) GetNodeRule() (*[]DetectRule, *[]string, error) {
 	ruleList := c.LocalRuleList
 	if c.NodeType != "V2ray" || c.RemoteRuleCache == nil {
-		return &ruleList, nil
+		return &ruleList, nil, nil
 	}
-
 	// V2board only support the rule for v2ray
 	// fix: reuse config response
 	c.access.Lock()
 	defer c.access.Unlock()
-	for i, rule := range c.RemoteRuleCache.Domain {
-		ruleListItem := DetectRule{
-			ID:      i,
-			Pattern: regexp.MustCompile(rule),
+	if len(*c.RemoteRuleCache) >= 2 {
+		for i, rule := range (*c.RemoteRuleCache)[1].Domain {
+			ruleListItem := DetectRule{
+				ID:      i,
+				Pattern: regexp.MustCompile(rule),
+			}
+			ruleList = append(ruleList, ruleListItem)
 		}
-		ruleList = append(ruleList, ruleListItem)
+	}
+	var protocolList []string
+	if len(*c.RemoteRuleCache) >= 3 {
+		for _, str := range (*c.RemoteRuleCache)[2].Protocol {
+			protocolList = append(protocolList, str)
+		}
 	}
 	c.RemoteRuleCache = nil
-	return &ruleList, nil
+	return &ruleList, &protocolList, nil
 }
 
 // ParseTrojanNodeResponse parse the response for the given nodeinfor format
@@ -238,8 +245,8 @@ func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule boo
 		return nil, fmt.Errorf("unmarshal nodeinfo error: %s", err)
 	}
 	if parseRule {
-		c.RemoteRuleCache = &Rule{}
-		err := json.Unmarshal(node.V2ray.Routing.Rules[1], c.RemoteRuleCache)
+		c.RemoteRuleCache = &[]Rule{}
+		err := json.Unmarshal(node.V2ray.Routing.Rules, c.RemoteRuleCache)
 		if err != nil {
 			log.Println(err)
 		}

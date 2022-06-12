@@ -158,6 +158,12 @@ func (c *Controller) UpdateRule(tag string, newRuleList []api.DetectRule) error 
 	return err
 }
 
+func (c *Controller) UpdateProtocolRule(tag string, newRuleList []string) error {
+	dispather := c.server.GetFeature(routing.DispatcherType()).(*mydispatcher.DefaultDispatcher)
+	err := dispather.RuleManager.UpdateProtocolRule(tag, newRuleList)
+	return err
+}
+
 func (c *Controller) GetDetectResult(tag string) (*[]api.DetectResult, error) {
 	dispather := c.server.GetFeature(routing.DispatcherType()).(*mydispatcher.DefaultDispatcher)
 	return dispather.RuleManager.GetDetectResult(tag)
