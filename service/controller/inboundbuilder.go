@@ -70,9 +70,7 @@ func InboundBuilder(config *Config, nodeInfo *api.NodeInfo, tag string) (*core.I
 	} else if nodeInfo.NodeType == "Shadowsocks" {
 		defer func() {
 			nodeInfo.V2ray = nil
-			nodeInfo.SS = nil
 		}()
-		defer func() { nodeInfo.V2ray = nil; nodeInfo.SS = nil }()
 		nodeInfo.V2ray = &api.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = []conf.InboundDetourConfig{{Protocol: "shadowsocks"}}
 		proxySetting = &conf.ShadowsocksServerConfig{}
