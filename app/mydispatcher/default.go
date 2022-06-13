@@ -490,13 +490,6 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	// Check if domain and protocol hit the rule
 	sessionInbound := session.InboundFromContext(ctx)
 	// Whether the inbound connection contains a user
-	/*if protocol == "bittorrent" {
-		newError(fmt.Sprintf("User %s access %s reject by protocol rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()
-		newError("destination is reject by protocol rule")
-		common.Close(link.Writer)
-		common.Interrupt(link.Reader)
-		return
-	}*/
 	if sessionInbound.User != nil {
 		if d.RuleManager.ProtocolDetect(sessionInbound.Tag, protocol) {
 			newError(fmt.Sprintf("User %s access %s reject by protocol rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()

@@ -43,16 +43,16 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList
 	}
 	userMap := new(sync.Map)
 	for i := range *userList {
-		if (*userList)[i].SpeedLimit == 0 {
+		/*if (*userList)[i].SpeedLimit == 0 {
 			(*userList)[i].SpeedLimit = nodeInfo.SpeedLimit
 		}
 		if (*userList)[i].DeviceLimit == 0 {
 			(*userList)[i].DeviceLimit = nodeInfo.DeviceLimit
-		}
+		}*/
 		userMap.Store(fmt.Sprintf("%s|%s|%d", tag, (*userList)[i].GetUserEmail(), (*userList)[i].UID), UserInfo{
 			UID:         (*userList)[i].UID,
-			SpeedLimit:  (*userList)[i].SpeedLimit,
-			DeviceLimit: (*userList)[i].DeviceLimit,
+			SpeedLimit:  nodeInfo.SpeedLimit,
+			DeviceLimit: nodeInfo.DeviceLimit,
 		})
 	}
 	inboundInfo.UserInfo = userMap
@@ -66,16 +66,16 @@ func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *api.NodeInfo, updat
 		inboundInfo := value.(*InboundInfo)
 		// Update User info
 		for _, u := range *usersIndex {
-			if (*updatedUserList)[u].SpeedLimit == 0 {
+			/*if (*updatedUserList)[u].SpeedLimit == 0 {
 				(*updatedUserList)[u].SpeedLimit = nodeInfo.SpeedLimit
 			}
 			if (*updatedUserList)[u].DeviceLimit == 0 {
 				(*updatedUserList)[u].DeviceLimit = nodeInfo.DeviceLimit
-			}
+			}*/
 			inboundInfo.UserInfo.Store(fmt.Sprintf("%s|%s|%d", tag, (*updatedUserList)[u].GetUserEmail(), (*updatedUserList)[u].UID), UserInfo{
 				UID:         (*updatedUserList)[u].UID,
-				SpeedLimit:  (*updatedUserList)[u].SpeedLimit,
-				DeviceLimit: (*updatedUserList)[u].DeviceLimit,
+				SpeedLimit:  nodeInfo.SpeedLimit,
+				DeviceLimit: nodeInfo.DeviceLimit,
 			})
 			inboundInfo.BucketHub.Delete(fmt.Sprintf("%s|%s|%d", tag, (*updatedUserList)[u].GetUserEmail(), (*updatedUserList)[u].UID)) // Delete old limiter bucket
 		}

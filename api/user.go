@@ -20,14 +20,14 @@ type TrojanUserInfo struct {
 	Password string `json:"password"`
 }
 type UserInfo struct {
-	DeviceLimit int             `json:"device_limit"`
-	SpeedLimit  uint64          `json:"speed_limit"`
-	UID         int             `json:"id"`
-	Port        int             `json:"port"`
-	Cipher      string          `json:"cipher"`
-	Secret      string          `json:"secret"`
-	V2rayUser   *V2RayUserInfo  `json:"v2ray_user"`
-	TrojanUser  *TrojanUserInfo `json:"trojan_user"`
+	/*DeviceLimit int             `json:"device_limit"`
+	SpeedLimit  uint64          `json:"speed_limit"`*/
+	UID        int             `json:"id"`
+	Port       int             `json:"port"`
+	Cipher     string          `json:"cipher"`
+	Secret     string          `json:"secret"`
+	V2rayUser  *V2RayUserInfo  `json:"v2ray_user"`
+	TrojanUser *TrojanUserInfo `json:"trojan_user"`
 }
 
 func (p *UserInfo) GetUserEmail() string {
