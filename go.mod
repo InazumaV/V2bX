@@ -20,7 +20,7 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
-require github.com/goccy/go-json v0.9.8
+require github.com/goccy/go-json v0.9.10
 
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
