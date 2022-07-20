@@ -59,6 +59,7 @@ A V2board node server based on Xray-core, modified from XrayR
 * 跨节点限制在线IP
 * 限制特定用户IP数及速率
 * 对恶意刷流量用户的识别
+* 记录特定周期内连接过的ip
 
 ## 软件安装
 
