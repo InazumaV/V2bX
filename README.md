@@ -9,7 +9,7 @@ A V2board node server based on Xray-core, modified from XrayR
 
 如果您喜欢本项目，可以右上角点个star+watch，持续关注本项目的进展。
 
-使用教程：[详细使用教程](https://crackair.gitbook.io/xrayr-project/)
+使用教程：[详细使用教程](https://yuzuki-1.gitbook.io/v2bx-doc/)
 
 如对脚本不放心，可使用此沙箱先测一遍再使用：https://killercoda.com/playgrounds/scenario/ubuntu
 
