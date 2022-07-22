@@ -214,6 +214,8 @@ func (c *Client) ParseSSNodeResponse() (*NodeInfo, error) {
 	if len(*userInfo) > 0 {
 		port = (*userInfo)[0].Port
 		method = (*userInfo)[0].Cipher
+	} else {
+		return nil, fmt.Errorf("shadowsocks node need a active user")
 	}
 
 	if err != nil {
