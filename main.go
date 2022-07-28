@@ -3,6 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api"
+	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/node"
+	"github.com/Yuzuki616/V2bX/xray"
+	"github.com/spf13/viper"
 	"log"
 	"os"
 	"os/signal"
@@ -10,11 +15,6 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
-	"time"
-
-	"github.com/Yuzuki616/V2bX/panel"
-	"github.com/fsnotify/fsnotify"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -23,7 +23,7 @@ var (
 )
 
 var (
-	version  = "v0.0.2"
+	version  = "v0.0.4"
 	codename = "V2bX"
 	intro    = "A V2board backend based on Xray"
 )
@@ -34,7 +34,6 @@ func showVersion() {
 
 func getConfig() *viper.Viper {
 	config := viper.New()
-
 	// Set custom path and name
 	if *configFile != "" {
 		configName := path.Base(*configFile)
@@ -52,16 +51,23 @@ func getConfig() *viper.Viper {
 		config.SetConfigName("config")
 		config.SetConfigType("yml")
 		config.AddConfigPath(".")
-
 	}
-
 	if err := config.ReadInConfig(); err != nil {
 		log.Panicf("Fatal error config file: %s \n", err)
 	}
-
-	config.WatchConfig() // Watch the config
-
 	return config
+}
+
+func startNodes(nodes []*conf.NodeConfig, core *xray.Xray) error {
+	for i, _ := range nodes {
+		var apiClient = api.New(nodes[i].ApiConfig)
+		// Register controller service
+		err := node.New(core, apiClient, nodes[i].ControllerConfig).Start()
+		if err != nil {
+			return fmt.Errorf("start node controller error: %v", err)
+		}
+	}
+	return nil
 }
 
 func main() {
@@ -70,28 +76,19 @@ func main() {
 	if *printVersion {
 		return
 	}
-
 	config := getConfig()
-	panelConfig := &panel.Config{}
-	config.Unmarshal(panelConfig)
-	p := panel.New(panelConfig)
-	lastTime := time.Now()
-	config.OnConfigChange(func(e fsnotify.Event) {
-		// Discarding event received within a short period of time after receiving an event.
-		if time.Now().After(lastTime.Add(3 * time.Second)) {
-			// Hot reload function
-			fmt.Println("Config file changed:", e.Name)
-			p.Close()
-			// Delete old instance and trigger GC
-			runtime.GC()
-			config.Unmarshal(panelConfig)
-			p.Start()
-			lastTime = time.Now()
-		}
-	})
-	p.Start()
-	defer p.Close()
-
+	c := conf.New()
+	err := config.Unmarshal(c)
+	if err != nil {
+		log.Panicf("can't unmarshal config file: %s \n", err)
+	}
+	x := xray.New(c)
+	x.Start()
+	defer x.Close()
+	err = startNodes(c.NodesConfig, x)
+	if err != nil {
+		log.Panicf("run nodes error: %v", err)
+	}
 	//Explicitly triggering GC to remove garbage from config loading.
 	runtime.GC()
 	// Running backend

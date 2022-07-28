@@ -1,7 +1,8 @@
-package controller_test
+package node_test
 
 import (
 	"fmt"
+	. "github.com/Yuzuki616/V2bX/node"
 	"os"
 	"os/signal"
 	"runtime"
@@ -9,8 +10,7 @@ import (
 	"testing"
 
 	"github.com/Yuzuki616/V2bX/api"
-	_ "github.com/Yuzuki616/V2bX/main/distro/all"
-	. "github.com/Yuzuki616/V2bX/service/controller"
+	_ "github.com/Yuzuki616/V2bX/example/distro/all"
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/infra/conf"
 )

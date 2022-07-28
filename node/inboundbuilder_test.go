@@ -1,10 +1,10 @@
-package controller_test
+package node_test
 
 import (
+	. "github.com/Yuzuki616/V2bX/node"
 	"testing"
 
 	"github.com/Yuzuki616/V2bX/api"
-	. "github.com/Yuzuki616/V2bX/service/controller"
 )
 
 func TestBuildV2ray(t *testing.T) {

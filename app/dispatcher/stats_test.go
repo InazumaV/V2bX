@@ -1,4 +1,4 @@
-package mydispatcher_test
+package dispatcher_test
 
 import (
 	"testing"

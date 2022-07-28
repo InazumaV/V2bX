@@ -4,6 +4,7 @@
 package api
 
 import (
+	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/go-resty/resty/v2"
 	"log"
 	"strconv"
@@ -12,21 +13,6 @@ import (
 )
 
 // API is the interface for different panel's api.
-
-type Config struct {
-	APIHost     string `mapstructure:"ApiHost"`
-	NodeID      int    `mapstructure:"NodeID"`
-	Key         string `mapstructure:"ApiKey"`
-	NodeType    string `mapstructure:"NodeType"`
-	EnableVless bool   `mapstructure:"EnableVless"`
-	EnableXTLS  bool   `mapstructure:"EnableXTLS"`
-	//EnableSS2022        bool    `mapstructure:"EnableSS2022"`
-	Timeout             int     `mapstructure:"Timeout"`
-	SpeedLimit          float64 `mapstructure:"SpeedLimit"`
-	DeviceLimit         int     `mapstructure:"DeviceLimit"`
-	RuleListPath        string  `mapstructure:"RuleListPath"`
-	DisableCustomConfig bool    `mapstructure:"DisableCustomConfig"`
-}
 
 type ClientInfo struct {
 	APIHost  string
@@ -53,8 +39,7 @@ type Client struct {
 	NodeRuleRspMd5  [16]byte
 }
 
-func New(apiConfig *Config) API {
-
+func New(apiConfig *conf.ApiConfig) API {
 	client := resty.New()
 	client.SetRetryCount(3)
 	if apiConfig.Timeout > 0 {

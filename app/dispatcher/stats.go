@@ -1,4 +1,4 @@
-package mydispatcher
+package dispatcher
 
 import (
 	"github.com/xtls/xray-core/common"

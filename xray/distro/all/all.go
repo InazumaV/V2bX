@@ -5,7 +5,7 @@ import (
 
 	// Required features. Can't remove unless there is replacements.
 	// _ "github.com/xtls/xray-core/app/dispatcher"
-	_ "github.com/Yuzuki616/V2bX/app/mydispatcher"
+	_ "github.com/Yuzuki616/V2bX/app/dispatcher"
 	_ "github.com/xtls/xray-core/app/proxyman/inbound"
 	_ "github.com/xtls/xray-core/app/proxyman/outbound"
 
@@ -29,13 +29,6 @@ import (
 	_ "github.com/xtls/xray-core/proxy/dns"
 	_ "github.com/xtls/xray-core/proxy/dokodemo"
 	_ "github.com/xtls/xray-core/proxy/freedom"
-	_ "github.com/xtls/xray-core/proxy/http"
-	_ "github.com/xtls/xray-core/proxy/mtproto"
-	_ "github.com/xtls/xray-core/proxy/shadowsocks"
-	_ "github.com/xtls/xray-core/proxy/socks"
-	_ "github.com/xtls/xray-core/proxy/trojan"
-	_ "github.com/xtls/xray-core/proxy/vless/inbound"
-	_ "github.com/xtls/xray-core/proxy/vless/outbound"
 	_ "github.com/xtls/xray-core/proxy/vmess/inbound"
 	_ "github.com/xtls/xray-core/proxy/vmess/outbound"
 
@@ -66,7 +59,4 @@ import (
 
 	// Load config from file or http(s)
 	_ "github.com/xtls/xray-core/main/confloader/external"
-
-	// Commands
-	_ "github.com/xtls/xray-core/main/commands/all"
 )
