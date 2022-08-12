@@ -5,13 +5,12 @@ import (
 )
 
 func (p *Core) UpdateRule(tag string, newRuleList []api.DetectRule) error {
-	err := p.dispatcher.RuleManager.UpdateRule(tag, newRuleList)
-	return err
+	return p.dispatcher.RuleManager.UpdateRule(tag, newRuleList)
 }
 
 func (p *Core) UpdateProtocolRule(tag string, newRuleList []string) error {
-	err := p.dispatcher.RuleManager.UpdateProtocolRule(tag, newRuleList)
-	return err
+
+	return p.dispatcher.RuleManager.UpdateProtocolRule(tag, newRuleList)
 }
 
 func (p *Core) GetDetectResult(tag string) ([]api.DetectResult, error) {

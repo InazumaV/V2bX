@@ -8,13 +8,11 @@ import (
 )
 
 func (p *Core) RemoveOutbound(tag string) error {
-	outboundManager := p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
-	err := outboundManager.RemoveHandler(context.Background(), tag)
+	err := p.ohm.RemoveHandler(context.Background(), tag)
 	return err
 }
 
 func (p *Core) AddOutbound(config *core.OutboundHandlerConfig) error {
-	outboundManager := p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
 	rawHandler, err := core.CreateObject(p.Server, config)
 	if err != nil {
 		return err
@@ -23,7 +21,7 @@ func (p *Core) AddOutbound(config *core.OutboundHandlerConfig) error {
 	if !ok {
 		return fmt.Errorf("not an InboundHandler: %s", err)
 	}
-	if err := outboundManager.AddHandler(context.Background(), handler); err != nil {
+	if err := p.ohm.AddHandler(context.Background(), handler); err != nil {
 		return err
 	}
 	return nil

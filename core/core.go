@@ -6,11 +6,12 @@ import (
 	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	_ "github.com/Yuzuki616/V2bX/core/distro/all"
 	"github.com/xtls/xray-core/app/proxyman"
-	"github.com/xtls/xray-core/app/proxyman/inbound"
-	"github.com/xtls/xray-core/app/proxyman/outbound"
 	"github.com/xtls/xray-core/app/stats"
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/core"
+	"github.com/xtls/xray-core/features/inbound"
+	"github.com/xtls/xray-core/features/outbound"
+	"github.com/xtls/xray-core/features/routing"
 	coreConf "github.com/xtls/xray-core/infra/conf"
 	io "io/ioutil"
 	"log"
@@ -21,8 +22,8 @@ import (
 type Core struct {
 	access     sync.Mutex
 	Server     *core.Instance
-	ihm        *inbound.Manager
-	ohm        *outbound.Manager
+	ihm        inbound.Manager
+	ohm        outbound.Manager
 	dispatcher *dispatcher.DefaultDispatcher
 }
 
@@ -154,6 +155,9 @@ func (p *Core) Start() {
 	if err := p.Server.Start(); err != nil {
 		log.Panicf("Failed to start instance: %s", err)
 	}
+	p.ihm = p.Server.GetFeature(inbound.ManagerType()).(inbound.Manager)
+	p.ohm = p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
+	p.dispatcher = p.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)
 	return
 }
 
