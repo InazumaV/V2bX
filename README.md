@@ -39,9 +39,9 @@ A V2board node server based on Xray-core, modified from XrayR
 | 自动申请tls证书 | √     | √      | √           |
 | 自动续签tls证书 | √     | √      | √           |
 | 在线人数统计    | √     | √      | √           |
-| 在线用户限制    | √     | √      | √           |
+| 在线IP数限制    | √     | √      | √           |
+| 跨节点IP数限制    | √     | √      | √           |
 | 审计规则        | √     | √      | √           |
-| 节点端口限速    | √     | √      | √           |
 | 按照用户限速    | √     | √      | √           |
 | 自定义DNS       | √     | √      | √           |
 
@@ -55,11 +55,6 @@ A V2board node server based on Xray-core, modified from XrayR
 
 * 进一步优化内存占用
 * 增加SS2022支持
-* 优化源码目录结构
-* 跨节点限制在线IP
-* 限制特定用户IP数及速率
-* 对恶意刷流量用户的识别
-* 记录特定周期内连接过的ip
 
 ## 软件安装
 
