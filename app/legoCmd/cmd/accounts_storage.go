@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Yuzuki616/V2bX/common/legoCmd/log"
+	"github.com/Yuzuki616/V2bX/app/legoCmd/log"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"

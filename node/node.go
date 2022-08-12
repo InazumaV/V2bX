@@ -2,9 +2,9 @@ package node
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/common/limiter"
+	"github.com/Yuzuki616/V2bX/app/limiter"
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/xray"
+	"github.com/Yuzuki616/V2bX/core"
 	"github.com/go-resty/resty/v2"
 	"github.com/goccy/go-json"
 	"log"
@@ -14,26 +14,26 @@ import (
 	"time"
 
 	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/common/legoCmd"
+	"github.com/Yuzuki616/V2bX/app/legoCmd"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/task"
 )
 
 type Node struct {
-	server                  *xray.Xray
+	server                  *core.Core
 	config                  *conf.ControllerConfig
 	clientInfo              api.ClientInfo
 	apiClient               api.API
 	nodeInfo                *api.NodeInfo
 	Tag                     string
-	userList                *[]api.UserInfo
+	userList                []api.UserInfo
 	nodeInfoMonitorPeriodic *task.Periodic
 	userReportPeriodic      *task.Periodic
 	onlineIpReportPeriodic  *task.Periodic
 }
 
 // New return a Node service with default parameters.
-func New(server *xray.Xray, api api.API, config *conf.ControllerConfig) *Node {
+func New(server *core.Core, api api.API, config *conf.ControllerConfig) *Node {
 	controller := &Node{
 		server:    server,
 		config:    config,
@@ -77,12 +77,12 @@ func (c *Node) Start() error {
 	if !c.config.DisableGetRule {
 		if ruleList, protocolRule, err := c.apiClient.GetNodeRule(); err != nil {
 			log.Printf("Get rule list filed: %s", err)
-		} else if len(*ruleList) > 0 {
-			if err := c.server.UpdateRule(c.Tag, *ruleList); err != nil {
+		} else if len(ruleList) > 0 {
+			if err := c.server.UpdateRule(c.Tag, ruleList); err != nil {
 				log.Print(err)
 			}
-			if len(*protocolRule) > 0 {
-				if err := c.server.UpdateProtocolRule(c.Tag, *protocolRule); err != nil {
+			if len(protocolRule) > 0 {
+				if err := c.server.UpdateProtocolRule(c.Tag, protocolRule); err != nil {
 					log.Print(err)
 				}
 			}
@@ -189,12 +189,12 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	if !c.config.DisableGetRule {
 		if ruleList, protocolRule, err := c.apiClient.GetNodeRule(); err != nil {
 			log.Printf("Get rule list filed: %s", err)
-		} else if len(*ruleList) > 0 {
-			if err := c.server.UpdateRule(c.Tag, *ruleList); err != nil {
+		} else if len(ruleList) > 0 {
+			if err := c.server.UpdateRule(c.Tag, ruleList); err != nil {
 				log.Print(err)
 			}
-			if len(*protocolRule) > 0 {
-				if err := c.server.UpdateProtocolRule(c.Tag, *protocolRule); err != nil {
+			if len(protocolRule) > 0 {
+				if err := c.server.UpdateProtocolRule(c.Tag, protocolRule); err != nil {
 					log.Print(err)
 				}
 			}
@@ -209,7 +209,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 		if err != nil {
 			log.Print(err)
 		}
-		// Xray-core supports the OcspStapling certification hot renew
+		// Core-core supports the OcspStapling certification hot renew
 		_, _, err = lego.RenewCert(c.config.CertConfig.CertDomain, c.config.CertConfig.Email,
 			c.config.CertConfig.CertMode, c.config.CertConfig.Provider, c.config.CertConfig.DNSEnv)
 		if err != nil {
@@ -239,19 +239,19 @@ func (c *Node) nodeInfoMonitor() (err error) {
 		runtime.GC()
 	} else {
 		deleted, added := compareUserList(c.userList, newUserInfo)
-		if len(*deleted) > 0 {
-			deletedEmail := make([]string, len(*deleted))
-			for i := range *deleted {
+		if len(deleted) > 0 {
+			deletedEmail := make([]string, len(deleted))
+			for i := range deleted {
 				deletedEmail[i] = fmt.Sprintf("%s|%s|%d", c.Tag,
-					(*deleted)[i].GetUserEmail(),
-					(*deleted)[i].UID)
+					(deleted)[i].GetUserEmail(),
+					(deleted)[i].UID)
 			}
 			err := c.server.RemoveUsers(deletedEmail, c.Tag)
 			if err != nil {
 				log.Print(err)
 			}
 		}
-		if len(*added) > 0 {
+		if len(added) > 0 {
 			err = c.addNewUser(added, newNodeInfo)
 			if err != nil {
 				log.Print(err)
@@ -262,7 +262,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			}
 		}
 		log.Printf("[%s: %d] %d user deleted, %d user added", c.nodeInfo.NodeType, c.nodeInfo.NodeId,
-			len(*deleted), len(*added))
+			len(deleted), len(added))
 		c.userList = newUserInfo
 		newUserInfo = nil
 		runtime.GC()
@@ -305,14 +305,14 @@ func (c *Node) addNewTag(newNodeInfo *api.NodeInfo) (err error) {
 	return nil
 }
 
-func (c *Node) addNewUser(userInfo *[]api.UserInfo, nodeInfo *api.NodeInfo) (err error) {
+func (c *Node) addNewUser(userInfo []api.UserInfo, nodeInfo *api.NodeInfo) (err error) {
 	users := make([]*protocol.User, 0)
 	if nodeInfo.NodeType == "V2ray" {
 		if nodeInfo.EnableVless {
 			users = c.buildVlessUsers(userInfo)
 		} else {
 			alterID := 0
-			alterID = (*userInfo)[0].V2rayUser.AlterId
+			alterID = (userInfo)[0].V2rayUser.AlterId
 			if alterID >= 0 && alterID < math.MaxUint16 {
 				users = c.buildVmessUsers(userInfo, uint16(alterID))
 			} else {
@@ -331,32 +331,32 @@ func (c *Node) addNewUser(userInfo *[]api.UserInfo, nodeInfo *api.NodeInfo) (err
 	if err != nil {
 		return err
 	}
-	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(*userInfo))
+	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(userInfo))
 	return nil
 }
 
-func compareUserList(old, new *[]api.UserInfo) (deleted, added *[]api.UserInfo) {
+func compareUserList(old, new []api.UserInfo) (deleted, added []api.UserInfo) {
 	tmp := map[string]struct{}{}
 	tmp2 := map[string]struct{}{}
-	for i := range *old {
-		tmp[(*old)[i].GetUserEmail()] = struct{}{}
+	for i := range old {
+		tmp[(old)[i].GetUserEmail()] = struct{}{}
 	}
 	l := len(tmp)
-	for i := range *new {
-		e := (*new)[i].GetUserEmail()
+	for i := range new {
+		e := (new)[i].GetUserEmail()
 		tmp[e] = struct{}{}
 		tmp2[e] = struct{}{}
 		if l != len(tmp) {
-			*added = append(*added, (*new)[i])
+			added = append(added, (new)[i])
 			l++
 		}
 	}
 	tmp = nil
 	l = len(tmp2)
-	for i := range *old {
-		tmp2[(*old)[i].GetUserEmail()] = struct{}{}
+	for i := range old {
+		tmp2[(old)[i].GetUserEmail()] = struct{}{}
 		if l != len(tmp2) {
-			*deleted = append(*deleted, (*old)[i])
+			deleted = append(deleted, (old)[i])
 			l++
 		}
 	}
@@ -366,17 +366,17 @@ func compareUserList(old, new *[]api.UserInfo) (deleted, added *[]api.UserInfo) 
 func (c *Node) userInfoMonitor() (err error) {
 	// Get User traffic
 	userTraffic := make([]api.UserTraffic, 0)
-	for i := range *c.userList {
-		up, down := c.server.GetUserTraffic(c.buildUserTag(&(*c.userList)[i]))
+	for i := range c.userList {
+		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]))
 		if up > 0 || down > 0 {
 			userTraffic = append(userTraffic, api.UserTraffic{
-				UID:      (*c.userList)[i].UID,
+				UID:      (c.userList)[i].UID,
 				Upload:   up,
 				Download: down})
 		}
 	}
 	if len(userTraffic) > 0 && !c.config.DisableUploadTraffic {
-		err = c.apiClient.ReportUserTraffic(&userTraffic)
+		err = c.apiClient.ReportUserTraffic(userTraffic)
 		if err != nil {
 			log.Print(err)
 		} else {
@@ -405,9 +405,9 @@ func (c *Node) onlineIpReport() (err error) {
 		c.server.ClearOnlineIps(c.Tag)
 		return nil
 	}
-	log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(*onlineIp))
+	log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 	if rsp.StatusCode() == 200 {
-		onlineIp = &[]limiter.UserIp{}
+		onlineIp = []limiter.UserIp{}
 		err := json.Unmarshal(rsp.Body(), onlineIp)
 		if err != nil {
 			log.Print(err)
@@ -415,7 +415,7 @@ func (c *Node) onlineIpReport() (err error) {
 			return nil
 		}
 		c.server.UpdateOnlineIps(c.Tag, onlineIp)
-		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(*onlineIp))
+		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 	} else {
 		c.server.ClearOnlineIps(c.Tag)
 	}

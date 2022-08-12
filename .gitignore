@@ -6,11 +6,10 @@ example/mytest
 example/access.logo
 example/error.log
 api/chooseparser.go.bak
-common/Inboundbuilder/.lego/
-common/legocmd/.lego/
+app/Inboundbuilder/.lego/
+app/legocmd/.lego/
 .vscode/launch.json
 example/.lego
 example/cert
-example/config.yml
 ./vscode
 .idea/*

@@ -34,7 +34,7 @@ func New() *Limiter {
 	}
 }
 
-func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList *[]api.UserInfo) error {
+func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList []api.UserInfo) error {
 	inboundInfo := &InboundInfo{
 		Tag:            tag,
 		NodeSpeedLimit: nodeInfo.SpeedLimit,
@@ -42,37 +42,38 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList
 		UserOnlineIP:   new(sync.Map),
 	}
 	userMap := new(sync.Map)
-	for i := range *userList {
+	for i := range userList {
 		/*if (*userList)[i].SpeedLimit == 0 {
 			(*userList)[i].SpeedLimit = nodeInfo.SpeedLimit
 		}
 		if (*userList)[i].DeviceLimit == 0 {
 			(*userList)[i].DeviceLimit = nodeInfo.DeviceLimit
 		}*/
-		userMap.Store(fmt.Sprintf("%s|%s|%d", tag, (*userList)[i].V2rayUser.Email, (*userList)[i].UID), UserInfo{
-			UID:         (*userList)[i].UID,
-			SpeedLimit:  nodeInfo.SpeedLimit,
-			DeviceLimit: nodeInfo.DeviceLimit,
-		})
+		userMap.Store(fmt.Sprintf("%s|%s|%d", tag, (userList)[i].V2rayUser.Email, (userList)[i].UID),
+			UserInfo{
+				UID:         (userList)[i].UID,
+				SpeedLimit:  nodeInfo.SpeedLimit,
+				DeviceLimit: nodeInfo.DeviceLimit,
+			})
 	}
 	inboundInfo.UserInfo = userMap
 	l.InboundInfo.Store(tag, inboundInfo) // Replace the old inbound info
 	return nil
 }
 
-func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *api.NodeInfo, updatedUserList *[]api.UserInfo) error {
+func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *api.NodeInfo, updatedUserList []api.UserInfo) error {
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		// Update User info
-		for i := range *updatedUserList {
+		for i := range updatedUserList {
 			inboundInfo.UserInfo.Store(fmt.Sprintf("%s|%s|%d", tag,
-				(*updatedUserList)[i].V2rayUser.Email, (*updatedUserList)[i].UID), UserInfo{
-				UID:         (*updatedUserList)[i].UID,
+				(updatedUserList)[i].V2rayUser.Email, (updatedUserList)[i].UID), UserInfo{
+				UID:         (updatedUserList)[i].UID,
 				SpeedLimit:  nodeInfo.SpeedLimit,
 				DeviceLimit: nodeInfo.DeviceLimit,
 			})
 			inboundInfo.BucketHub.Delete(fmt.Sprintf("%s|%s|%d", tag,
-				(*updatedUserList)[i].V2rayUser.Email, (*updatedUserList)[i].UID)) // Delete old limiter bucket
+				(updatedUserList)[i].V2rayUser.Email, (updatedUserList)[i].UID)) // Delete old limiter bucket
 		}
 	} else {
 		return fmt.Errorf("no such inbound in limiter: %s", tag)
@@ -90,7 +91,7 @@ type UserIp struct {
 	IPs []string `json:"Ips"`
 }
 
-func (l *Limiter) GetOnlineUserIp(tag string) (*[]UserIp, error) {
+func (l *Limiter) GetOnlineUserIp(tag string) ([]UserIp, error) {
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		// Clear Speed Limiter bucket for users who are not online
@@ -124,13 +125,13 @@ func (l *Limiter) GetOnlineUserIp(tag string) (*[]UserIp, error) {
 		if len(onlineUser) == 0 {
 			return nil, nil
 		}
-		return &onlineUser, nil
+		return onlineUser, nil
 	} else {
 		return nil, fmt.Errorf("no such inbound in limiter: %s", tag)
 	}
 }
 
-func (l *Limiter) UpdateOnlineUserIP(tag string, userIpList *[]UserIp) {
+func (l *Limiter) UpdateOnlineUserIP(tag string, userIpList []UserIp) {
 	if v, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := v.(*InboundInfo)
 		//Clear old IP
@@ -139,12 +140,12 @@ func (l *Limiter) UpdateOnlineUserIP(tag string, userIpList *[]UserIp) {
 			return true
 		})
 		// Update User Online IP
-		for i := range *userIpList {
+		for i := range userIpList {
 			ipMap := new(sync.Map)
-			for _, userIp := range (*userIpList)[i].IPs {
+			for _, userIp := range (userIpList)[i].IPs {
 				ipMap.Store(userIp, false)
 			}
-			inboundInfo.UserOnlineIP.Store((*userIpList)[i].Uid, ipMap)
+			inboundInfo.UserOnlineIP.Store((userIpList)[i].Uid, ipMap)
 		}
 	}
 }

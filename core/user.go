@@ -1,20 +1,16 @@
-package xray
+package core
 
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/app/dispatcher"
-	"github.com/Yuzuki616/V2bX/common/limiter"
+	"github.com/Yuzuki616/V2bX/app/limiter"
 	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/features/inbound"
-	"github.com/xtls/xray-core/features/routing"
 	"github.com/xtls/xray-core/features/stats"
 	"github.com/xtls/xray-core/proxy"
 )
 
-func (p *Xray) GetUserManager(tag string) (proxy.UserManager, error) {
-	inboundManager := p.Server.GetFeature(inbound.ManagerType()).(inbound.Manager)
-	handler, err := inboundManager.GetHandler(context.Background(), tag)
+func (p *Core) GetUserManager(tag string) (proxy.UserManager, error) {
+	handler, err := p.ihm.GetHandler(context.Background(), tag)
 	if err != nil {
 		return nil, fmt.Errorf("no such inbound tag: %s", err)
 	}
@@ -29,7 +25,7 @@ func (p *Xray) GetUserManager(tag string) (proxy.UserManager, error) {
 	return userManager, nil
 }
 
-func (p *Xray) AddUsers(users []*protocol.User, tag string) error {
+func (p *Core) AddUsers(users []*protocol.User, tag string) error {
 	userManager, err := p.GetUserManager(tag)
 	if err != nil {
 		return fmt.Errorf("get user manager error: %s", err)
@@ -47,7 +43,7 @@ func (p *Xray) AddUsers(users []*protocol.User, tag string) error {
 	return nil
 }
 
-func (p *Xray) RemoveUsers(users []string, tag string) error {
+func (p *Core) RemoveUsers(users []string, tag string) error {
 	userManager, err := p.GetUserManager(tag)
 	if err != nil {
 		return fmt.Errorf("get user manager error: %s", err)
@@ -61,7 +57,7 @@ func (p *Xray) RemoveUsers(users []string, tag string) error {
 	return nil
 }
 
-func (p *Xray) GetUserTraffic(email string) (up int64, down int64) {
+func (p *Core) GetUserTraffic(email string) (up int64, down int64) {
 	upName := "user>>>" + email + ">>>traffic>>>uplink"
 	downName := "user>>>" + email + ">>>traffic>>>downlink"
 	statsManager := p.Server.GetFeature(stats.ManagerType()).(stats.Manager)
@@ -78,17 +74,14 @@ func (p *Xray) GetUserTraffic(email string) (up int64, down int64) {
 	return up, down
 }
 
-func (p *Xray) GetOnlineIps(tag string) (*[]limiter.UserIp, error) {
-	dispather := p.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)
-	return dispather.Limiter.GetOnlineUserIp(tag)
+func (p *Core) GetOnlineIps(tag string) ([]limiter.UserIp, error) {
+	return p.dispatcher.Limiter.GetOnlineUserIp(tag)
 }
 
-func (p *Xray) UpdateOnlineIps(tag string, ips *[]limiter.UserIp) {
-	dispather := p.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)
-	dispather.Limiter.UpdateOnlineUserIP(tag, ips)
+func (p *Core) UpdateOnlineIps(tag string, ips []limiter.UserIp) {
+	p.dispatcher.Limiter.UpdateOnlineUserIP(tag, ips)
 }
 
-func (p *Xray) ClearOnlineIps(tag string) {
-	dispather := p.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)
-	dispather.Limiter.ClearOnlineUserIP(tag)
+func (p *Core) ClearOnlineIps(tag string) {
+	p.dispatcher.Limiter.ClearOnlineUserIP(tag)
 }

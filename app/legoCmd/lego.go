@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Yuzuki616/V2bX/common/legoCmd/cmd"
+	"github.com/Yuzuki616/V2bX/app/legoCmd/cmd"
 	"github.com/urfave/cli"
 )
 

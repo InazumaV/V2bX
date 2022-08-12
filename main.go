@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api"
 	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/node"
-	"github.com/Yuzuki616/V2bX/xray"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -25,7 +25,7 @@ var (
 var (
 	version  = "v0.0.4"
 	codename = "V2bX"
-	intro    = "A V2board backend based on Xray"
+	intro    = "A V2board backend based on Xray-core"
 )
 
 func showVersion() {
@@ -58,7 +58,7 @@ func getConfig() *viper.Viper {
 	return config
 }
 
-func startNodes(nodes []*conf.NodeConfig, core *xray.Xray) error {
+func startNodes(nodes []*conf.NodeConfig, core *core.Core) error {
 	for i, _ := range nodes {
 		var apiClient = api.New(nodes[i].ApiConfig)
 		// Register controller service
@@ -82,7 +82,7 @@ func main() {
 	if err != nil {
 		log.Panicf("can't unmarshal config file: %s \n", err)
 	}
-	x := xray.New(c)
+	x := core.New(c)
 	x.Start()
 	defer x.Close()
 	err = startNodes(c.NodesConfig, x)

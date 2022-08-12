@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/common/legoCmd"
+	"github.com/Yuzuki616/V2bX/app/legoCmd"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/common/uuid"

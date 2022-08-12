@@ -160,10 +160,10 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	return nodeInfo, nil
 }
 
-func (c *Client) GetNodeRule() (*[]DetectRule, *[]string, error) {
+func (c *Client) GetNodeRule() ([]DetectRule, []string, error) {
 	ruleList := c.LocalRuleList
 	if c.NodeType != "V2ray" || c.RemoteRuleCache == nil {
-		return &ruleList, nil, nil
+		return ruleList, nil, nil
 	}
 	// V2board only support the rule for v2ray
 	// fix: reuse config response
@@ -185,7 +185,7 @@ func (c *Client) GetNodeRule() (*[]DetectRule, *[]string, error) {
 		}
 	}
 	c.RemoteRuleCache = nil
-	return &ruleList, &protocolList, nil
+	return ruleList, protocolList, nil
 }
 
 // ParseTrojanNodeResponse parse the response for the given nodeinfor format
@@ -211,9 +211,9 @@ func (c *Client) ParseSSNodeResponse() (*NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(*userInfo) > 0 {
-		port = (*userInfo)[0].Port
-		method = (*userInfo)[0].Cipher
+	if len(userInfo) > 0 {
+		port = userInfo[0].Port
+		method = userInfo[0].Cipher
 	} else {
 		return nil, fmt.Errorf("shadowsocks node need a active user")
 	}

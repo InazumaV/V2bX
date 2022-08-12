@@ -46,7 +46,7 @@ func (r *Rule) UpdateProtocolRule(tag string, ruleList []string) error {
 	return nil
 }
 
-func (r *Rule) GetDetectResult(tag string) (*[]api.DetectResult, error) {
+func (r *Rule) GetDetectResult(tag string) ([]api.DetectResult, error) {
 	detectResult := make([]api.DetectResult, 0)
 	if value, ok := r.InboundDetectResult.LoadAndDelete(tag); ok {
 		resultSet := value.(mapset.Set)
@@ -55,7 +55,7 @@ func (r *Rule) GetDetectResult(tag string) (*[]api.DetectResult, error) {
 			detectResult = append(detectResult, result.(api.DetectResult))
 		}
 	}
-	return &detectResult, nil
+	return detectResult, nil
 }
 
 func (r *Rule) Detect(tag string, destination string, email string) (reject bool) {

@@ -1,11 +1,13 @@
-package xray
+package core
 
 import (
 	"encoding/json"
-	"github.com/Yuzuki616/V2bX/app/dispatcher"
 	"github.com/Yuzuki616/V2bX/conf"
-	_ "github.com/Yuzuki616/V2bX/xray/distro/all"
+	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
+	_ "github.com/Yuzuki616/V2bX/core/distro/all"
 	"github.com/xtls/xray-core/app/proxyman"
+	"github.com/xtls/xray-core/app/proxyman/inbound"
+	"github.com/xtls/xray-core/app/proxyman/outbound"
 	"github.com/xtls/xray-core/app/stats"
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/core"
@@ -15,14 +17,17 @@ import (
 	"sync"
 )
 
-// Xray Structure
-type Xray struct {
-	access sync.Mutex
-	Server *core.Instance
+// Core Structure
+type Core struct {
+	access     sync.Mutex
+	Server     *core.Instance
+	ihm        *inbound.Manager
+	ohm        *outbound.Manager
+	dispatcher *dispatcher.DefaultDispatcher
 }
 
-func New(c *conf.Conf) *Xray {
-	return &Xray{Server: getCore(c)}
+func New(c *conf.Conf) *Core {
+	return &Core{Server: getCore(c)}
 }
 
 func parseConnectionConfig(c *conf.ConnetionConfig) (policy *coreConf.Policy) {
@@ -117,7 +122,7 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 	corePolicyConfig := &coreConf.PolicyConfig{}
 	corePolicyConfig.Levels = map[uint32]*coreConf.Policy{0: levelPolicyConfig}
 	policyConfig, _ := corePolicyConfig.Build()
-	// Build Xray conf
+	// Build Core conf
 	config := &core.Config{
 		App: []*serial.TypedMessage{
 			serial.ToTypedMessage(coreLogConfig.Build()),
@@ -136,13 +141,13 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 	if err != nil {
 		log.Panicf("failed to create instance: %s", err)
 	}
-	log.Printf("Xray Version: %s", core.Version())
+	log.Printf("Core Version: %s", core.Version())
 
 	return server
 }
 
-// Start the Xray
-func (p *Xray) Start() {
+// Start the Core
+func (p *Core) Start() {
 	p.access.Lock()
 	defer p.access.Unlock()
 	log.Print("Start the panel..")
@@ -153,7 +158,7 @@ func (p *Xray) Start() {
 }
 
 // Close  the core
-func (p *Xray) Close() {
+func (p *Core) Close() {
 	p.access.Lock()
 	defer p.access.Unlock()
 	p.Server.Close()

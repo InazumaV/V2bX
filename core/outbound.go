@@ -1,4 +1,4 @@
-package xray
+package core
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 	"github.com/xtls/xray-core/features/outbound"
 )
 
-func (p *Xray) RemoveOutbound(tag string) error {
+func (p *Core) RemoveOutbound(tag string) error {
 	outboundManager := p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
 	err := outboundManager.RemoveHandler(context.Background(), tag)
 	return err
 }
 
-func (p *Xray) AddOutbound(config *core.OutboundHandlerConfig) error {
+func (p *Core) AddOutbound(config *core.OutboundHandlerConfig) error {
 	outboundManager := p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
 	rawHandler, err := core.CreateObject(p.Server, config)
 	if err != nil {

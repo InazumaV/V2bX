@@ -13,9 +13,9 @@ import (
 	"github.com/xtls/xray-core/proxy/vless"
 )
 
-func (c *Node) buildVmessUsers(userInfo *[]api.UserInfo, serverAlterID uint16) (users []*protocol.User) {
-	users = make([]*protocol.User, len(*userInfo))
-	for i, user := range *userInfo {
+func (c *Node) buildVmessUsers(userInfo []api.UserInfo, serverAlterID uint16) (users []*protocol.User) {
+	users = make([]*protocol.User, len(userInfo))
+	for i, user := range userInfo {
 		users[i] = c.buildVmessUser(&user, serverAlterID)
 	}
 	return users
@@ -35,10 +35,10 @@ func (c *Node) buildVmessUser(userInfo *api.UserInfo, serverAlterID uint16) (use
 	return user
 }
 
-func (c *Node) buildVlessUsers(userInfo *[]api.UserInfo) (users []*protocol.User) {
-	users = make([]*protocol.User, len(*userInfo))
-	for i := range *userInfo {
-		users[i] = c.buildVlessUser(&(*userInfo)[i])
+func (c *Node) buildVlessUsers(userInfo []api.UserInfo) (users []*protocol.User) {
+	users = make([]*protocol.User, len(userInfo))
+	for i := range userInfo {
+		users[i] = c.buildVlessUser(&(userInfo)[i])
 	}
 	return users
 }
@@ -56,10 +56,10 @@ func (c *Node) buildVlessUser(userInfo *api.UserInfo) (user *protocol.User) {
 	return user
 }
 
-func (c *Node) buildTrojanUsers(userInfo *[]api.UserInfo) (users []*protocol.User) {
-	users = make([]*protocol.User, len(*userInfo))
-	for i := range *userInfo {
-		users[i] = c.buildTrojanUser(&(*userInfo)[i])
+func (c *Node) buildTrojanUsers(userInfo []api.UserInfo) (users []*protocol.User) {
+	users = make([]*protocol.User, len(userInfo))
+	for i := range userInfo {
+		users[i] = c.buildTrojanUser(&(userInfo)[i])
 	}
 	return users
 }
@@ -92,10 +92,10 @@ func getCipherFromString(c string) shadowsocks.CipherType {
 	}
 }
 
-func (c *Node) buildSSUsers(userInfo *[]api.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
-	users = make([]*protocol.User, len(*userInfo))
-	for i := range *userInfo {
-		c.buildSSUser(&(*userInfo)[i], cypher)
+func (c *Node) buildSSUsers(userInfo []api.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
+	users = make([]*protocol.User, len(userInfo))
+	for i := range userInfo {
+		c.buildSSUser(&(userInfo)[i], cypher)
 	}
 	return users
 }

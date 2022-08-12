@@ -1,2 +1,2 @@
-// Package app contains the third-party app used to replace the default app in xray-core
+// Package app contains feature implementations of XrayR.
 package app

@@ -45,7 +45,7 @@ type UserListBody struct {
 }
 
 // GetUserList will pull user form sspanel
-func (c *Client) GetUserList() (UserList *[]UserInfo, err error) {
+func (c *Client) GetUserList() (UserList []UserInfo, err error) {
 	var path string
 	switch c.NodeType {
 	case "V2ray":
@@ -69,7 +69,7 @@ func (c *Client) GetUserList() (UserList *[]UserInfo, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal userlist error: %s", err)
 	}
-	return &userList.Data, nil
+	return userList.Data, nil
 }
 
 type UserTraffic struct {
@@ -79,7 +79,7 @@ type UserTraffic struct {
 }
 
 // ReportUserTraffic reports the user traffic
-func (c *Client) ReportUserTraffic(userTraffic *[]UserTraffic) error {
+func (c *Client) ReportUserTraffic(userTraffic []UserTraffic) error {
 	var path string
 	switch c.NodeType {
 	case "V2ray":
@@ -90,8 +90,8 @@ func (c *Client) ReportUserTraffic(userTraffic *[]UserTraffic) error {
 		path = "/api/v1/server/ShadowsocksTidalab/submit"
 	}
 
-	data := make([]UserTraffic, len(*userTraffic))
-	for i, traffic := range *userTraffic {
+	data := make([]UserTraffic, len(userTraffic))
+	for i, traffic := range userTraffic {
 		data[i] = UserTraffic{
 			UID:      traffic.UID,
 			Upload:   traffic.Upload,

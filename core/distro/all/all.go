@@ -5,7 +5,7 @@ import (
 
 	// Required features. Can't remove unless there is replacements.
 	// _ "github.com/xtls/xray-core/app/dispatcher"
-	_ "github.com/Yuzuki616/V2bX/app/dispatcher"
+	_ "github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	_ "github.com/xtls/xray-core/app/proxyman/inbound"
 	_ "github.com/xtls/xray-core/app/proxyman/outbound"
 
@@ -54,8 +54,8 @@ import (
 
 	// JSON & TOML & YAML
 	_ "github.com/xtls/xray-core/main/json"
-	_ "github.com/xtls/xray-core/main/toml"
-	_ "github.com/xtls/xray-core/main/yaml"
+	//_ "github.com/xtls/xray-core/main/toml"
+	//_ "github.com/xtls/xray-core/main/yaml"
 
 	// Load config from file or http(s)
 	_ "github.com/xtls/xray-core/main/confloader/external"

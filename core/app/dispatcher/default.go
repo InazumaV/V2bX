@@ -5,8 +5,8 @@ package dispatcher
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/common/limiter"
-	"github.com/Yuzuki616/V2bX/common/rule"
+	"github.com/Yuzuki616/V2bX/app/limiter"
+	"github.com/Yuzuki616/V2bX/app/rule"
 	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/common/buf"
 	"github.com/xtls/xray-core/common/log"
