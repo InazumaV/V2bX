@@ -250,7 +250,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			}
 		}
 		if len(added) > 0 {
-			err = c.addNewUser(added, newNodeInfo)
+			err = c.addNewUser(added, c.nodeInfo)
 			if err != nil {
 				log.Print(err)
 			}
