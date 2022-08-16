@@ -5,8 +5,6 @@ package dispatcher
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/app/limiter"
-	"github.com/Yuzuki616/V2bX/app/rule"
 	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/common/buf"
 	"github.com/xtls/xray-core/common/log"
@@ -96,8 +94,8 @@ type DefaultDispatcher struct {
 	stats       stats.Manager
 	dns         dns.Client
 	fdns        dns.FakeDNSEngine
-	Limiter     *limiter.Limiter
-	RuleManager *rule.Rule
+	Limiter     *Limiter
+	RuleManager *Rule
 }
 
 func init() {
@@ -121,8 +119,8 @@ func (d *DefaultDispatcher) Init(config *Config, om outbound.Manager, router rou
 	d.router = router
 	d.policy = pm
 	d.stats = sm
-	d.Limiter = limiter.New()
-	d.RuleManager = rule.New()
+	d.Limiter = NewLimiter()
+	d.RuleManager = NewRule()
 	d.dns = dns
 	return nil
 }

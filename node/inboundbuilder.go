@@ -4,9 +4,9 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/app/legoCmd"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/node/legoCmd"
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/common/uuid"
 	"github.com/xtls/xray-core/core"
@@ -14,7 +14,7 @@ import (
 )
 
 //InboundBuilder build Inbound config for different protocol
-func InboundBuilder(config *conf.ControllerConfig, nodeInfo *api.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
+func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
 	var proxySetting interface{}
 	if nodeInfo.NodeType == "V2ray" {
 		defer func() {
@@ -47,7 +47,7 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *api.NodeInfo, tag s
 			nodeInfo.V2ray = nil
 			nodeInfo.Trojan = nil
 		}()
-		nodeInfo.V2ray = &api.V2rayConfig{}
+		nodeInfo.V2ray = &panel.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = make([]coreConf.InboundDetourConfig, 1)
 		nodeInfo.V2ray.Inbounds[0].Protocol = "trojan"
 		// Enable fallback
@@ -72,7 +72,7 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *api.NodeInfo, tag s
 		defer func() {
 			nodeInfo.V2ray = nil
 		}()
-		nodeInfo.V2ray = &api.V2rayConfig{}
+		nodeInfo.V2ray = &panel.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = []coreConf.InboundDetourConfig{{Protocol: "shadowsocks"}}
 		proxySetting = &coreConf.ShadowsocksServerConfig{}
 		randomPasswd := uuid.New()

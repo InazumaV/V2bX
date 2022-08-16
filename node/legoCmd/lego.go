@@ -5,13 +5,13 @@ package legoCmd
 import (
 	"errors"
 	"fmt"
+	cmd2 "github.com/Yuzuki616/V2bX/node/legoCmd/cmd"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	"github.com/Yuzuki616/V2bX/app/legoCmd/cmd"
 	"github.com/urfave/cli"
 )
 
@@ -47,11 +47,11 @@ func New() (*LegoCMD, error) {
 
 	defaultPath = filepath.Join(pathTemp, "cert")
 
-	app.Flags = cmd.CreateFlags(defaultPath)
+	app.Flags = cmd2.CreateFlags(defaultPath)
 
-	app.Before = cmd.Before
+	app.Before = cmd2.Before
 
-	app.Commands = cmd.CreateCommands()
+	app.Commands = cmd2.CreateCommands()
 
 	lego := &LegoCMD{
 		cmdClient: app,

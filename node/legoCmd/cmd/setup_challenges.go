@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"github.com/Yuzuki616/V2bX/node/legoCmd/log"
 	"net"
 	"strings"
 	"time"
 
-	"github.com/Yuzuki616/V2bX/app/legoCmd/log"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/challenge/http01"

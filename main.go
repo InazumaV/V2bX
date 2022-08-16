@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/node"
@@ -60,7 +60,7 @@ func getConfig() *viper.Viper {
 
 func startNodes(nodes []*conf.NodeConfig, core *core.Core) error {
 	for i, _ := range nodes {
-		var apiClient = api.New(nodes[i].ApiConfig)
+		var apiClient = panel.New(nodes[i].ApiConfig)
 		// Register controller service
 		err := node.New(core, apiClient, nodes[i].ControllerConfig).Start()
 		if err != nil {

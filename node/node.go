@@ -2,38 +2,37 @@ package node
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/app/limiter"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
+	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
+	"github.com/Yuzuki616/V2bX/node/legoCmd"
 	"github.com/go-resty/resty/v2"
 	"github.com/goccy/go-json"
+	"github.com/xtls/xray-core/common/protocol"
+	"github.com/xtls/xray-core/common/task"
 	"log"
 	"math"
 	"reflect"
 	"runtime"
 	"time"
-
-	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/app/legoCmd"
-	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/common/task"
 )
 
 type Node struct {
 	server                  *core.Core
 	config                  *conf.ControllerConfig
-	clientInfo              api.ClientInfo
-	apiClient               api.API
-	nodeInfo                *api.NodeInfo
+	clientInfo              panel.ClientInfo
+	apiClient               panel.Panel
+	nodeInfo                *panel.NodeInfo
 	Tag                     string
-	userList                []api.UserInfo
+	userList                []panel.UserInfo
 	nodeInfoMonitorPeriodic *task.Periodic
 	userReportPeriodic      *task.Periodic
 	onlineIpReportPeriodic  *task.Periodic
 }
 
 // New return a Node service with default parameters.
-func New(server *core.Core, api api.API, config *conf.ControllerConfig) *Node {
+func New(server *core.Core, api panel.Panel, config *conf.ControllerConfig) *Node {
 	controller := &Node{
 		server:    server,
 		config:    config,
@@ -280,7 +279,7 @@ func (c *Node) removeOldTag(oldtag string) (err error) {
 	return nil
 }
 
-func (c *Node) addNewTag(newNodeInfo *api.NodeInfo) (err error) {
+func (c *Node) addNewTag(newNodeInfo *panel.NodeInfo) (err error) {
 	inboundConfig, err := InboundBuilder(c.config, newNodeInfo, c.Tag)
 	if err != nil {
 		return err
@@ -303,7 +302,7 @@ func (c *Node) addNewTag(newNodeInfo *api.NodeInfo) (err error) {
 	return nil
 }
 
-func (c *Node) addNewUser(userInfo []api.UserInfo, nodeInfo *api.NodeInfo) (err error) {
+func (c *Node) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (err error) {
 	users := make([]*protocol.User, 0)
 	if nodeInfo.NodeType == "V2ray" {
 		if nodeInfo.EnableVless {
@@ -333,7 +332,7 @@ func (c *Node) addNewUser(userInfo []api.UserInfo, nodeInfo *api.NodeInfo) (err 
 	return nil
 }
 
-func compareUserList(old, new []api.UserInfo) (deleted, added []api.UserInfo) {
+func compareUserList(old, new []panel.UserInfo) (deleted, added []panel.UserInfo) {
 	tmp := map[string]struct{}{}
 	tmp2 := map[string]struct{}{}
 	for i := range old {
@@ -363,11 +362,11 @@ func compareUserList(old, new []api.UserInfo) (deleted, added []api.UserInfo) {
 
 func (c *Node) userInfoMonitor() (err error) {
 	// Get User traffic
-	userTraffic := make([]api.UserTraffic, 0)
+	userTraffic := make([]panel.UserTraffic, 0)
 	for i := range c.userList {
 		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]))
 		if up > 0 || down > 0 {
-			userTraffic = append(userTraffic, api.UserTraffic{
+			userTraffic = append(userTraffic, panel.UserTraffic{
 				UID:      (c.userList)[i].UID,
 				Upload:   up,
 				Download: down})
@@ -406,8 +405,8 @@ func (c *Node) onlineIpReport() (err error) {
 		}
 		log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 		if rsp.StatusCode() == 200 {
-			onlineIp = []limiter.UserIp{}
-			err := json.Unmarshal(rsp.Body(), onlineIp)
+			onlineIp = []dispatcher.UserIp{}
+			err := json.Unmarshal(rsp.Body(), &onlineIp)
 			if err != nil {
 				log.Print(err)
 				c.server.ClearOnlineIps(c.Tag)

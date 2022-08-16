@@ -1,9 +1,8 @@
 package legoCmd_test
 
 import (
+	"github.com/Yuzuki616/V2bX/node/legoCmd"
 	"testing"
-
-	"github.com/Yuzuki616/V2bX/app/legoCmd"
 )
 
 func TestLegoClient(t *testing.T) {

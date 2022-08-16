@@ -1,6 +1,6 @@
-package api
+package panel
 
-type API interface {
+type Panel interface {
 	GetNodeInfo() (nodeInfo *NodeInfo, err error)
 	GetUserList() (userList []UserInfo, err error)
 	ReportUserTraffic(userTraffic []UserTraffic) (err error)

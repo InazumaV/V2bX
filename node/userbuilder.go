@@ -2,9 +2,9 @@ package node
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"strings"
 
-	"github.com/Yuzuki616/V2bX/api"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/infra/conf"
@@ -13,7 +13,7 @@ import (
 	"github.com/xtls/xray-core/proxy/vless"
 )
 
-func (c *Node) buildVmessUsers(userInfo []api.UserInfo, serverAlterID uint16) (users []*protocol.User) {
+func (c *Node) buildVmessUsers(userInfo []panel.UserInfo, serverAlterID uint16) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i, user := range userInfo {
 		users[i] = c.buildVmessUser(&user, serverAlterID)
@@ -21,7 +21,7 @@ func (c *Node) buildVmessUsers(userInfo []api.UserInfo, serverAlterID uint16) (u
 	return users
 }
 
-func (c *Node) buildVmessUser(userInfo *api.UserInfo, serverAlterID uint16) (user *protocol.User) {
+func (c *Node) buildVmessUser(userInfo *panel.UserInfo, serverAlterID uint16) (user *protocol.User) {
 	vmessAccount := &conf.VMessAccount{
 		ID:       userInfo.V2rayUser.Uuid,
 		AlterIds: serverAlterID,
@@ -35,7 +35,7 @@ func (c *Node) buildVmessUser(userInfo *api.UserInfo, serverAlterID uint16) (use
 	return user
 }
 
-func (c *Node) buildVlessUsers(userInfo []api.UserInfo) (users []*protocol.User) {
+func (c *Node) buildVlessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
 		users[i] = c.buildVlessUser(&(userInfo)[i])
@@ -43,7 +43,7 @@ func (c *Node) buildVlessUsers(userInfo []api.UserInfo) (users []*protocol.User)
 	return users
 }
 
-func (c *Node) buildVlessUser(userInfo *api.UserInfo) (user *protocol.User) {
+func (c *Node) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	vlessAccount := &vless.Account{
 		Id:   userInfo.V2rayUser.Uuid,
 		Flow: "xtls-rprx-direct",
@@ -56,7 +56,7 @@ func (c *Node) buildVlessUser(userInfo *api.UserInfo) (user *protocol.User) {
 	return user
 }
 
-func (c *Node) buildTrojanUsers(userInfo []api.UserInfo) (users []*protocol.User) {
+func (c *Node) buildTrojanUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
 		users[i] = c.buildTrojanUser(&(userInfo)[i])
@@ -64,7 +64,7 @@ func (c *Node) buildTrojanUsers(userInfo []api.UserInfo) (users []*protocol.User
 	return users
 }
 
-func (c *Node) buildTrojanUser(userInfo *api.UserInfo) (user *protocol.User) {
+func (c *Node) buildTrojanUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	trojanAccount := &trojan.Account{
 		Password: userInfo.TrojanUser.Password,
 		Flow:     "xtls-rprx-direct",
@@ -92,7 +92,7 @@ func getCipherFromString(c string) shadowsocks.CipherType {
 	}
 }
 
-func (c *Node) buildSSUsers(userInfo []api.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
+func (c *Node) buildSSUsers(userInfo []panel.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
 		c.buildSSUser(&(userInfo)[i], cypher)
@@ -100,7 +100,7 @@ func (c *Node) buildSSUsers(userInfo []api.UserInfo, cypher shadowsocks.CipherTy
 	return users
 }
 
-func (c *Node) buildSSUser(userInfo *api.UserInfo, cypher shadowsocks.CipherType) (user *protocol.User) {
+func (c *Node) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherType) (user *protocol.User) {
 	ssAccount := &shadowsocks.Account{
 		Password:   userInfo.Secret,
 		CipherType: cypher,
@@ -113,6 +113,6 @@ func (c *Node) buildSSUser(userInfo *api.UserInfo, cypher shadowsocks.CipherType
 	return user
 }
 
-func (c *Node) buildUserTag(user *api.UserInfo) string {
+func (c *Node) buildUserTag(user *panel.UserInfo) string {
 	return fmt.Sprintf("%s|%s|%d", c.Tag, user.GetUserEmail(), user.UID)
 }

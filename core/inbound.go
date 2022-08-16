@@ -3,8 +3,8 @@ package core
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api"
-	"github.com/Yuzuki616/V2bX/app/limiter"
+	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/features/inbound"
 )
@@ -29,20 +29,20 @@ func (p *Core) AddInbound(config *core.InboundHandlerConfig) error {
 	return nil
 }
 
-func (p *Core) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList []api.UserInfo) error {
+func (p *Core) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo, userList []panel.UserInfo) error {
 	err := p.dispatcher.Limiter.AddInboundLimiter(tag, nodeInfo, userList)
 	return err
 }
 
-func (p *Core) GetInboundLimiter(tag string) (*limiter.InboundInfo, error) {
+func (p *Core) GetInboundLimiter(tag string) (*dispatcher.InboundInfo, error) {
 	limit, ok := p.dispatcher.Limiter.InboundInfo.Load(tag)
 	if ok {
-		return limit.(*limiter.InboundInfo), nil
+		return limit.(*dispatcher.InboundInfo), nil
 	}
 	return nil, fmt.Errorf("not found limiter")
 }
 
-func (p *Core) UpdateInboundLimiter(tag string, nodeInfo *api.NodeInfo, updatedUserList []api.UserInfo) error {
+func (p *Core) UpdateInboundLimiter(tag string, nodeInfo *panel.NodeInfo, updatedUserList []panel.UserInfo) error {
 	err := p.dispatcher.Limiter.UpdateInboundLimiter(tag, nodeInfo, updatedUserList)
 	return err
 }

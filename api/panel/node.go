@@ -1,4 +1,4 @@
-package api
+package panel
 
 import (
 	"bufio"

@@ -3,10 +3,10 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/Yuzuki616/V2bX/node/legoCmd/log"
 	"os"
 	"strings"
 
-	"github.com/Yuzuki616/V2bX/app/legoCmd/log"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"

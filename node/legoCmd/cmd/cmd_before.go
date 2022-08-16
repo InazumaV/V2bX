@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Yuzuki616/V2bX/app/legoCmd/log"
+	"github.com/Yuzuki616/V2bX/node/legoCmd/log"
 	"github.com/urfave/cli"
 )
 

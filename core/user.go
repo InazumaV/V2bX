@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/app/limiter"
+	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/features/stats"
 	"github.com/xtls/xray-core/proxy"
@@ -74,11 +74,11 @@ func (p *Core) GetUserTraffic(email string) (up int64, down int64) {
 	return up, down
 }
 
-func (p *Core) GetOnlineIps(tag string) ([]limiter.UserIp, error) {
+func (p *Core) GetOnlineIps(tag string) ([]dispatcher.UserIp, error) {
 	return p.dispatcher.Limiter.GetOnlineUserIp(tag)
 }
 
-func (p *Core) UpdateOnlineIps(tag string, ips []limiter.UserIp) {
+func (p *Core) UpdateOnlineIps(tag string, ips []dispatcher.UserIp) {
 	p.dispatcher.Limiter.UpdateOnlineUserIP(tag, ips)
 }
 

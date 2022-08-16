@@ -1,14 +1,13 @@
 package node_test
 
 import (
+	"github.com/Yuzuki616/V2bX/api/panel"
 	. "github.com/Yuzuki616/V2bX/node"
 	"testing"
-
-	"github.com/Yuzuki616/V2bX/api"
 )
 
 func TestBuildV2ray(t *testing.T) {
-	nodeInfo := &api.NodeInfo{
+	nodeInfo := &panel.NodeInfo{
 		NodeType:          "V2ray",
 		NodeID:            1,
 		Port:              1145,
@@ -36,7 +35,7 @@ func TestBuildV2ray(t *testing.T) {
 }
 
 func TestBuildTrojan(t *testing.T) {
-	nodeInfo := &api.NodeInfo{
+	nodeInfo := &panel.NodeInfo{
 		NodeType:          "Trojan",
 		NodeID:            1,
 		Port:              1145,
@@ -68,7 +67,7 @@ func TestBuildTrojan(t *testing.T) {
 }
 
 func TestBuildSS(t *testing.T) {
-	nodeInfo := &api.NodeInfo{
+	nodeInfo := &panel.NodeInfo{
 		NodeType:          "Shadowsocks",
 		NodeID:            1,
 		Port:              1145,

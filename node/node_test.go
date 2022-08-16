@@ -2,6 +2,7 @@ package node_test
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	. "github.com/Yuzuki616/V2bX/node"
 	"os"
 	"os/signal"
@@ -60,7 +61,7 @@ func TestController(t *testing.T) {
 		NodeID:   41,
 		NodeType: "V2ray",
 	}
-	apiclient := api.New(apiConfig)
+	apiclient := panel.New(apiConfig)
 	c := New(server, apiclient, controlerconfig)
 	fmt.Println("Sleep 1s")
 	err = c.Start()

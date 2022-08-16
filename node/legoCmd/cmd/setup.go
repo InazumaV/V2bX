@@ -4,12 +4,12 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/Yuzuki616/V2bX/node/legoCmd/log"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/Yuzuki616/V2bX/app/legoCmd/log"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"

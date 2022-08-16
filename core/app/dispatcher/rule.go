@@ -1,14 +1,14 @@
 // Package rule is to control the audit rule behaviors
-package rule
+package dispatcher
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/Yuzuki616/V2bX/api"
 	mapset "github.com/deckarep/golang-set"
 )
 
@@ -18,7 +18,7 @@ type Rule struct {
 	InboundDetectResult *sync.Map // key: Tag, Value: mapset.NewSet []api.DetectResult
 }
 
-func New() *Rule {
+func NewRule() *Rule {
 	return &Rule{
 		InboundRule:         new(sync.Map),
 		InboundProtocolRule: new(sync.Map),
@@ -26,9 +26,9 @@ func New() *Rule {
 	}
 }
 
-func (r *Rule) UpdateRule(tag string, newRuleList []api.DetectRule) error {
+func (r *Rule) UpdateRule(tag string, newRuleList []panel.DetectRule) error {
 	if value, ok := r.InboundRule.LoadOrStore(tag, newRuleList); ok {
-		oldRuleList := value.([]api.DetectRule)
+		oldRuleList := value.([]panel.DetectRule)
 		if !reflect.DeepEqual(oldRuleList, newRuleList) {
 			r.InboundRule.Store(tag, newRuleList)
 		}
@@ -46,13 +46,13 @@ func (r *Rule) UpdateProtocolRule(tag string, ruleList []string) error {
 	return nil
 }
 
-func (r *Rule) GetDetectResult(tag string) ([]api.DetectResult, error) {
-	detectResult := make([]api.DetectResult, 0)
+func (r *Rule) GetDetectResult(tag string) ([]panel.DetectResult, error) {
+	detectResult := make([]panel.DetectResult, 0)
 	if value, ok := r.InboundDetectResult.LoadAndDelete(tag); ok {
 		resultSet := value.(mapset.Set)
 		it := resultSet.Iterator()
 		for result := range it.C {
-			detectResult = append(detectResult, result.(api.DetectResult))
+			detectResult = append(detectResult, result.(panel.DetectResult))
 		}
 	}
 	return detectResult, nil
@@ -63,7 +63,7 @@ func (r *Rule) Detect(tag string, destination string, email string) (reject bool
 	var hitRuleID = -1
 	// If we have some rule for this inbound
 	if value, ok := r.InboundRule.Load(tag); ok {
-		ruleList := value.([]api.DetectRule)
+		ruleList := value.([]panel.DetectRule)
 		for _, r := range ruleList {
 			if r.Pattern.Match([]byte(destination)) {
 				hitRuleID = r.ID
@@ -79,12 +79,12 @@ func (r *Rule) Detect(tag string, destination string, email string) (reject bool
 				newError(fmt.Sprintf("Record illegal behavior failed! Cannot find user's uid: %s", email)).AtDebug().WriteToLog()
 				return reject
 			}
-			newSet := mapset.NewSetWith(api.DetectResult{UID: uid, RuleID: hitRuleID})
+			newSet := mapset.NewSetWith(panel.DetectResult{UID: uid, RuleID: hitRuleID})
 			// If there are any hit history
 			if v, ok := r.InboundDetectResult.LoadOrStore(tag, newSet); ok {
 				resultSet := v.(mapset.Set)
 				// If this is a new record
-				if resultSet.Add(api.DetectResult{UID: uid, RuleID: hitRuleID}) {
+				if resultSet.Add(panel.DetectResult{UID: uid, RuleID: hitRuleID}) {
 					r.InboundDetectResult.Store(tag, resultSet)
 				}
 			}

@@ -1,13 +1,15 @@
 // Package limiter is to control the links that go into the dispather
-package limiter
+package dispatcher
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/juju/ratelimit"
+	"github.com/xtls/xray-core/common"
+	"github.com/xtls/xray-core/common/buf"
+	"io"
 	"sync"
 	"time"
-
-	"github.com/Yuzuki616/V2bX/api"
-	"github.com/juju/ratelimit"
 )
 
 type UserInfo struct {
@@ -28,13 +30,13 @@ type Limiter struct {
 	InboundInfo *sync.Map // Key: Tag, Value: *InboundInfo
 }
 
-func New() *Limiter {
+func NewLimiter() *Limiter {
 	return &Limiter{
 		InboundInfo: new(sync.Map),
 	}
 }
 
-func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList []api.UserInfo) error {
+func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo, userList []panel.UserInfo) error {
 	inboundInfo := &InboundInfo{
 		Tag:            tag,
 		NodeSpeedLimit: nodeInfo.SpeedLimit,
@@ -61,7 +63,7 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *api.NodeInfo, userList
 	return nil
 }
 
-func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *api.NodeInfo, updatedUserList []api.UserInfo) error {
+func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *panel.NodeInfo, updatedUserList []panel.UserInfo) error {
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		// Update User info
@@ -209,6 +211,28 @@ func (l *Limiter) GetUserBucket(tag string, email string, ip string) (limiter *r
 		newError("Get Inbound Limiter information failed").AtDebug().WriteToLog()
 		return nil, false, false
 	}
+}
+
+type Writer struct {
+	writer  buf.Writer
+	limiter *ratelimit.Bucket
+	w       io.Writer
+}
+
+func (l *Limiter) RateWriter(writer buf.Writer, limiter *ratelimit.Bucket) buf.Writer {
+	return &Writer{
+		writer:  writer,
+		limiter: limiter,
+	}
+}
+
+func (w *Writer) Close() error {
+	return common.Close(w.writer)
+}
+
+func (w *Writer) WriteMultiBuffer(mb buf.MultiBuffer) error {
+	w.limiter.Wait(int64(mb.Len()))
+	return w.writer.WriteMultiBuffer(mb)
 }
 
 // determineRate returns the minimum non-zero rate
