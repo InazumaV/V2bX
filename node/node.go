@@ -108,9 +108,11 @@ func (c *Node) Start() error {
 		time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
 		_ = c.userReportPeriodic.Start()
 	}()
-	c.onlineIpReportPeriodic = &task.Periodic{
-		Interval: time.Duration(c.config.UpdatePeriodic) * 30,
-		Execute:  c.onlineIpReport,
+	if c.config.EnableIpRecorder {
+		c.onlineIpReportPeriodic = &task.Periodic{
+			Interval: time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second,
+			Execute:  c.onlineIpReport,
+		}
 	}
 	log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	// delay to start onlineIpReport
@@ -381,42 +383,41 @@ func (c *Node) userInfoMonitor() (err error) {
 		}
 	}
 	userTraffic = nil
+	if !c.config.EnableIpRecorder {
+		c.server.ClearOnlineIps(c.Tag)
+	}
 	runtime.GC()
 	return nil
 }
 
 func (c *Node) onlineIpReport() (err error) {
-	if c.config.EnableIpRecorder {
-		onlineIp, err := c.server.GetOnlineIps(c.Tag)
-		if err != nil {
-			log.Print(err)
-			return nil
-		}
-		rsp, err := resty.New().SetTimeout(time.Duration(c.config.IpRecorderConfig.Timeout) * time.Second).
-			R().
-			SetBody(onlineIp).
-			Post(c.config.IpRecorderConfig.Url +
-				"/api/v1/SyncOnlineIp?token=" +
-				c.config.IpRecorderConfig.Token)
+	onlineIp, err := c.server.GetOnlineIps(c.Tag)
+	if err != nil {
+		log.Print(err)
+		return nil
+	}
+	rsp, err := resty.New().SetTimeout(time.Duration(c.config.IpRecorderConfig.Timeout) * time.Second).
+		R().
+		SetBody(onlineIp).
+		Post(c.config.IpRecorderConfig.Url +
+			"/api/v1/SyncOnlineIp?token=" +
+			c.config.IpRecorderConfig.Token)
+	if err != nil {
+		log.Print(err)
+		c.server.ClearOnlineIps(c.Tag)
+		return nil
+	}
+	log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
+	if rsp.StatusCode() == 200 {
+		onlineIp = []dispatcher.UserIp{}
+		err := json.Unmarshal(rsp.Body(), &onlineIp)
 		if err != nil {
 			log.Print(err)
 			c.server.ClearOnlineIps(c.Tag)
 			return nil
 		}
-		log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
-		if rsp.StatusCode() == 200 {
-			onlineIp = []dispatcher.UserIp{}
-			err := json.Unmarshal(rsp.Body(), &onlineIp)
-			if err != nil {
-				log.Print(err)
-				c.server.ClearOnlineIps(c.Tag)
-				return nil
-			}
-			c.server.UpdateOnlineIps(c.Tag, onlineIp)
-			log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
-		} else {
-			c.server.ClearOnlineIps(c.Tag)
-		}
+		c.server.UpdateOnlineIps(c.Tag, onlineIp)
+		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 	} else {
 		c.server.ClearOnlineIps(c.Tag)
 	}
