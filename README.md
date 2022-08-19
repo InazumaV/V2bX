@@ -1,7 +1,6 @@
 # V2bX
 
-[![](https://img.shields.io/badge/TgChat-@XrayR讨论-blue.svg)](https://t.me/XrayR_project)
-[![](https://img.shields.io/badge/Channel-@XrayR通知-blue.svg)](https://t.me/XrayR_channel)
+[![](https://img.shields.io/badge/TgChat-%E4%BA%A4%E6%B5%81%E7%BE%A4-blue)](https://t.me/YuzukiProjects)
 
 A V2board node server based on Xray-core, modified from XrayR
 
@@ -12,6 +11,8 @@ A V2board node server based on Xray-core, modified from XrayR
 使用教程：[详细使用教程](https://yuzuki-1.gitbook.io/v2bx-doc/)
 
 如对脚本不放心，可使用此沙箱先测一遍再使用：https://killercoda.com/playgrounds/scenario/ubuntu
+
+目前可以结合 [IpRecorder](https://github.com/Yuzuki616/IpRecorder) 实现跨节点IP数限制和每日IP连接数超限提醒，请参考 [配置文件说明](https://yuzuki-1.gitbook.io/v2bx-doc/v2bx-pei-zhi-wen-jian-shuo-ming/config#wai-bu-ji-lu-qi-pei-zhi) 配置IpRecorder。
 
 ## 免责声明
 
@@ -40,7 +41,7 @@ A V2board node server based on Xray-core, modified from XrayR
 | 自动续签tls证书 | √     | √      | √           |
 | 在线人数统计    | √     | √      | √           |
 | 在线IP数限制    | √     | √      | √           |
-| 跨节点IP数限制    | √     | √      | √           |
+| 跨节点IP数限制   | √    | √     | √          |
 | 审计规则        | √     | √      | √           |
 | 按照用户限速    | √     | √      | √           |
 | 自定义DNS       | √     | √      | √           |
