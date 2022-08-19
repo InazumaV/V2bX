@@ -113,13 +113,13 @@ func (c *Node) Start() error {
 			Interval: time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second,
 			Execute:  c.onlineIpReport,
 		}
+		go func() {
+			time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
+			_ = c.onlineIpReportPeriodic.Start()
+		}()
+		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	}
-	log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	// delay to start onlineIpReport
-	go func() {
-		time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
-		_ = c.onlineIpReportPeriodic.Start()
-	}()
 	runtime.GC()
 	return nil
 }
