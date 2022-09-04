@@ -1,4 +1,3 @@
-// Package rule is to control the audit rule behaviors
 package dispatcher
 
 import (

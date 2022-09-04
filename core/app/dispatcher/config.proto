@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package xrayr.app.mydispatcher;
-option csharp_namespace = "XrayR.App.Myispatcher";
-option go_package = "github.com/Yuzuki616/V2bX/app/mydispatcher";
-option java_package = "com.xrayr.app.mydispatcher";
+package v2bx.core.app.dispatcher;
+option csharp_namespace = "V2bX.core.app.dispatcher";
+option go_package = "github.com/Yuzuki616/V2bX/core/app/dispatcher";
+option java_package = "com.v2bx.core.app.dispatcher";
 option java_multiple_files = true;
 
 message SessionConfig {

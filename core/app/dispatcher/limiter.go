@@ -1,4 +1,3 @@
-// Package limiter is to control the links that go into the dispather
 package dispatcher
 
 import (

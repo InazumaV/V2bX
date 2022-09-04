@@ -62,7 +62,6 @@ func (c *Node) Start() error {
 	if err != nil {
 		return err
 	}
-
 	err = c.addNewUser(userInfo, newNodeInfo)
 	if err != nil {
 		return err
@@ -155,7 +154,6 @@ func (c *Node) nodeInfoMonitor() (err error) {
 		log.Print(err)
 		return nil
 	}
-
 	var nodeInfoChanged = false
 	// If nodeInfo changed
 	if newNodeInfo != nil {

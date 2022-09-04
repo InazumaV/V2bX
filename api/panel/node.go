@@ -49,7 +49,6 @@ func readLocalRuleList(path string) (LocalRuleList []DetectRule) {
 			log.Fatalf("Error while reading file: %s", err)
 			return []DetectRule{}
 		}
-		file.Close()
 	}
 
 	return LocalRuleList
