@@ -382,14 +382,14 @@ func (c *Node) userInfoMonitor() (err error) {
 	}
 	userTraffic = nil
 	if !c.config.EnableIpRecorder {
-		c.server.ClearOnlineIps(c.Tag)
+		c.server.ClearOnlineIp(c.Tag)
 	}
 	runtime.GC()
 	return nil
 }
 
 func (c *Node) onlineIpReport() (err error) {
-	onlineIp, err := c.server.GetOnlineIps(c.Tag)
+	onlineIp, err := c.server.ListOnlineIp(c.Tag)
 	if err != nil {
 		log.Print(err)
 		return nil
@@ -402,7 +402,7 @@ func (c *Node) onlineIpReport() (err error) {
 			c.config.IpRecorderConfig.Token)
 	if err != nil {
 		log.Print(err)
-		c.server.ClearOnlineIps(c.Tag)
+		c.server.ClearOnlineIp(c.Tag)
 		return nil
 	}
 	log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
@@ -411,13 +411,13 @@ func (c *Node) onlineIpReport() (err error) {
 		err := json.Unmarshal(rsp.Body(), &onlineIp)
 		if err != nil {
 			log.Print(err)
-			c.server.ClearOnlineIps(c.Tag)
+			c.server.ClearOnlineIp(c.Tag)
 			return nil
 		}
-		c.server.UpdateOnlineIps(c.Tag, onlineIp)
+		c.server.UpdateOnlineIp(c.Tag, onlineIp)
 		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 	} else {
-		c.server.ClearOnlineIps(c.Tag)
+		c.server.ClearOnlineIp(c.Tag)
 	}
 	return nil
 }
