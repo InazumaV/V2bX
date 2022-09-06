@@ -407,7 +407,7 @@ func (c *Node) onlineIpReport() (err error) {
 	}
 	log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 	if rsp.StatusCode() == 200 {
-		onlineIp = []dispatcher.UserIp{}
+		onlineIp = []dispatcher.UserIpList{}
 		err := json.Unmarshal(rsp.Body(), &onlineIp)
 		if err != nil {
 			log.Print(err)

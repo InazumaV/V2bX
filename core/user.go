@@ -74,14 +74,14 @@ func (p *Core) GetUserTraffic(email string) (up int64, down int64) {
 	return up, down
 }
 
-func (p *Core) ListOnlineIp(tag string) ([]dispatcher.UserIp, error) {
-	return p.dispatcher.Limiter.GetOnlineUserIp(tag)
+func (p *Core) ListOnlineIp(tag string) ([]dispatcher.UserIpList, error) {
+	return p.dispatcher.Limiter.ListOnlineUserIp(tag)
 }
 
-func (p *Core) UpdateOnlineIp(tag string, ips []dispatcher.UserIp) {
+func (p *Core) UpdateOnlineIp(tag string, ips []dispatcher.UserIpList) {
 	p.dispatcher.Limiter.UpdateOnlineUserIP(tag, ips)
 }
 
 func (p *Core) ClearOnlineIp(tag string) {
-	p.dispatcher.Limiter.ClearOnlineUserIP(tag)
+	p.dispatcher.Limiter.ClearOnlineUserIpAndSpeedLimiter(tag)
 }
