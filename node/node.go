@@ -118,7 +118,6 @@ func (c *Node) Start() error {
 		}()
 		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	}
-	// delay to start onlineIpReport
 	runtime.GC()
 	return nil
 }
@@ -414,8 +413,10 @@ func (c *Node) onlineIpReport() (err error) {
 			c.server.ClearOnlineIp(c.Tag)
 			return nil
 		}
-		c.server.UpdateOnlineIp(c.Tag, onlineIp)
-		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
+		if c.config.IpRecorderConfig.EnableIpSync {
+			c.server.UpdateOnlineIp(c.Tag, onlineIp)
+			log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
+		}
 	} else {
 		c.server.ClearOnlineIp(c.Tag)
 	}
