@@ -11,7 +11,7 @@ require (
 	github.com/juju/ratelimit v1.0.2
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
-	github.com/urfave/cli v1.22.9
+	github.com/urfave/cli v1.22.10
 	github.com/xtls/xray-core v1.5.10
 	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b
 	google.golang.org/appengine v1.6.7 // indirect
@@ -52,7 +52,6 @@ require (
 	github.com/exoscale/egoscale v1.19.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
