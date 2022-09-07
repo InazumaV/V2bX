@@ -363,7 +363,7 @@ func (c *Node) userInfoMonitor() (err error) {
 	// Get User traffic
 	userTraffic := make([]panel.UserTraffic, 0)
 	for i := range c.userList {
-		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]))
+		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), true)
 		if up > 0 || down > 0 {
 			userTraffic = append(userTraffic, panel.UserTraffic{
 				UID:      (c.userList)[i].UID,

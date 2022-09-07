@@ -12,6 +12,7 @@ import (
 	"github.com/xtls/xray-core/features/inbound"
 	"github.com/xtls/xray-core/features/outbound"
 	"github.com/xtls/xray-core/features/routing"
+	statsFeature "github.com/xtls/xray-core/features/stats"
 	coreConf "github.com/xtls/xray-core/infra/conf"
 	io "io/ioutil"
 	"log"
@@ -24,6 +25,7 @@ type Core struct {
 	Server     *core.Instance
 	ihm        inbound.Manager
 	ohm        outbound.Manager
+	shm        statsFeature.Manager
 	dispatcher *dispatcher.DefaultDispatcher
 }
 
@@ -155,6 +157,7 @@ func (p *Core) Start() {
 	if err := p.Server.Start(); err != nil {
 		log.Panicf("Failed to start instance: %s", err)
 	}
+	p.shm = p.Server.GetFeature(statsFeature.ManagerType()).(statsFeature.Manager)
 	p.ihm = p.Server.GetFeature(inbound.ManagerType()).(inbound.Manager)
 	p.ohm = p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
 	p.dispatcher = p.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/features/stats"
 	"github.com/xtls/xray-core/proxy"
 )
 
@@ -57,19 +56,25 @@ func (p *Core) RemoveUsers(users []string, tag string) error {
 	return nil
 }
 
-func (p *Core) GetUserTraffic(email string) (up int64, down int64) {
+func (p *Core) GetUserTraffic(email string, reset bool) (up int64, down int64) {
 	upName := "user>>>" + email + ">>>traffic>>>uplink"
 	downName := "user>>>" + email + ">>>traffic>>>downlink"
-	statsManager := p.Server.GetFeature(stats.ManagerType()).(stats.Manager)
-	upCounter := statsManager.GetCounter(upName)
-	downCounter := statsManager.GetCounter(downName)
-	if upCounter != nil {
-		up = upCounter.Value()
-		upCounter.Set(0)
-	}
-	if downCounter != nil {
-		down = downCounter.Value()
-		downCounter.Set(0)
+	upCounter := p.shm.GetCounter(upName)
+	downCounter := p.shm.GetCounter(downName)
+	if reset {
+		if upCounter != nil {
+			up = upCounter.Set(0)
+		}
+		if downCounter != nil {
+			down = downCounter.Set(0)
+		}
+	} else {
+		if upCounter != nil {
+			up = upCounter.Value()
+		}
+		if downCounter != nil {
+			down = downCounter.Value()
+		}
 	}
 	return up, down
 }
