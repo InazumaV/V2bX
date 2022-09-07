@@ -47,6 +47,12 @@ Nodes:
           Periodic: 60 # Report interval, sec.
           Timeout: 10 # Report timeout, sec.
           EnableIpSync: false # Enable online ip sync
+      EnableDynamicSpeedLimit: false # Enable dynamic speed limit
+      DynamicSpeedLimitConfig:
+        Periodic: 60 # Time to check the user traffic , sec.
+        Traffic: 0 # Traffic limit, MB
+        SpeedLimit: 0 # Speed limit, Mbps
+        ExpireTime: 0 # Time limit, sec.
       CertConfig:
         CertMode: dns # Option about how to get certificate: none, file, http, dns. Choose "none" will forcedly disable the tls config.
         CertDomain: "node1.test.com" # Domain to cert

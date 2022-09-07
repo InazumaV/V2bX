@@ -10,8 +10,7 @@ import (
 )
 
 func (p *Core) RemoveInbound(tag string) error {
-	err := p.ihm.RemoveHandler(context.Background(), tag)
-	return err
+	return p.ihm.RemoveHandler(context.Background(), tag)
 }
 
 func (p *Core) AddInbound(config *core.InboundHandlerConfig) error {
@@ -30,8 +29,7 @@ func (p *Core) AddInbound(config *core.InboundHandlerConfig) error {
 }
 
 func (p *Core) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo, userList []panel.UserInfo) error {
-	err := p.dispatcher.Limiter.AddInboundLimiter(tag, nodeInfo, userList)
-	return err
+	return p.dispatcher.Limiter.AddInboundLimiter(tag, nodeInfo, userList)
 }
 
 func (p *Core) GetInboundLimiter(tag string) (*dispatcher.InboundInfo, error) {
@@ -42,12 +40,10 @@ func (p *Core) GetInboundLimiter(tag string) (*dispatcher.InboundInfo, error) {
 	return nil, fmt.Errorf("not found limiter")
 }
 
-func (p *Core) UpdateInboundLimiter(tag string, nodeInfo *panel.NodeInfo, updatedUserList []panel.UserInfo) error {
-	err := p.dispatcher.Limiter.UpdateInboundLimiter(tag, nodeInfo, updatedUserList)
-	return err
+func (p *Core) UpdateInboundLimiter(tag string, nodeInfo *panel.NodeInfo, added, deleted []panel.UserInfo) error {
+	return p.dispatcher.Limiter.UpdateInboundLimiter(tag, nodeInfo, added, deleted)
 }
 
 func (p *Core) DeleteInboundLimiter(tag string) error {
-	err := p.dispatcher.Limiter.DeleteInboundLimiter(tag)
-	return err
+	return p.dispatcher.Limiter.DeleteInboundLimiter(tag)
 }

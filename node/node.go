@@ -19,16 +19,17 @@ import (
 )
 
 type Node struct {
-	server                  *core.Core
-	config                  *conf.ControllerConfig
-	clientInfo              panel.ClientInfo
-	apiClient               panel.Panel
-	nodeInfo                *panel.NodeInfo
-	Tag                     string
-	userList                []panel.UserInfo
-	nodeInfoMonitorPeriodic *task.Periodic
-	userReportPeriodic      *task.Periodic
-	onlineIpReportPeriodic  *task.Periodic
+	server                    *core.Core
+	config                    *conf.ControllerConfig
+	clientInfo                panel.ClientInfo
+	apiClient                 panel.Panel
+	nodeInfo                  *panel.NodeInfo
+	Tag                       string
+	userList                  []panel.UserInfo
+	nodeInfoMonitorPeriodic   *task.Periodic
+	userReportPeriodic        *task.Periodic
+	onlineIpReportPeriodic    *task.Periodic
+	DynamicSpeedLimitPeriodic *task.Periodic
 }
 
 // New return a Node service with default parameters.
@@ -113,10 +114,21 @@ func (c *Node) Start() error {
 			Execute:  c.onlineIpReport,
 		}
 		go func() {
-			time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
+			time.Sleep(time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second)
 			_ = c.onlineIpReportPeriodic.Start()
 		}()
 		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
+	}
+	if c.config.EnableDynamicSpeedLimit {
+		c.DynamicSpeedLimitPeriodic = &task.Periodic{
+			Interval: time.Duration(c.config.DynamicSpeedLimitConfig.Periodic) * time.Second,
+			Execute:  c.DynamicSpeedLimit,
+		}
+		go func() {
+			time.Sleep(time.Duration(c.config.DynamicSpeedLimitConfig.Periodic) * time.Second)
+			_ = c.DynamicSpeedLimitPeriodic.Start()
+		}()
+		log.Printf("[%s: %d] Start dynamic speed limit", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	}
 	runtime.GC()
 	return nil
@@ -252,8 +264,10 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			if err != nil {
 				log.Print(err)
 			}
+		}
+		if len(added) > 0 || len(deleted) > 0 {
 			// Update Limiter
-			if err := c.server.UpdateInboundLimiter(c.Tag, c.nodeInfo, added); err != nil {
+			if err := c.server.UpdateInboundLimiter(c.Tag, c.nodeInfo, added, deleted); err != nil {
 				log.Print(err)
 			}
 		}
@@ -365,6 +379,9 @@ func (c *Node) userInfoMonitor() (err error) {
 	for i := range c.userList {
 		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), true)
 		if up > 0 || down > 0 {
+			if c.config.EnableDynamicSpeedLimit {
+				c.userList[i].Traffic += up + down
+			}
 			userTraffic = append(userTraffic, panel.UserTraffic{
 				UID:      (c.userList)[i].UID,
 				Upload:   up,
@@ -419,6 +436,25 @@ func (c *Node) onlineIpReport() (err error) {
 		}
 	} else {
 		c.server.ClearOnlineIp(c.Tag)
+	}
+	return nil
+}
+
+func (c *Node) DynamicSpeedLimit() error {
+	if c.config.EnableDynamicSpeedLimit {
+		for i := range c.userList {
+			up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), false)
+			if c.userList[i].Traffic+down+up/1024/1024 > c.config.DynamicSpeedLimitConfig.Traffic {
+				err := c.server.UpdateUserSpeedLimit(c.Tag,
+					&c.userList[i],
+					c.config.DynamicSpeedLimitConfig.SpeedLimit,
+					time.Now().Add(time.Second*time.Duration(c.config.DynamicSpeedLimitConfig.ExpireTime)).Unix())
+				if err != nil {
+					log.Print(err)
+				}
+			}
+			c.userList[i].Traffic = 0
+		}
 	}
 	return nil
 }

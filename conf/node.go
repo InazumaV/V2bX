@@ -27,22 +27,31 @@ type IpReportConfig struct {
 	EnableIpSync bool   `mapstructure:"EnableIpSync"`
 }
 
+type DynamicSpeedLimitConfig struct {
+	Periodic   int    `mapstructure:"Periodic"`
+	Traffic    int64  `mapstructure:"Traffic"`
+	SpeedLimit uint64 `mapstructure:"SpeedLimit"`
+	ExpireTime int    `mapstructure:"ExpireTime"`
+}
+
 type ControllerConfig struct {
-	ListenIP             string            `mapstructure:"ListenIP"`
-	SendIP               string            `mapstructure:"SendIP"`
-	UpdatePeriodic       int               `mapstructure:"UpdatePeriodic"`
-	EnableDNS            bool              `mapstructure:"EnableDNS"`
-	DNSType              string            `mapstructure:"DNSType"`
-	DisableUploadTraffic bool              `mapstructure:"DisableUploadTraffic"`
-	DisableGetRule       bool              `mapstructure:"DisableGetRule"`
-	EnableProxyProtocol  bool              `mapstructure:"EnableProxyProtocol"`
-	EnableFallback       bool              `mapstructure:"EnableFallback"`
-	DisableIVCheck       bool              `mapstructure:"DisableIVCheck"`
-	DisableSniffing      bool              `mapstructure:"DisableSniffing"`
-	FallBackConfigs      []*FallBackConfig `mapstructure:"FallBackConfigs"`
-	EnableIpRecorder     bool              `mapstructure:"EnableIpRecorder"`
-	IpRecorderConfig     *IpReportConfig   `mapstructure:"IpRecorderConfig"`
-	CertConfig           *CertConfig       `mapstructure:"CertConfig"`
+	ListenIP                string                   `mapstructure:"ListenIP"`
+	SendIP                  string                   `mapstructure:"SendIP"`
+	UpdatePeriodic          int                      `mapstructure:"UpdatePeriodic"`
+	EnableDNS               bool                     `mapstructure:"EnableDNS"`
+	DNSType                 string                   `mapstructure:"DNSType"`
+	DisableUploadTraffic    bool                     `mapstructure:"DisableUploadTraffic"`
+	DisableGetRule          bool                     `mapstructure:"DisableGetRule"`
+	EnableProxyProtocol     bool                     `mapstructure:"EnableProxyProtocol"`
+	EnableFallback          bool                     `mapstructure:"EnableFallback"`
+	DisableIVCheck          bool                     `mapstructure:"DisableIVCheck"`
+	DisableSniffing         bool                     `mapstructure:"DisableSniffing"`
+	FallBackConfigs         []*FallBackConfig        `mapstructure:"FallBackConfigs"`
+	EnableIpRecorder        bool                     `mapstructure:"EnableIpRecorder"`
+	IpRecorderConfig        *IpReportConfig          `mapstructure:"IpRecorderConfig"`
+	EnableDynamicSpeedLimit bool                     `mapstructure:"EnableDynamicSpeedLimit"`
+	DynamicSpeedLimitConfig *DynamicSpeedLimitConfig `mapstructure:"DynamicSpeedLimitConfig"`
+	CertConfig              *CertConfig              `mapstructure:"CertConfig"`
 }
 
 type ApiConfig struct {

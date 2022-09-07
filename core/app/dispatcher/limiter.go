@@ -14,6 +14,7 @@ import (
 type UserInfo struct {
 	UID         int
 	SpeedLimit  uint64
+	ExpireTime  int64
 	DeviceLimit int
 }
 
@@ -51,7 +52,7 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo, userLi
 			(*userList)[i].DeviceLimit = nodeInfo.DeviceLimit
 		}*/
 		userMap.Store(fmt.Sprintf("%s|%s|%d", tag, (userList)[i].V2rayUser.Email, (userList)[i].UID),
-			UserInfo{
+			&UserInfo{
 				UID:         (userList)[i].UID,
 				SpeedLimit:  nodeInfo.SpeedLimit,
 				DeviceLimit: nodeInfo.DeviceLimit,
@@ -62,19 +63,23 @@ func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo, userLi
 	return nil
 }
 
-func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *panel.NodeInfo, updatedUserList []panel.UserInfo) error {
+func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *panel.NodeInfo, added, deleted []panel.UserInfo) error {
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		// Update User info
-		for i := range updatedUserList {
+		for i := range added {
 			inboundInfo.UserInfo.Store(fmt.Sprintf("%s|%s|%d", tag,
-				(updatedUserList)[i].V2rayUser.Email, (updatedUserList)[i].UID), UserInfo{
-				UID:         (updatedUserList)[i].UID,
+				(added)[i].V2rayUser.Email, (added)[i].UID), &UserInfo{
+				UID:         (added)[i].UID,
 				SpeedLimit:  nodeInfo.SpeedLimit,
 				DeviceLimit: nodeInfo.DeviceLimit,
 			})
+		}
+		for i := range deleted {
+			inboundInfo.UserInfo.Delete(fmt.Sprintf("%s|%s|%d", tag,
+				(deleted)[i].V2rayUser.Email, (deleted)[i].UID))
 			inboundInfo.SpeedLimiter.Delete(fmt.Sprintf("%s|%s|%d", tag,
-				(updatedUserList)[i].V2rayUser.Email, (updatedUserList)[i].UID)) // Delete old limiter bucket
+				(deleted)[i].V2rayUser.Email, (deleted)[i].UID)) // Delete limiter bucket
 		}
 	} else {
 		return fmt.Errorf("no such inbound in limiter: %s", tag)
@@ -85,6 +90,22 @@ func (l *Limiter) UpdateInboundLimiter(tag string, nodeInfo *panel.NodeInfo, upd
 func (l *Limiter) DeleteInboundLimiter(tag string) error {
 	l.InboundInfo.Delete(tag)
 	return nil
+}
+
+func (l *Limiter) UpdateUserSpeedLimit(tag string, userInfo *panel.UserInfo, limit uint64, expire int64) error {
+	if value, ok := l.InboundInfo.Load(tag); ok {
+		inboundInfo := value.(*InboundInfo)
+		if user, ok := inboundInfo.UserInfo.Load(fmt.Sprintf("%s|%s|%d", tag, userInfo.GetUserEmail(), userInfo.UID)); ok {
+			user.(*UserInfo).SpeedLimit = limit
+			user.(*UserInfo).ExpireTime = time.Now().Add(time.Duration(expire) * time.Second).Unix()
+			inboundInfo.SpeedLimiter.Delete(fmt.Sprintf("%s|%s|%d", tag, userInfo.GetUserEmail(), userInfo.UID))
+		} else {
+			return fmt.Errorf("no such user in limiter: %s", userInfo.GetUserEmail())
+		}
+		return nil
+	} else {
+		return fmt.Errorf("no such inbound in limiter: %s", tag)
+	}
 }
 
 type UserIpList struct {
@@ -109,7 +130,7 @@ func (l *Limiter) ListOnlineUserIp(tag string) ([]UserIpList, error) {
 			if len(ip) > 0 {
 				if u, ok := inboundInfo.UserInfo.Load(key.(string)); ok {
 					onlineUser = append(onlineUser, UserIpList{
-						Uid:    u.(UserInfo).UID,
+						Uid:    u.(*UserInfo).UID,
 						IpList: ip,
 					})
 				}
@@ -172,9 +193,15 @@ func (l *Limiter) CheckSpeedAndDeviceLimit(tag string, email string, ip string) 
 		nodeLimit := inboundInfo.NodeSpeedLimit
 		var userLimit uint64 = 0
 		var deviceLimit = 0
+		expired := false
 		if v, ok := inboundInfo.UserInfo.Load(email); ok {
-			u := v.(UserInfo)
-			userLimit = u.SpeedLimit
+			u := v.(*UserInfo)
+			if u.ExpireTime < time.Now().Unix() && u.ExpireTime != 0 {
+				userLimit = 0
+				expired = true
+			} else {
+				userLimit = u.SpeedLimit
+			}
 			deviceLimit = u.DeviceLimit
 		}
 		ipMap := new(sync.Map)
@@ -203,6 +230,10 @@ func (l *Limiter) CheckSpeedAndDeviceLimit(tag string, email string, ip string) 
 		if limit > 0 {
 			limiter := ratelimit.NewBucketWithQuantum(time.Second, int64(limit), int64(limit)) // Byte/s
 			if v, ok := inboundInfo.SpeedLimiter.LoadOrStore(email, limiter); ok {
+				if expired {
+					inboundInfo.SpeedLimiter.Store(email, limiter)
+					return limiter, true, false
+				}
 				bucket := v.(*ratelimit.Bucket)
 				return bucket, true, false
 			} else {

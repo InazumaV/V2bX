@@ -23,6 +23,7 @@ type UserInfo struct {
 	/*DeviceLimit int             `json:"device_limit"`
 	SpeedLimit  uint64          `json:"speed_limit"`*/
 	UID        int             `json:"id"`
+	Traffic    int64           `json:"-"`
 	Port       int             `json:"port"`
 	Cipher     string          `json:"cipher"`
 	Secret     string          `json:"secret"`
