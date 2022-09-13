@@ -80,8 +80,8 @@ func (p *Core) GetUserTraffic(email string, reset bool) (up int64, down int64) {
 	return up, down
 }
 
-func (p *Core) UpdateUserSpeedLimit(tag string, user *panel.UserInfo, speedLimit uint64, expire int64) error {
-	return p.dispatcher.Limiter.UpdateUserSpeedLimit(tag, user, speedLimit, expire)
+func (p *Core) AddUserSpeedLimit(tag string, user *panel.UserInfo, speedLimit uint64, expire int64) error {
+	return p.dispatcher.Limiter.AddUserSpeedLimit(tag, user, speedLimit, expire)
 }
 
 func (p *Core) ListOnlineIp(tag string) ([]dispatcher.UserIpList, error) {

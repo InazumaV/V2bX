@@ -59,17 +59,15 @@ func (c *Node) Start() error {
 		return err
 	}
 	// Update user
-	userInfo, err := c.apiClient.GetUserList()
+	c.userList, err = c.apiClient.GetUserList()
 	if err != nil {
 		return err
 	}
-	err = c.addNewUser(userInfo, newNodeInfo)
+	err = c.addNewUser(c.userList, newNodeInfo)
 	if err != nil {
 		return err
 	}
-	//sync controller userList
-	c.userList = userInfo
-	if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo, userInfo); err != nil {
+	if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo); err != nil {
 		log.Print(err)
 	}
 	// Add Rule Manager
@@ -240,7 +238,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 		}
 		newNodeInfo = nil
 		// Add Limiter
-		if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo, c.userList); err != nil {
+		if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo); err != nil {
 			log.Print(err)
 			return nil
 		}
@@ -267,7 +265,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 		}
 		if len(added) > 0 || len(deleted) > 0 {
 			// Update Limiter
-			if err := c.server.UpdateInboundLimiter(c.Tag, c.nodeInfo, added, deleted); err != nil {
+			if err := c.server.UpdateInboundLimiter(c.Tag, deleted); err != nil {
 				log.Print(err)
 			}
 		}
@@ -445,7 +443,7 @@ func (c *Node) DynamicSpeedLimit() error {
 		for i := range c.userList {
 			up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), false)
 			if c.userList[i].Traffic+down+up/1024/1024 > c.config.DynamicSpeedLimitConfig.Traffic {
-				err := c.server.UpdateUserSpeedLimit(c.Tag,
+				err := c.server.AddUserSpeedLimit(c.Tag,
 					&c.userList[i],
 					c.config.DynamicSpeedLimitConfig.SpeedLimit,
 					time.Now().Add(time.Second*time.Duration(c.config.DynamicSpeedLimitConfig.ExpireTime)).Unix())
