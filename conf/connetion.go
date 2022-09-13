@@ -1,11 +1,11 @@
 package conf
 
 type ConnetionConfig struct {
-	Handshake    uint32 `mapstructure:"handshake"`
-	ConnIdle     uint32 `mapstructure:"connIdle"`
-	UplinkOnly   uint32 `mapstructure:"uplinkOnly"`
-	DownlinkOnly uint32 `mapstructure:"downlinkOnly"`
-	BufferSize   int32  `mapstructure:"bufferSize"`
+	Handshake    uint32 `yaml:"handshake"`
+	ConnIdle     uint32 `yaml:"connIdle"`
+	UplinkOnly   uint32 `yaml:"uplinkOnly"`
+	DownlinkOnly uint32 `yaml:"downlinkOnly"`
+	BufferSize   int32  `yaml:"bufferSize"`
 }
 
 func NewConnetionConfig() *ConnetionConfig {

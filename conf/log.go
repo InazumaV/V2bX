@@ -1,9 +1,9 @@
 package conf
 
 type LogConfig struct {
-	Level      string `mapstructure:"Level"`
-	AccessPath string `mapstructure:"AccessPath"`
-	ErrorPath  string `mapstructure:"ErrorPath"`
+	Level      string `yaml:"Level"`
+	AccessPath string `yaml:"AccessPath"`
+	ErrorPath  string `yaml:"ErrorPath"`
 }
 
 func NewLogConfig() *LogConfig {

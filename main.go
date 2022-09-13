@@ -7,18 +7,15 @@ import (
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/node"
-	"github.com/spf13/viper"
 	"log"
 	"os"
 	"os/signal"
-	"path"
 	"runtime"
-	"strings"
 	"syscall"
 )
 
 var (
-	configFile   = flag.String("config", "", "Config file for XrayR.")
+	configFile   = flag.String("config", "/etc/V2bX/config.yml", "Config file for V2bX.")
 	printVersion = flag.Bool("version", false, "show version")
 )
 
@@ -32,34 +29,8 @@ func showVersion() {
 	fmt.Printf("%s %s (%s) \n", codename, version, intro)
 }
 
-func getConfig() *viper.Viper {
-	config := viper.New()
-	// Set custom path and name
-	if *configFile != "" {
-		configName := path.Base(*configFile)
-		configFileExt := path.Ext(*configFile)
-		configNameOnly := strings.TrimSuffix(configName, configFileExt)
-		configPath := path.Dir(*configFile)
-		config.SetConfigName(configNameOnly)
-		config.SetConfigType(strings.TrimPrefix(configFileExt, "."))
-		config.AddConfigPath(configPath)
-		// Set ASSET Path and Config Path for XrayR
-		os.Setenv("XRAY_LOCATION_ASSET", configPath)
-		os.Setenv("XRAY_LOCATION_CONFIG", configPath)
-	} else {
-		// Set default config path
-		config.SetConfigName("config")
-		config.SetConfigType("yml")
-		config.AddConfigPath(".")
-	}
-	if err := config.ReadInConfig(); err != nil {
-		log.Panicf("Fatal error config file: %s \n", err)
-	}
-	return config
-}
-
 func startNodes(nodes []*conf.NodeConfig, core *core.Core) error {
-	for i, _ := range nodes {
+	for i := range nodes {
 		var apiClient = panel.New(nodes[i].ApiConfig)
 		// Register controller service
 		err := node.New(core, apiClient, nodes[i].ControllerConfig).Start()
@@ -76,16 +47,15 @@ func main() {
 	if *printVersion {
 		return
 	}
-	config := getConfig()
-	c := conf.New()
-	err := config.Unmarshal(c)
+	config := conf.New()
+	err := config.LoadFromPath(*configFile)
 	if err != nil {
 		log.Panicf("can't unmarshal config file: %s \n", err)
 	}
-	x := core.New(c)
+	x := core.New(config)
 	x.Start()
 	defer x.Close()
-	err = startNodes(c.NodesConfig, x)
+	err = startNodes(config.NodesConfig, x)
 	if err != nil {
 		log.Panicf("run nodes error: %v", err)
 	}

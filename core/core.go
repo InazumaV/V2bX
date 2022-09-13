@@ -14,8 +14,8 @@ import (
 	"github.com/xtls/xray-core/features/routing"
 	statsFeature "github.com/xtls/xray-core/features/stats"
 	coreConf "github.com/xtls/xray-core/infra/conf"
-	io "io/ioutil"
 	"log"
+	"os"
 	"sync"
 )
 
@@ -55,10 +55,10 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 	// DNS config
 	coreDnsConfig := &coreConf.DNSConfig{}
 	if v2bXConfig.DnsConfigPath != "" {
-		if data, err := io.ReadFile(v2bXConfig.DnsConfigPath); err != nil {
+		if f, err := os.Open(v2bXConfig.DnsConfigPath); err != nil {
 			log.Panicf("Failed to read DNS config file at: %s", v2bXConfig.DnsConfigPath)
 		} else {
-			if err = json.Unmarshal(data, coreDnsConfig); err != nil {
+			if err = json.NewDecoder(f).Decode(coreDnsConfig); err != nil {
 				log.Panicf("Failed to unmarshal DNS config: %s", v2bXConfig.DnsConfigPath)
 			}
 		}
@@ -70,10 +70,10 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 	// Routing config
 	coreRouterConfig := &coreConf.RouterConfig{}
 	if v2bXConfig.RouteConfigPath != "" {
-		if data, err := io.ReadFile(v2bXConfig.RouteConfigPath); err != nil {
+		if f, err := os.Open(v2bXConfig.RouteConfigPath); err != nil {
 			log.Panicf("Failed to read Routing config file at: %s", v2bXConfig.RouteConfigPath)
 		} else {
-			if err = json.Unmarshal(data, coreRouterConfig); err != nil {
+			if err = json.NewDecoder(f).Decode(coreRouterConfig); err != nil {
 				log.Panicf("Failed to unmarshal Routing config: %s", v2bXConfig.RouteConfigPath)
 			}
 		}
@@ -85,10 +85,10 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 	// Custom Inbound config
 	var coreCustomInboundConfig []coreConf.InboundDetourConfig
 	if v2bXConfig.InboundConfigPath != "" {
-		if data, err := io.ReadFile(v2bXConfig.InboundConfigPath); err != nil {
+		if f, err := os.Open(v2bXConfig.InboundConfigPath); err != nil {
 			log.Panicf("Failed to read Custom Inbound config file at: %s", v2bXConfig.OutboundConfigPath)
 		} else {
-			if err = json.Unmarshal(data, &coreCustomInboundConfig); err != nil {
+			if err = json.NewDecoder(f).Decode(&coreCustomInboundConfig); err != nil {
 				log.Panicf("Failed to unmarshal Custom Inbound config: %s", v2bXConfig.OutboundConfigPath)
 			}
 		}
@@ -104,10 +104,10 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 	// Custom Outbound config
 	var coreCustomOutboundConfig []coreConf.OutboundDetourConfig
 	if v2bXConfig.OutboundConfigPath != "" {
-		if data, err := io.ReadFile(v2bXConfig.OutboundConfigPath); err != nil {
+		if f, err := os.Open(v2bXConfig.OutboundConfigPath); err != nil {
 			log.Panicf("Failed to read Custom Outbound config file at: %s", v2bXConfig.OutboundConfigPath)
 		} else {
-			if err = json.Unmarshal(data, &coreCustomOutboundConfig); err != nil {
+			if err = json.NewDecoder(f).Decode(&coreCustomOutboundConfig); err != nil {
 				log.Panicf("Failed to unmarshal Custom Outbound config: %s", v2bXConfig.OutboundConfigPath)
 			}
 		}
