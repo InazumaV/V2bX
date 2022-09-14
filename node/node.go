@@ -168,8 +168,8 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	if newNodeInfo != nil {
 		if c.nodeInfo.SS == nil || !reflect.DeepEqual(c.nodeInfo.SS, newNodeInfo.SS) {
 			// Remove old tag
-			oldtag := c.Tag
-			err := c.removeOldTag(oldtag)
+			oldTag := c.Tag
+			err := c.removeOldTag(oldTag)
 			if err != nil {
 				log.Print(err)
 				return nil
@@ -184,7 +184,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			}
 			nodeInfoChanged = true
 			// Remove Old limiter
-			if err = c.server.DeleteInboundLimiter(oldtag); err != nil {
+			if err = c.server.DeleteInboundLimiter(oldTag); err != nil {
 				log.Print(err)
 				return nil
 			}
@@ -278,12 +278,12 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	return nil
 }
 
-func (c *Node) removeOldTag(oldtag string) (err error) {
-	err = c.server.RemoveInbound(oldtag)
+func (c *Node) removeOldTag(oldTag string) (err error) {
+	err = c.server.RemoveInbound(oldTag)
 	if err != nil {
 		return err
 	}
-	err = c.server.RemoveOutbound(oldtag)
+	err = c.server.RemoveOutbound(oldTag)
 	if err != nil {
 		return err
 	}

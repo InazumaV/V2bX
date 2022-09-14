@@ -9,7 +9,6 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/juju/ratelimit v1.0.2
-	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli v1.22.10
 	github.com/xtls/xray-core v1.5.10
