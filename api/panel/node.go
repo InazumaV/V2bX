@@ -93,7 +93,7 @@ type TrojanConfig struct {
 	} `json:"ssl"`
 }
 
-// GetNodeInfo will pull NodeInfo Config from sspanel
+// GetNodeInfo will pull NodeInfo Config from v2board
 func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	var path string
 	var res *resty.Response
@@ -182,7 +182,7 @@ func (c *Client) GetNodeRule() (*DetectRule, error) {
 	return ruleList, nil
 }
 
-// ParseTrojanNodeResponse parse the response for the given nodeinfor format
+// ParseTrojanNodeResponse parse the response for the given node info format
 func (c *Client) ParseTrojanNodeResponse(body []byte) (*NodeInfo, error) {
 	node := &NodeInfo{Trojan: &TrojanConfig{}}
 	var err = json.Unmarshal(body, node.Trojan)
@@ -197,7 +197,7 @@ func (c *Client) ParseTrojanNodeResponse(body []byte) (*NodeInfo, error) {
 	return node, nil
 }
 
-// ParseSSNodeResponse parse the response for the given nodeinfor format
+// ParseSSNodeResponse parse the response for the given node info format
 func (c *Client) ParseSSNodeResponse() (*NodeInfo, error) {
 	var port int
 	var method string

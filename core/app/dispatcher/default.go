@@ -455,14 +455,7 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	sessionInbound := session.InboundFromContext(ctx)
 	// Whether the inbound connection contains a user
 	if sessionInbound.User != nil {
-		if d.RuleManager.ProtocolDetect(sessionInbound.Tag, protocol) {
-			newError(fmt.Sprintf("User %s access %s reject by protocol rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()
-			newError("destination is reject by protocol rule")
-			common.Close(link.Writer)
-			common.Interrupt(link.Reader)
-			return
-		}
-		if d.RuleManager.Detect(sessionInbound.Tag, destination.String(), sessionInbound.User.Email) {
+		if d.RuleManager.Detect(sessionInbound.Tag, destination.String(), protocol) {
 			newError(fmt.Sprintf("User %s access %s reject by rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()
 			newError("destination is reject by rule")
 			common.Close(link.Writer)
