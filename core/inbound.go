@@ -47,3 +47,7 @@ func (p *Core) UpdateInboundLimiter(tag string, deleted []panel.UserInfo) error 
 func (p *Core) DeleteInboundLimiter(tag string) error {
 	return p.dispatcher.Limiter.DeleteInboundLimiter(tag)
 }
+
+func (p *Core) UpdateRule(tag string, newRuleList *panel.DetectRule) error {
+	return p.dispatcher.RuleManager.UpdateRule(tag, newRuleList)
+}

@@ -14,32 +14,29 @@ import (
 )
 
 type DetectRule struct {
+	ProtocolRule    []string
+	DestinationRule []DestinationRule
+}
+type DestinationRule struct {
 	ID      int
 	Pattern *regexp.Regexp
 }
-type DetectResult struct {
-	UID    int
-	RuleID int
-}
 
 // readLocalRuleList reads the local rule list file
-func readLocalRuleList(path string) (LocalRuleList []DetectRule) {
-	LocalRuleList = make([]DetectRule, 0)
+func readLocalRuleList(path string) (LocalRuleList *DetectRule) {
+	LocalRuleList = &DetectRule{}
 	if path != "" {
 		// open the file
 		file, err := os.Open(path)
-
 		//handle errors while opening
 		if err != nil {
 			log.Printf("Error when opening file: %s", err)
-			return LocalRuleList
+			return
 		}
-
 		fileScanner := bufio.NewScanner(file)
-
 		// read line by line
 		for fileScanner.Scan() {
-			LocalRuleList = append(LocalRuleList, DetectRule{
+			LocalRuleList.DestinationRule = append(LocalRuleList.DestinationRule, DestinationRule{
 				ID:      -1,
 				Pattern: regexp.MustCompile(fileScanner.Text()),
 			})
@@ -47,11 +44,10 @@ func readLocalRuleList(path string) (LocalRuleList []DetectRule) {
 		// handle first encountered error while reading
 		if err := fileScanner.Err(); err != nil {
 			log.Fatalf("Error while reading file: %s", err)
-			return []DetectRule{}
+			return
 		}
 	}
-
-	return LocalRuleList
+	return
 }
 
 type NodeInfo struct {
@@ -159,32 +155,31 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	return nodeInfo, nil
 }
 
-func (c *Client) GetNodeRule() ([]DetectRule, []string, error) {
+func (c *Client) GetNodeRule() (*DetectRule, error) {
 	ruleList := c.LocalRuleList
 	if c.NodeType != "V2ray" || c.RemoteRuleCache == nil {
-		return ruleList, nil, nil
+		return nil, nil
 	}
 	// V2board only support the rule for v2ray
 	// fix: reuse config response
 	c.access.Lock()
 	defer c.access.Unlock()
-	if len(*c.RemoteRuleCache) >= 2 {
-		for i, rule := range (*c.RemoteRuleCache)[1].Domain {
-			ruleListItem := DetectRule{
+	if len(c.RemoteRuleCache) >= 2 {
+		for i, rule := range (c.RemoteRuleCache)[1].Domain {
+			ruleListItem := DestinationRule{
 				ID:      i,
 				Pattern: regexp.MustCompile(rule),
 			}
-			ruleList = append(ruleList, ruleListItem)
+			ruleList.DestinationRule = append(ruleList.DestinationRule, ruleListItem)
 		}
 	}
-	var protocolList []string
-	if len(*c.RemoteRuleCache) >= 3 {
-		for _, str := range (*c.RemoteRuleCache)[2].Protocol {
-			protocolList = append(protocolList, str)
+	if len(c.RemoteRuleCache) >= 3 {
+		for _, str := range (c.RemoteRuleCache)[2].Protocol {
+			ruleList.ProtocolRule = append(ruleList.ProtocolRule, str)
 		}
 	}
 	c.RemoteRuleCache = nil
-	return ruleList, protocolList, nil
+	return ruleList, nil
 }
 
 // ParseTrojanNodeResponse parse the response for the given nodeinfor format
@@ -246,7 +241,7 @@ func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule boo
 		return nil, fmt.Errorf("unmarshal nodeinfo error: %s", err)
 	}
 	if parseRule {
-		c.RemoteRuleCache = &[]Rule{}
+		c.RemoteRuleCache = []Rule{}
 		err := json.Unmarshal(node.V2ray.Routing.Rules, c.RemoteRuleCache)
 		if err != nil {
 			log.Println(err)

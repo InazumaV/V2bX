@@ -3,26 +3,26 @@ package node_test
 import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/core"
+	_ "github.com/Yuzuki616/V2bX/core/distro/all"
 	. "github.com/Yuzuki616/V2bX/node"
+	xCore "github.com/xtls/xray-core/core"
+	coreConf "github.com/xtls/xray-core/infra/conf"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 	"testing"
-
-	"github.com/Yuzuki616/V2bX/api"
-	_ "github.com/Yuzuki616/V2bX/example/distro/all"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/infra/conf"
 )
 
 func TestController(t *testing.T) {
-	serverConfig := &conf.Config{
-		Stats:     &conf.StatsConfig{},
-		LogConfig: &conf.LogConfig{LogLevel: "debug"},
+	serverConfig := &coreConf.Config{
+		Stats:     &coreConf.StatsConfig{},
+		LogConfig: &coreConf.LogConfig{LogLevel: "debug"},
 	}
-	policyConfig := &conf.PolicyConfig{}
-	policyConfig.Levels = map[uint32]*conf.Policy{0: &conf.Policy{
+	policyConfig := &coreConf.PolicyConfig{}
+	policyConfig.Levels = map[uint32]*coreConf.Policy{0: &coreConf.Policy{
 		StatsUserUplink:   true,
 		StatsUserDownlink: true,
 	}}
@@ -37,7 +37,7 @@ func TestController(t *testing.T) {
 	// 		serial.ToTypedMessage(&stats.Config{}),
 	// 	}}
 
-	server, err := core.New(config)
+	server, err := xCore.New(config)
 	defer server.Close()
 	if err != nil {
 		t.Errorf("failed to create instance: %s", err)
@@ -45,35 +45,36 @@ func TestController(t *testing.T) {
 	if err = server.Start(); err != nil {
 		t.Errorf("Failed to start instance: %s", err)
 	}
-	certConfig := &CertConfig{
+	certConfig := &conf.CertConfig{
 		CertMode:   "http",
 		CertDomain: "test.ss.tk",
 		Provider:   "alidns",
 		Email:      "ss@ss.com",
 	}
-	controlerconfig := &Config{
+	controlerconfig := &conf.ControllerConfig{
 		UpdatePeriodic: 5,
 		CertConfig:     certConfig,
 	}
-	apiConfig := &api.Config{
+	apiConfig := &conf.ApiConfig{
 		APIHost:  "http://127.0.0.1:667",
 		Key:      "123",
 		NodeID:   41,
 		NodeType: "V2ray",
 	}
 	apiclient := panel.New(apiConfig)
-	c := New(server, apiclient, controlerconfig)
+	c := &core.Core{Server: server}
+	c.Start()
+	node := New(c, apiclient, controlerconfig)
 	fmt.Println("Sleep 1s")
-	err = c.Start()
+	err = node.Start()
 	if err != nil {
 		t.Error(err)
 	}
 	//Explicitly triggering GC to remove garbage from config loading.
 	runtime.GC()
-
 	{
 		osSignals := make(chan os.Signal, 1)
-		signal.Notify(osSignals, os.Interrupt, os.Kill, syscall.SIGTERM)
+		signal.Notify(osSignals, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM)
 		<-osSignals
 	}
 }
