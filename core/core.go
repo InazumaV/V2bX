@@ -167,6 +167,23 @@ func (p *Core) Start() error {
 func (p *Core) Close() {
 	p.access.Lock()
 	defer p.access.Unlock()
-	p.Server.Close()
+	p.ihm = nil
+	p.ohm = nil
+	p.shm = nil
+	p.dispatcher = nil
+	err := p.Server.Close()
+	if err != nil {
+		log.Panicf("failed to close xray core: %s", err)
+	}
 	return
+}
+
+func (p *Core) Restart(v2bXConfig *conf.Conf) error {
+	p.Close()
+	p.Server = getCore(v2bXConfig)
+	err := p.Start()
+	if err != nil {
+		return err
+	}
+	return nil
 }

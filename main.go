@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/node"
@@ -20,25 +19,13 @@ var (
 )
 
 var (
-	version  = "v0.0.7_beta"
+	version  = "v0.0.7_beta2"
 	codename = "V2bX"
 	intro    = "A V2board backend based on Xray-core"
 )
 
 func showVersion() {
 	fmt.Printf("%s %s (%s) \n", codename, version, intro)
-}
-
-func startNodes(nodes []*conf.NodeConfig, core *core.Core) error {
-	for i := range nodes {
-		var apiClient = panel.New(nodes[i].ApiConfig)
-		// Register controller service
-		err := node.New(core, apiClient, nodes[i].ControllerConfig).Start()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func main() {
@@ -59,9 +46,25 @@ func main() {
 		log.Panicf("Failed to start core: %s", err)
 	}
 	defer x.Close()
-	err = startNodes(config.NodesConfig, x)
+	nodes := node.New()
+	err = nodes.Start(config.NodesConfig, x)
 	if err != nil {
 		log.Panicf("run nodes error: %s", err)
+	}
+	err = config.Watch(*configFile, func() {
+		nodes.Close()
+		err = x.Restart(config)
+		if err != nil {
+			log.Panicf("Failed to restart core: %s", err)
+		}
+		err = nodes.Start(config.NodesConfig, x)
+		if err != nil {
+			log.Panicf("run nodes error: %s", err)
+		}
+		runtime.GC()
+	})
+	if err != nil {
+		log.Panicf("watch config file error: %s", err)
 	}
 	//Explicitly triggering GC to remove garbage from config loading.
 	runtime.GC()

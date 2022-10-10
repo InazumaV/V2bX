@@ -3,7 +3,7 @@ package cmd
 import (
 	"crypto"
 	"crypto/x509"
-	"github.com/Yuzuki616/V2bX/node/legoCmd/log"
+	"github.com/Yuzuki616/V2bX/node/controller/legoCmd/log"
 	"time"
 
 	"github.com/go-acme/lego/v4/certcrypto"

@@ -1,10 +1,10 @@
-package node
+package controller
 
 import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
-	"github.com/Yuzuki616/V2bX/node/legoCmd"
+	"github.com/Yuzuki616/V2bX/node/controller/legoCmd"
 	"github.com/go-resty/resty/v2"
 	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/protocol"

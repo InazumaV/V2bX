@@ -1,7 +1,7 @@
 package legoCmd_test
 
 import (
-	"github.com/Yuzuki616/V2bX/node/legoCmd"
+	"github.com/Yuzuki616/V2bX/node/controller/legoCmd"
 	"testing"
 )
 

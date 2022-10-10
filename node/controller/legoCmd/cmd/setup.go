@@ -4,7 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/node/legoCmd/log"
+	"github.com/Yuzuki616/V2bX/node/controller/legoCmd/log"
 	"io/ioutil"
 	"os"
 	"strings"

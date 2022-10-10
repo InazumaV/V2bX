@@ -2,7 +2,9 @@ package conf
 
 import (
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
+	"log"
 	"os"
 	"path"
 )
@@ -35,11 +37,46 @@ func (p *Conf) LoadFromPath(filePath string) error {
 	os.Setenv("XRAY_LOCATION_CONFIG", confPath)
 	f, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("open config file error: %v", err)
+		return fmt.Errorf("open config file error: %s", err)
 	}
 	err = yaml.NewDecoder(f).Decode(p)
 	if err != nil {
-		return fmt.Errorf("decode config error: %v", err)
+		return fmt.Errorf("decode config error: %s", err)
+	}
+	return nil
+}
+
+func (p *Conf) Watch(filePath string, reload func()) error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("new watcher error: %s", err)
+	}
+	go func() {
+		defer watcher.Close()
+		for {
+			select {
+			case event := <-watcher.Events:
+				if event.Op&fsnotify.Chmod == fsnotify.Chmod {
+					if event.Name == filePath {
+						log.Println("config file changed, reloading...")
+						err := p.LoadFromPath(filePath)
+						if err != nil {
+							log.Printf("reload config error: %s", err)
+						}
+						log.Println("reload config success")
+						reload()
+					}
+				}
+			case err := <-watcher.Errors:
+				if err != nil {
+					log.Panicf("watcher error: %s", err)
+				}
+			}
+		}
+	}()
+	err = watcher.Add(path.Dir(filePath))
+	if err != nil {
+		return fmt.Errorf("watch file error: %s", err)
 	}
 	return nil
 }
