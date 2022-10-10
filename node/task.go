@@ -9,7 +9,6 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/protocol"
 	"log"
-	"math"
 	"reflect"
 	"runtime"
 	"time"
@@ -118,6 +117,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			}
 		}
 		if len(added) > 0 || len(deleted) > 0 {
+			defer runtime.GC()
 			// Update Limiter
 			if err := c.server.UpdateInboundLimiter(c.Tag, deleted); err != nil {
 				log.Print(err)
@@ -127,7 +127,6 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			len(deleted), len(added))
 		c.userList = newUserInfo
 		newUserInfo = nil
-		runtime.GC()
 	}
 	return nil
 }
@@ -145,7 +144,7 @@ func (c *Node) removeOldTag(oldTag string) (err error) {
 }
 
 func (c *Node) addNewTag(newNodeInfo *panel.NodeInfo) (err error) {
-	inboundConfig, err := InboundBuilder(c.config, newNodeInfo, c.Tag)
+	inboundConfig, err := buildInbound(c.config, newNodeInfo, c.Tag)
 	if err != nil {
 		return err
 	}
@@ -154,7 +153,7 @@ func (c *Node) addNewTag(newNodeInfo *panel.NodeInfo) (err error) {
 
 		return err
 	}
-	outBoundConfig, err := OutboundBuilder(c.config, newNodeInfo, c.Tag)
+	outBoundConfig, err := buildOutbound(c.config, newNodeInfo, c.Tag)
 	if err != nil {
 
 		return err
@@ -173,14 +172,7 @@ func (c *Node) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (
 		if nodeInfo.EnableVless {
 			users = c.buildVlessUsers(userInfo)
 		} else {
-			alterID := 0
-			alterID = (userInfo)[0].V2rayUser.AlterId
-			if alterID >= 0 && alterID < math.MaxUint16 {
-				users = c.buildVmessUsers(userInfo, uint16(alterID))
-			} else {
-				users = c.buildVmessUsers(userInfo, 0)
-				return fmt.Errorf("AlterID should between 0 to 1<<16 - 1, set it to 0 for now")
-			}
+			users = c.buildVmessUsers(userInfo)
 		}
 	} else if nodeInfo.NodeType == "Trojan" {
 		users = c.buildTrojanUsers(userInfo)
@@ -225,7 +217,7 @@ func compareUserList(old, new []panel.UserInfo) (deleted, added []panel.UserInfo
 	return deleted, added
 }
 
-func (c *Node) userInfoMonitor() (err error) {
+func (c *Node) reportUserTraffic() (err error) {
 	// Get User traffic
 	userTraffic := make([]panel.UserTraffic, 0)
 	for i := range c.userList {
@@ -243,7 +235,7 @@ func (c *Node) userInfoMonitor() (err error) {
 	if len(userTraffic) > 0 && !c.config.DisableUploadTraffic {
 		err = c.apiClient.ReportUserTraffic(userTraffic)
 		if err != nil {
-			log.Print(err)
+			log.Printf("Report user traffic faild: %s", err)
 		} else {
 			log.Printf("[%s: %d] Report %d online users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(userTraffic))
 		}
@@ -256,7 +248,7 @@ func (c *Node) userInfoMonitor() (err error) {
 	return nil
 }
 
-func (c *Node) onlineIpReport() (err error) {
+func (c *Node) reportOnlineIp() (err error) {
 	onlineIp, err := c.server.ListOnlineIp(c.Tag)
 	if err != nil {
 		log.Print(err)
@@ -292,7 +284,7 @@ func (c *Node) onlineIpReport() (err error) {
 	return nil
 }
 
-func (c *Node) DynamicSpeedLimit() error {
+func (c *Node) dynamicSpeedLimit() error {
 	if c.config.EnableDynamicSpeedLimit {
 		for i := range c.userList {
 			up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), false)

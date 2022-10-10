@@ -35,7 +35,7 @@ func startNodes(nodes []*conf.NodeConfig, core *core.Core) error {
 		// Register controller service
 		err := node.New(core, apiClient, nodes[i].ControllerConfig).Start()
 		if err != nil {
-			return fmt.Errorf("start node controller error: %v", err)
+			return err
 		}
 	}
 	return nil
@@ -52,12 +52,16 @@ func main() {
 	if err != nil {
 		log.Panicf("can't unmarshal config file: %s \n", err)
 	}
+	log.Println("Start V2bX...")
 	x := core.New(config)
-	x.Start()
+	err = x.Start()
+	if err != nil {
+		log.Panicf("Failed to start core: %s", err)
+	}
 	defer x.Close()
 	err = startNodes(config.NodesConfig, x)
 	if err != nil {
-		log.Panicf("run nodes error: %v", err)
+		log.Panicf("run nodes error: %s", err)
 	}
 	//Explicitly triggering GC to remove garbage from config loading.
 	runtime.GC()

@@ -1,13 +1,13 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
 	"github.com/xtls/xray-core/common/task"
 	"log"
-	"runtime"
 	"time"
 )
 
@@ -41,27 +41,29 @@ func (c *Node) Start() error {
 	// First fetch Node Info
 	newNodeInfo, err := c.apiClient.GetNodeInfo()
 	if err != nil {
-		return err
+		return fmt.Errorf("get node info failed: %s", err)
 	}
 	c.nodeInfo = newNodeInfo
 	c.Tag = c.buildNodeTag()
 	// Add new tag
 	err = c.addNewTag(newNodeInfo)
 	if err != nil {
-		log.Panic(err)
-		return err
+		return fmt.Errorf("add new tag failed: %s", err)
 	}
 	// Update user
 	c.userList, err = c.apiClient.GetUserList()
 	if err != nil {
-		return err
+		return fmt.Errorf("get user list failed: %s", err)
+	}
+	if len(c.userList) == 0 {
+		return errors.New("add users failed: not have any user")
 	}
 	err = c.addNewUser(c.userList, newNodeInfo)
 	if err != nil {
 		return err
 	}
 	if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo); err != nil {
-		log.Print(err)
+		return fmt.Errorf("add inbound limiter failed: %s", err)
 	}
 	// Add Rule Manager
 	if !c.config.DisableGetRule {
@@ -69,17 +71,19 @@ func (c *Node) Start() error {
 			log.Printf("Get rule list filed: %s", err)
 		} else if ruleList != nil {
 			if err := c.server.UpdateRule(c.Tag, ruleList); err != nil {
-				log.Print(err)
+				log.Printf("Update rule filed: %s", err)
 			}
 		}
 	}
+	// fetch node info task
 	c.nodeInfoMonitorPeriodic = &task.Periodic{
 		Interval: time.Duration(c.config.UpdatePeriodic) * time.Second,
 		Execute:  c.nodeInfoMonitor,
 	}
+	// fetch user list task
 	c.userReportPeriodic = &task.Periodic{
 		Interval: time.Duration(c.config.UpdatePeriodic) * time.Second,
-		Execute:  c.userInfoMonitor,
+		Execute:  c.reportUserTraffic,
 	}
 	log.Printf("[%s: %d] Start monitor node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	// delay to start nodeInfoMonitor
@@ -95,9 +99,10 @@ func (c *Node) Start() error {
 		_ = c.userReportPeriodic.Start()
 	}()
 	if c.config.EnableIpRecorder {
+		// report and fetch online ip list task
 		c.onlineIpReportPeriodic = &task.Periodic{
 			Interval: time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second,
-			Execute:  c.onlineIpReport,
+			Execute:  c.reportOnlineIp,
 		}
 		go func() {
 			time.Sleep(time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second)
@@ -106,9 +111,10 @@ func (c *Node) Start() error {
 		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	}
 	if c.config.EnableDynamicSpeedLimit {
+		// Check dynamic speed limit task
 		c.DynamicSpeedLimitPeriodic = &task.Periodic{
 			Interval: time.Duration(c.config.DynamicSpeedLimitConfig.Periodic) * time.Second,
-			Execute:  c.DynamicSpeedLimit,
+			Execute:  c.dynamicSpeedLimit,
 		}
 		go func() {
 			time.Sleep(time.Duration(c.config.DynamicSpeedLimitConfig.Periodic) * time.Second)
@@ -116,7 +122,6 @@ func (c *Node) Start() error {
 		}()
 		log.Printf("[%s: %d] Start dynamic speed limit", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	}
-	runtime.GC()
 	return nil
 }
 
@@ -139,6 +144,12 @@ func (c *Node) Close() error {
 		err := c.onlineIpReportPeriodic.Close()
 		if err != nil {
 			log.Panicf("online ip report periodic close failed: %s", err)
+		}
+	}
+	if c.DynamicSpeedLimitPeriodic != nil {
+		err := c.DynamicSpeedLimitPeriodic.Close()
+		if err != nil {
+			log.Panicf("dynamic speed limit periodic close failed: %s", err)
 		}
 	}
 	return nil

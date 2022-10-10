@@ -150,18 +150,17 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 }
 
 // Start the Core
-func (p *Core) Start() {
+func (p *Core) Start() error {
 	p.access.Lock()
 	defer p.access.Unlock()
-	log.Print("Start the panel..")
 	if err := p.Server.Start(); err != nil {
-		log.Panicf("Failed to start instance: %s", err)
+		return err
 	}
 	p.shm = p.Server.GetFeature(statsFeature.ManagerType()).(statsFeature.Manager)
 	p.ihm = p.Server.GetFeature(inbound.ManagerType()).(inbound.Manager)
 	p.ohm = p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
 	p.dispatcher = p.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)
-	return
+	return nil
 }
 
 // Close  the core

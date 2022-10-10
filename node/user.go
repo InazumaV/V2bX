@@ -13,10 +13,10 @@ import (
 	"github.com/xtls/xray-core/proxy/vless"
 )
 
-func (c *Node) buildVmessUsers(userInfo []panel.UserInfo, serverAlterID uint16) (users []*protocol.User) {
+func (c *Node) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i, user := range userInfo {
-		users[i] = c.buildVmessUser(&user, serverAlterID)
+		users[i] = c.buildVmessUser(&user, 0)
 	}
 	return users
 }
@@ -27,12 +27,11 @@ func (c *Node) buildVmessUser(userInfo *panel.UserInfo, serverAlterID uint16) (u
 		AlterIds: serverAlterID,
 		Security: "auto",
 	}
-	user = &protocol.User{
+	return &protocol.User{
 		Level:   0,
 		Email:   c.buildUserTag(userInfo), // Uid: InboundTag|email|uid
 		Account: serial.ToTypedMessage(vmessAccount.Build()),
 	}
-	return user
 }
 
 func (c *Node) buildVlessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
@@ -48,12 +47,11 @@ func (c *Node) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
 		Id:   userInfo.V2rayUser.Uuid,
 		Flow: "xtls-rprx-direct",
 	}
-	user = &protocol.User{
+	return &protocol.User{
 		Level:   0,
 		Email:   c.buildUserTag(userInfo),
 		Account: serial.ToTypedMessage(vlessAccount),
 	}
-	return user
 }
 
 func (c *Node) buildTrojanUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
@@ -69,12 +67,11 @@ func (c *Node) buildTrojanUser(userInfo *panel.UserInfo) (user *protocol.User) {
 		Password: userInfo.TrojanUser.Password,
 		Flow:     "xtls-rprx-direct",
 	}
-	user = &protocol.User{
+	return &protocol.User{
 		Level:   0,
 		Email:   c.buildUserTag(userInfo),
 		Account: serial.ToTypedMessage(trojanAccount),
 	}
-	return user
 }
 
 func getCipherFromString(c string) shadowsocks.CipherType {
@@ -105,12 +102,11 @@ func (c *Node) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherTy
 		Password:   userInfo.Secret,
 		CipherType: cypher,
 	}
-	user = &protocol.User{
+	return &protocol.User{
 		Level:   0,
 		Email:   c.buildUserTag(userInfo),
 		Account: serial.ToTypedMessage(ssAccount),
 	}
-	return user
 }
 
 func (c *Node) buildUserTag(user *panel.UserInfo) string {

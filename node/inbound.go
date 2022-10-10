@@ -13,17 +13,19 @@ import (
 	coreConf "github.com/xtls/xray-core/infra/conf"
 )
 
-//InboundBuilder build Inbound config for different protocol
-func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
+// buildInbound build Inbound config for different protocol
+func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
 	var proxySetting interface{}
 	if nodeInfo.NodeType == "V2ray" {
 		defer func() {
+			//Clear v2ray config
 			nodeInfo.V2ray = nil
 		}()
 		if nodeInfo.EnableVless {
+			//Set vless
 			nodeInfo.V2ray.Inbounds[0].Protocol = "vless"
-			// Enable fallback
 			if config.EnableFallback {
+				// Set fallback
 				fallbackConfigs, err := buildVlessFallbacks(config.FallBackConfigs)
 				if err == nil {
 					proxySetting = &coreConf.VLessInboundConfig{
@@ -39,19 +41,21 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 				}
 			}
 		} else {
+			// Set vmess
 			nodeInfo.V2ray.Inbounds[0].Protocol = "vmess"
 			proxySetting = &coreConf.VMessInboundConfig{}
 		}
 	} else if nodeInfo.NodeType == "Trojan" {
 		defer func() {
+			//clear trojan and v2ray config
 			nodeInfo.V2ray = nil
 			nodeInfo.Trojan = nil
 		}()
 		nodeInfo.V2ray = &panel.V2rayConfig{}
 		nodeInfo.V2ray.Inbounds = make([]coreConf.InboundDetourConfig, 1)
 		nodeInfo.V2ray.Inbounds[0].Protocol = "trojan"
-		// Enable fallback
 		if config.EnableFallback {
+			// Set fallback
 			fallbackConfigs, err := buildTrojanFallbacks(config.FallBackConfigs)
 			if err == nil {
 				proxySetting = &coreConf.TrojanServerConfig{
@@ -70,6 +74,7 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 		nodeInfo.V2ray.Inbounds[0].StreamSetting = &coreConf.StreamConfig{Network: &t}
 	} else if nodeInfo.NodeType == "Shadowsocks" {
 		defer func() {
+			//Clear v2ray config
 			nodeInfo.V2ray = nil
 		}()
 		nodeInfo.V2ray = &panel.V2rayConfig{}
@@ -94,18 +99,7 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 		nodeInfo.V2ray.Inbounds[0].StreamSetting = &coreConf.StreamConfig{Network: &t}
 	} else {
 		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks", nodeInfo.NodeType)
-	} /*else if nodeInfo.NodeType == "dokodemo-door" {
-		nodeInfo.V2ray = &api.V2rayConfig{}
-		nodeInfo.V2ray.Inbounds = make([]coreConf.InboundDetourConfig, 1)
-		nodeInfo.V2ray.Inbounds[0].Protocol = "dokodemo-door"
-		proxySetting = struct {
-			Host        string   `json:"address"`
-			NetworkList []string `json:"network"`
-		}{
-			Host:        "v1.mux.cool",
-			NetworkList: []string{"tcp", "udp"},
-		}
-	}*/
+	}
 	// Build Listen IP address
 	ipAddress := net.ParseAddress(config.ListenIP)
 	nodeInfo.V2ray.Inbounds[0].ListenOn = &coreConf.Address{Address: ipAddress}
@@ -122,7 +116,6 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 	var setting json.RawMessage
 
 	// Build Protocol and Protocol setting
-
 	setting, err := json.Marshal(proxySetting)
 	if err != nil {
 		return nil, fmt.Errorf("marshal proxy %s config fialed: %s", nodeInfo.NodeType, err)
@@ -133,12 +126,12 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 		} else {
 			tcpSetting := &coreConf.TCPConfig{
 				AcceptProxyProtocol: config.EnableProxyProtocol,
-			}
+			} //Enable proxy protocol
 			nodeInfo.V2ray.Inbounds[0].StreamSetting.TCPSettings = tcpSetting
 		}
 	} else if *nodeInfo.V2ray.Inbounds[0].StreamSetting.Network == "ws" {
 		nodeInfo.V2ray.Inbounds[0].StreamSetting.WSSettings = &coreConf.WebSocketConfig{
-			AcceptProxyProtocol: config.EnableProxyProtocol}
+			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
 	}
 	// Build TLS and XTLS settings
 	if nodeInfo.EnableTls && config.CertConfig.CertMode != "none" {
@@ -152,7 +145,6 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 				RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
 			}
 			tlsSettings.Certs = append(tlsSettings.Certs, &coreConf.TLSCertConfig{CertFile: certFile, KeyFile: keyFile, OcspStapling: 3600})
-
 			nodeInfo.V2ray.Inbounds[0].StreamSetting.TLSSettings = tlsSettings
 		} else if nodeInfo.TLSType == "xtls" {
 			xtlsSettings := &coreConf.XTLSConfig{
@@ -171,7 +163,7 @@ func InboundBuilder(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 		config.EnableProxyProtocol {
 		sockoptConfig := &coreConf.SocketConfig{
 			AcceptProxyProtocol: config.EnableProxyProtocol,
-		}
+		} //Enable proxy protocol
 		nodeInfo.V2ray.Inbounds[0].StreamSetting.SocketSettings = sockoptConfig
 	}
 	nodeInfo.V2ray.Inbounds[0].Settings = &setting

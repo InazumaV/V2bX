@@ -28,7 +28,7 @@ func TestBuildV2ray(t *testing.T) {
 	config := &Config{
 		CertConfig: certConfig,
 	}
-	_, err := InboundBuilder(config, nodeInfo)
+	_, err := buildInbound(config, nodeInfo)
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,7 +60,7 @@ func TestBuildTrojan(t *testing.T) {
 	config := &Config{
 		CertConfig: certConfig,
 	}
-	_, err := InboundBuilder(config, nodeInfo)
+	_, err := buildInbound(config, nodeInfo)
 	if err != nil {
 		t.Error(err)
 	}
@@ -92,7 +92,7 @@ func TestBuildSS(t *testing.T) {
 	config := &Config{
 		CertConfig: certConfig,
 	}
-	_, err := InboundBuilder(config, nodeInfo)
+	_, err := buildInbound(config, nodeInfo)
 	if err != nil {
 		t.Error(err)
 	}

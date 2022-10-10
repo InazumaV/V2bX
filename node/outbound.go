@@ -11,8 +11,8 @@ import (
 	"github.com/xtls/xray-core/infra/conf"
 )
 
-//OutboundBuilder build freedom outbund config for addoutbound
-func OutboundBuilder(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.OutboundHandlerConfig, error) {
+// buildOutbound build freedom outbund config for addoutbound
+func buildOutbound(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.OutboundHandlerConfig, error) {
 	outboundDetourConfig := &conf.OutboundDetourConfig{}
 	outboundDetourConfig.Protocol = "freedom"
 	outboundDetourConfig.Tag = tag
@@ -34,10 +34,6 @@ func OutboundBuilder(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, t
 	}
 	proxySetting := &conf.FreedomConfig{
 		DomainStrategy: domainStrategy,
-	}
-	// Used for Shadowsocks-Plugin
-	if nodeInfo.NodeType == "dokodemo-door" {
-		proxySetting.Redirect = fmt.Sprintf("127.0.0.1:%d", nodeInfo.V2ray.Inbounds[0].PortList.Range[0].From-1)
 	}
 	var setting json.RawMessage
 	setting, err := json.Marshal(proxySetting)

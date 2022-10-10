@@ -242,7 +242,7 @@ func (c *Client) ParseV2rayNodeResponse(body []byte, notParseNode, parseRule boo
 	}
 	if parseRule {
 		c.RemoteRuleCache = []Rule{}
-		err := json.Unmarshal(node.V2ray.Routing.Rules, c.RemoteRuleCache)
+		err := json.Unmarshal(node.V2ray.Routing.Rules, &c.RemoteRuleCache)
 		if err != nil {
 			log.Println(err)
 		}
