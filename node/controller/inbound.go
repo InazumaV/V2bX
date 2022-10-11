@@ -1,4 +1,3 @@
-// Package node the InbounderConfig used by add inbound
 package controller
 
 import (

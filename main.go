@@ -15,6 +15,7 @@ import (
 
 var (
 	configFile   = flag.String("config", "/etc/V2bX/config.yml", "Config file for V2bX.")
+	watch        = flag.Bool("watch", true, "Watch config file for changes.")
 	printVersion = flag.Bool("version", false, "show version")
 )
 
@@ -51,20 +52,22 @@ func main() {
 	if err != nil {
 		log.Panicf("run nodes error: %s", err)
 	}
-	err = config.Watch(*configFile, func() {
-		nodes.Close()
-		err = x.Restart(config)
+	if *watch {
+		err = config.Watch(*configFile, func() {
+			nodes.Close()
+			err = x.Restart(config)
+			if err != nil {
+				log.Panicf("Failed to restart core: %s", err)
+			}
+			err = nodes.Start(config.NodesConfig, x)
+			if err != nil {
+				log.Panicf("run nodes error: %s", err)
+			}
+			runtime.GC()
+		})
 		if err != nil {
-			log.Panicf("Failed to restart core: %s", err)
+			log.Panicf("watch config file error: %s", err)
 		}
-		err = nodes.Start(config.NodesConfig, x)
-		if err != nil {
-			log.Panicf("run nodes error: %s", err)
-		}
-		runtime.GC()
-	})
-	if err != nil {
-		log.Panicf("watch config file error: %s", err)
 	}
 	//Explicitly triggering GC to remove garbage from config loading.
 	runtime.GC()
