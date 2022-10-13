@@ -3,7 +3,7 @@ module github.com/Yuzuki616/V2bX
 go 1.19
 
 require (
-	github.com/fsnotify/fsnotify v1.5.4
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-acme/lego/v4 v4.8.0
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golang/protobuf v1.5.2 // indirect
