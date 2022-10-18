@@ -45,6 +45,7 @@ A V2board node server based on Xray-core, modified from XrayR
 | 审计规则        | √     | √      | √           |
 | 按照用户限速    | √     | √      | √           |
 | 自定义DNS       | √     | √      | √           |
+| 动态限速(未测试)       | √     | √     | √             
 
 ## 支持前端
 
