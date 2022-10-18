@@ -37,7 +37,7 @@ func (p *UserInfo) GetUserEmail() string {
 	} else if p.TrojanUser != nil {
 		return p.TrojanUser.Password
 	}
-	return p.Cipher
+	return p.Secret
 }
 
 type UserListBody struct {
