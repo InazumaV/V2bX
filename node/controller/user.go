@@ -92,7 +92,7 @@ func getCipherFromString(c string) shadowsocks.CipherType {
 func (c *Node) buildSSUsers(userInfo []panel.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
-		c.buildSSUser(&(userInfo)[i], cypher)
+		users[i] = c.buildSSUser(&(userInfo)[i], cypher)
 	}
 	return users
 }
