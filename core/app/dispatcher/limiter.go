@@ -55,9 +55,9 @@ func (l *Limiter) UpdateInboundLimiter(tag string, deleted []panel.UserInfo) err
 		inboundInfo := value.(*InboundInfo)
 		for i := range deleted {
 			inboundInfo.UserLimitInfo.Delete(fmt.Sprintf("%s|%s|%d", tag,
-				(deleted)[i].V2rayUser.Email, (deleted)[i].UID))
+				(deleted)[i].GetUserEmail(), (deleted)[i].UID))
 			inboundInfo.SpeedLimiter.Delete(fmt.Sprintf("%s|%s|%d", tag,
-				(deleted)[i].V2rayUser.Email, (deleted)[i].UID)) // Delete limiter bucket
+				(deleted)[i].GetUserEmail(), (deleted)[i].UID)) // Delete limiter bucket
 		}
 	} else {
 		return fmt.Errorf("no such inbound in limiter: %s", tag)
