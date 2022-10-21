@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api/iprecoder"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
@@ -19,6 +20,7 @@ type Node struct {
 	nodeInfo                  *panel.NodeInfo
 	Tag                       string
 	userList                  []panel.UserInfo
+	ipRecorder                iprecoder.IpRecorder
 	nodeInfoMonitorPeriodic   *task.Periodic
 	userReportPeriodic        *task.Periodic
 	onlineIpReportPeriodic    *task.Periodic
@@ -99,6 +101,11 @@ func (c *Node) Start() error {
 		_ = c.userReportPeriodic.Start()
 	}()
 	if c.config.EnableIpRecorder {
+		switch c.config.IpRecorderConfig.Type {
+		case "Record":
+			c.ipRecorder = iprecoder.New(c.config.IpRecorderConfig.RecorderConfig)
+		case "RedisConfig":
+		}
 		// report and fetch online ip list task
 		c.onlineIpReportPeriodic = &task.Periodic{
 			Interval: time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second,

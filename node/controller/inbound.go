@@ -155,6 +155,8 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 				OcspStapling: 3600})
 			nodeInfo.V2ray.Inbounds[0].StreamSetting.XTLSSettings = xtlsSettings
 		}
+	} else if nodeInfo.NodeType == "V2ray" {
+		nodeInfo.V2ray.Inbounds[0].StreamSetting.Security = "none"
 	}
 	// Support ProxyProtocol for any transport protocol
 	if *nodeInfo.V2ray.Inbounds[0].StreamSetting.Network != "tcp" &&

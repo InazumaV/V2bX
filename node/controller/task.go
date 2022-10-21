@@ -3,10 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	"github.com/Yuzuki616/V2bX/node/controller/legoCmd"
-	"github.com/go-resty/resty/v2"
-	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/protocol"
 	"log"
 	"reflect"
@@ -254,33 +251,16 @@ func (c *Node) reportOnlineIp() (err error) {
 		log.Print(err)
 		return nil
 	}
-	rsp, err := resty.New().SetTimeout(time.Duration(c.config.IpRecorderConfig.Timeout) * time.Second).
-		R().
-		SetBody(onlineIp).
-		Post(c.config.IpRecorderConfig.Url +
-			"/api/v1/SyncOnlineIp?token=" +
-			c.config.IpRecorderConfig.Token)
+	onlineIp, err = c.ipRecorder.SyncOnlineIp(onlineIp)
 	if err != nil {
-		log.Print(err)
+		log.Print("Report online ip error: ", err)
 		c.server.ClearOnlineIp(c.Tag)
-		return nil
+	}
+	if c.config.IpRecorderConfig.EnableIpSync {
+		c.server.UpdateOnlineIp(c.Tag, onlineIp)
+		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 	}
 	log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
-	if rsp.StatusCode() == 200 {
-		onlineIp = []dispatcher.UserIpList{}
-		err := json.Unmarshal(rsp.Body(), &onlineIp)
-		if err != nil {
-			log.Print(err)
-			c.server.ClearOnlineIp(c.Tag)
-			return nil
-		}
-		if c.config.IpRecorderConfig.EnableIpSync {
-			c.server.UpdateOnlineIp(c.Tag, onlineIp)
-			log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
-		}
-	} else {
-		c.server.ClearOnlineIp(c.Tag)
-	}
 	return nil
 }
 

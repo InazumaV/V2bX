@@ -19,12 +19,24 @@ type FallBackConfig struct {
 	ProxyProtocolVer uint64 `yaml:"ProxyProtocolVer"`
 }
 
+type RecorderConfig struct {
+	Url     string `yaml:"Url"`
+	Token   string `yaml:"Token"`
+	Timeout int    `yaml:"Timeout"`
+}
+
+type RedisConfig struct {
+	Address  string `yaml:"Address"`
+	Password string `yaml:"Password"`
+	Db       int    `yaml:"Db"`
+}
+
 type IpReportConfig struct {
-	Url          string `yaml:"Url"`
-	Token        string `yaml:"Token"`
-	Periodic     int    `yaml:"Periodic"`
-	Timeout      int    `yaml:"Timeout"`
-	EnableIpSync bool   `yaml:"EnableIpSync"`
+	Periodic       int             `yaml:"Periodic"`
+	Type           string          `yaml:"Type"`
+	RecorderConfig *RecorderConfig `yaml:"RecorderConfig"`
+	RedisConfig    *RedisConfig    `yaml:"RedisConfig"`
+	EnableIpSync   bool            `yaml:"EnableIpSync"`
 }
 
 type DynamicSpeedLimitConfig struct {

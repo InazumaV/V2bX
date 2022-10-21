@@ -42,10 +42,12 @@ Nodes:
           ProxyProtocolVer: 0 # Send PROXY protocol version, 0 for dsable
       EnableIpRecorder: false # Enable online ip report
       IpRecorderConfig:
-          Url: "http://127.0.0.1:123" # Report url
-          Token: "123" # Report token
+          Type: "Recorder"
+          RecorderConfig:
+            Url: "http://127.0.0.1:123" # Report url
+            Token: "123" # Report token
+            Timeout: 10 # Report timeout, sec.
           Periodic: 60 # Report interval, sec.
-          Timeout: 10 # Report timeout, sec.
           EnableIpSync: false # Enable online ip sync
       EnableDynamicSpeedLimit: false # Enable dynamic speed limit
       DynamicSpeedLimitConfig:
