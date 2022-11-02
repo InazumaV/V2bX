@@ -102,9 +102,10 @@ func (c *Node) Start() error {
 	}()
 	if c.config.EnableIpRecorder {
 		switch c.config.IpRecorderConfig.Type {
-		case "Record":
+		case "Recorder":
 			c.ipRecorder = iprecoder.NewRecorder(c.config.IpRecorderConfig.RecorderConfig)
-		case "RedisConfig":
+		case "Redis":
+			c.ipRecorder = iprecoder.NewRedis(c.config.IpRecorderConfig.RedisConfig)
 		}
 		// report and fetch online ip list task
 		c.onlineIpReportPeriodic = &task.Periodic{
