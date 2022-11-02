@@ -29,19 +29,17 @@ func NewRedis(c *conf.RedisConfig) *Redis {
 func (r *Redis) SyncOnlineIp(Ips []dispatcher.UserIpList) ([]dispatcher.UserIpList, error) {
 	ctx := context.Background()
 	for i := range Ips {
-		if !r.client.SIsMember(ctx, "UserList", strconv.Itoa(Ips[i].Uid)).Val() {
-			err := r.client.SAdd(ctx, "UserList", Ips[i].Uid).Err()
-			if err != nil {
-				return nil, fmt.Errorf("add user failed: %s", err)
-			}
+		err := r.client.SAdd(ctx, "UserList", Ips[i].Uid).Err()
+		if err != nil {
+			return nil, fmt.Errorf("add user failed: %s", err)
 		}
-		r.client.Expire(ctx, "UserList", time.Duration(2)*time.Minute)
+		r.client.Expire(ctx, "UserList", 2*time.Minute)
 		for _, ip := range Ips[i].IpList {
 			err := r.client.SAdd(ctx, strconv.Itoa(Ips[i].Uid), ip).Err()
 			if err != nil {
 				return nil, fmt.Errorf("add ip failed: %s", err)
 			}
-			r.client.Expire(ctx, strconv.Itoa(Ips[i].Uid), time.Duration(2)*time.Minute)
+			r.client.Expire(ctx, strconv.Itoa(Ips[i].Uid), 2*time.Minute)
 		}
 	}
 	c := r.client.SMembers(ctx, "UserList")
