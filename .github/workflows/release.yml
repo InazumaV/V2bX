@@ -90,7 +90,7 @@ jobs:
           # END S390X
           # END Other architectures
       fail-fast: false
-      
+
     runs-on: ubuntu-latest
     env:
       GOOS: ${{ matrix.goos }}
@@ -100,14 +100,14 @@ jobs:
     steps:
       - name: Checkout codebase
         uses: actions/checkout@v2
-      - name: Show workflow information 
+      - name: Show workflow information
         id: get_filename
         run: |
           export _NAME=$(jq ".[\"$GOOS-$GOARCH$GOARM$GOMIPS\"].friendlyName" -r < .github/build/friendly-filenames.json)
           echo "GOOS: $GOOS, GOARCH: $GOARCH, GOARM: $GOARM, GOMIPS: $GOMIPS, RELEASE_NAME: $_NAME"
           echo "::set-output name=ASSET_NAME::$_NAME"
           echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV
-    
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -115,17 +115,25 @@ jobs:
 
       - name: Get project dependencies
         run: go mod download
-
-
+      - name: Get release version
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          echo "version=$(echo $GITHUB_REF | cut -d / -f 3)" >> $GITHUB_ENV
+      - name: Get other version
+        if: ${{ github.event_name != 'release' }}
+        run: |
+          echo "version:${{ github.sha }}" >> $GITHUB_ENV
       - name: Build V2bX
         run: |
+          echo "version: $version"
           mkdir -p build_assets
-          go build -v -o build_assets/V2bX -trimpath -ldflags "-s -w -buildid="
-    
+          go build -v -o build_assets/V2bX -trimpath -ldflags "-X 'main.version=$version' -s -w -buildid="
+
       - name: Build Mips softfloat V2bX
         if: matrix.goarch == 'mips' || matrix.goarch == 'mipsle'
         run: |
-          GOMIPS=softfloat go build -v -o build_assets/V2bX_softfloat -trimpath -ldflags "-s -w -buildid="
+          echo "version: $version"
+          GOMIPS=softfloat go build -v -o build_assets/V2bX_softfloat -trimpath -ldflags "-X 'main.version=$version' -s -w -buildid="
       - name: Rename Windows V2bX
         if: matrix.goos == 'windows'
         run: |
@@ -169,12 +177,12 @@ jobs:
       - name: Change the name
         run: |
           mv build_assets V2bX-$ASSET_NAME
-     # - name: Upload files to Artifacts
-     #   uses: actions/upload-artifact@v2
-     #   with:
-     #     name: V2bX-${{ steps.get_filename.outputs.ASSET_NAME }}
-     #     path: |
-     #       ./V2bX-${{ steps.get_filename.outputs.ASSET_NAME }}/*
+      # - name: Upload files to Artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: V2bX-${{ steps.get_filename.outputs.ASSET_NAME }}
+      #     path: |
+      #       ./V2bX-${{ steps.get_filename.outputs.ASSET_NAME }}/*
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         if: github.event_name == 'release'
