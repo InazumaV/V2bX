@@ -14,7 +14,7 @@ type Recorder struct {
 	*conf.RecorderConfig
 }
 
-func New(c *conf.RecorderConfig) *Recorder {
+func NewRecorder(c *conf.RecorderConfig) *Recorder {
 	return &Recorder{
 		client:         resty.New().SetTimeout(time.Duration(c.Timeout) * time.Second),
 		RecorderConfig: c,
