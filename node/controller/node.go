@@ -100,24 +100,6 @@ func (c *Node) Start() error {
 		time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
 		_ = c.userReportPeriodic.Start()
 	}()
-	if c.config.EnableIpRecorder {
-		switch c.config.IpRecorderConfig.Type {
-		case "Recorder":
-			c.ipRecorder = iprecoder.NewRecorder(c.config.IpRecorderConfig.RecorderConfig)
-		case "Redis":
-			c.ipRecorder = iprecoder.NewRedis(c.config.IpRecorderConfig.RedisConfig)
-		}
-		// report and fetch online ip list task
-		c.onlineIpReportPeriodic = &task.Periodic{
-			Interval: time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second,
-			Execute:  c.reportOnlineIp,
-		}
-		go func() {
-			time.Sleep(time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second)
-			_ = c.onlineIpReportPeriodic.Start()
-		}()
-		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
-	}
 	if c.config.EnableDynamicSpeedLimit {
 		// Check dynamic speed limit task
 		c.DynamicSpeedLimitPeriodic = &task.Periodic{
@@ -129,6 +111,27 @@ func (c *Node) Start() error {
 			_ = c.DynamicSpeedLimitPeriodic.Start()
 		}()
 		log.Printf("[%s: %d] Start dynamic speed limit", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
+	}
+	if c.config.EnableIpRecorder {
+		switch c.config.IpRecorderConfig.Type {
+		case "Recorder":
+			c.ipRecorder = iprecoder.NewRecorder(c.config.IpRecorderConfig.RecorderConfig)
+		case "Redis":
+			c.ipRecorder = iprecoder.NewRedis(c.config.IpRecorderConfig.RedisConfig)
+		default:
+			log.Printf("recorder type: %s is not vail, disable recorder", c.config.IpRecorderConfig.Type)
+			return nil
+		}
+		// report and fetch online ip list task
+		c.onlineIpReportPeriodic = &task.Periodic{
+			Interval: time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second,
+			Execute:  c.reportOnlineIp,
+		}
+		go func() {
+			time.Sleep(time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second)
+			_ = c.onlineIpReportPeriodic.Start()
+		}()
+		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	}
 	return nil
 }
