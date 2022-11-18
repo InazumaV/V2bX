@@ -29,6 +29,7 @@ type RedisConfig struct {
 	Address  string `yaml:"Address"`
 	Password string `yaml:"Password"`
 	Db       int    `yaml:"Db"`
+	Expiry   int    `json:"Expiry"`
 }
 
 type IpReportConfig struct {

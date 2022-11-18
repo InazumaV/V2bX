@@ -51,6 +51,7 @@ Nodes:
             Address: "127.0.0.1:6379" # Redis address
             Password: "" # Redis password
             DB: 0 # Redis DB
+            Expiry: 60 # redis expiry time, sec.
           Periodic: 60 # Report interval, sec.
           EnableIpSync: false # Enable online ip sync
       EnableDynamicSpeedLimit: false # Enable dynamic speed limit

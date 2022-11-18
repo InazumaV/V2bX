@@ -33,13 +33,13 @@ func (r *Redis) SyncOnlineIp(Ips []dispatcher.UserIpList) ([]dispatcher.UserIpLi
 		if err != nil {
 			return nil, fmt.Errorf("add user failed: %s", err)
 		}
-		r.client.Expire(ctx, "UserList", 2*time.Minute)
+		r.client.Expire(ctx, "UserList", time.Second*time.Duration(r.Expiry))
 		for _, ip := range Ips[i].IpList {
 			err := r.client.SAdd(ctx, strconv.Itoa(Ips[i].Uid), ip).Err()
 			if err != nil {
 				return nil, fmt.Errorf("add ip failed: %s", err)
 			}
-			r.client.Expire(ctx, strconv.Itoa(Ips[i].Uid), 2*time.Minute)
+			r.client.Expire(ctx, strconv.Itoa(Ips[i].Uid), time.Second*time.Duration(r.Expiry))
 		}
 	}
 	c := r.client.SMembers(ctx, "UserList")
