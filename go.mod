@@ -10,7 +10,7 @@ require (
 	github.com/juju/ratelimit v1.0.2
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
-	github.com/xtls/xray-core v1.6.3
+	github.com/xtls/xray-core v1.6.4
 	golang.org/x/net v0.2.0
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1
@@ -63,7 +63,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/pprof v0.0.0-20221103000818-d260c55eee4c // indirect
+	github.com/google/pprof v0.0.0-20221112000123-84eb7ad69597 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.0.0-20220520183353-fd19c99a87aa // indirect
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
@@ -79,7 +79,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.1.2 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.0 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2 // indirect
 	github.com/labbsr0x/goh v1.0.1 // indirect
@@ -105,7 +105,7 @@ require (
 	github.com/nrdcg/goinwx v0.8.1 // indirect
 	github.com/nrdcg/namesilo v0.2.1 // indirect
 	github.com/nrdcg/porkbun v0.1.1 // indirect
-	github.com/onsi/ginkgo/v2 v2.4.0 // indirect
+	github.com/onsi/ginkgo/v2 v2.5.0 // indirect
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible // indirect
 	github.com/ovh/go-ovh v1.1.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
@@ -138,16 +138,16 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	go.starlark.net v0.0.0-20221028183056-acb66ad56dd2 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
-	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/exp v0.0.0-20221106115401-f9659909a136 // indirect
-	golang.org/x/mod v0.6.0 // indirect
+	golang.org/x/crypto v0.2.0 // indirect
+	golang.org/x/exp v0.0.0-20221111204811-129d8d6c17ab // indirect
+	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
-	golang.org/x/tools v0.2.0 // indirect
+	golang.org/x/tools v0.3.0 // indirect
 	google.golang.org/api v0.84.0 // indirect
-	google.golang.org/genproto v0.0.0-20221027153422-115e99e71e1c // indirect
+	google.golang.org/genproto v0.0.0-20221111202108-142d8a6fa32e // indirect
 	google.golang.org/grpc v1.50.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.6.5 // indirect
