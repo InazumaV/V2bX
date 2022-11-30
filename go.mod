@@ -18,7 +18,7 @@ require (
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/goccy/go-json v0.9.11
+	github.com/goccy/go-json v0.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
