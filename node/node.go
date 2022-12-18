@@ -18,9 +18,13 @@ func New() *Node {
 func (n *Node) Start(nodes []*conf.NodeConfig, core *core.Core) error {
 	n.controllers = make([]*controller.Node, len(nodes))
 	for i, c := range nodes {
+		p, err := panel.New(c.ApiConfig)
+		if err != nil {
+			return err
+		}
 		// Register controller service
-		n.controllers[i] = controller.New(core, panel.New(c.ApiConfig), c.ControllerConfig)
-		err := n.controllers[i].Start()
+		n.controllers[i] = controller.New(core, p, c.ControllerConfig)
+		err = n.controllers[i].Start()
 		if err != nil {
 			return err
 		}

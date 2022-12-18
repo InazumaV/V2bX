@@ -28,8 +28,8 @@ func (p *Core) AddInbound(config *core.InboundHandlerConfig) error {
 	return nil
 }
 
-func (p *Core) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo) error {
-	return p.dispatcher.Limiter.AddInboundLimiter(tag, nodeInfo)
+func (p *Core) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo, users []panel.UserInfo) error {
+	return p.dispatcher.Limiter.AddInboundLimiter(tag, nodeInfo, users)
 }
 
 func (p *Core) GetInboundLimiter(tag string) (*dispatcher.InboundInfo, error) {
@@ -40,14 +40,14 @@ func (p *Core) GetInboundLimiter(tag string) (*dispatcher.InboundInfo, error) {
 	return nil, fmt.Errorf("not found limiter")
 }
 
-func (p *Core) UpdateInboundLimiter(tag string, deleted []panel.UserInfo) error {
-	return p.dispatcher.Limiter.UpdateInboundLimiter(tag, deleted)
+func (p *Core) UpdateInboundLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo) error {
+	return p.dispatcher.Limiter.UpdateInboundLimiter(tag, added, deleted)
 }
 
 func (p *Core) DeleteInboundLimiter(tag string) error {
 	return p.dispatcher.Limiter.DeleteInboundLimiter(tag)
 }
 
-func (p *Core) UpdateRule(tag string, newRuleList *panel.DetectRule) error {
+func (p *Core) UpdateRule(tag string, newRuleList []panel.DestinationRule) error {
 	return p.dispatcher.RuleManager.UpdateRule(tag, newRuleList)
 }

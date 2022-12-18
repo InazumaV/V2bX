@@ -14,7 +14,6 @@ import (
 
 type Node struct {
 	server                    *core.Core
-	config                    *conf.ControllerConfig
 	clientInfo                panel.ClientInfo
 	apiClient                 panel.Panel
 	nodeInfo                  *panel.NodeInfo
@@ -25,14 +24,15 @@ type Node struct {
 	userReportPeriodic        *task.Periodic
 	onlineIpReportPeriodic    *task.Periodic
 	DynamicSpeedLimitPeriodic *task.Periodic
+	*conf.ControllerConfig
 }
 
 // New return a Node service with default parameters.
 func New(server *core.Core, api panel.Panel, config *conf.ControllerConfig) *Node {
 	controller := &Node{
-		server:    server,
-		config:    config,
-		apiClient: api,
+		server:           server,
+		ControllerConfig: config,
+		apiClient:        api,
 	}
 	return controller
 }
@@ -64,71 +64,67 @@ func (c *Node) Start() error {
 	if err != nil {
 		return err
 	}
-	if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo); err != nil {
+	if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo, c.userList); err != nil {
 		return fmt.Errorf("add inbound limiter failed: %s", err)
 	}
 	// Add Rule Manager
-	if !c.config.DisableGetRule {
-		if ruleList, err := c.apiClient.GetNodeRule(); err != nil {
-			log.Printf("Get rule list filed: %s", err)
-		} else if ruleList != nil {
-			if err := c.server.UpdateRule(c.Tag, ruleList); err != nil {
-				log.Printf("Update rule filed: %s", err)
-			}
+	if !c.DisableGetRule {
+		if err := c.server.UpdateRule(c.Tag, newNodeInfo.Rules); err != nil {
+			log.Printf("Update rule filed: %s", err)
 		}
 	}
 	// fetch node info task
 	c.nodeInfoMonitorPeriodic = &task.Periodic{
-		Interval: time.Duration(c.config.UpdatePeriodic) * time.Second,
+		Interval: time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second,
 		Execute:  c.nodeInfoMonitor,
 	}
 	// fetch user list task
 	c.userReportPeriodic = &task.Periodic{
-		Interval: time.Duration(c.config.UpdatePeriodic) * time.Second,
+		Interval: time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second,
 		Execute:  c.reportUserTraffic,
 	}
 	log.Printf("[%s: %d] Start monitor node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	// delay to start nodeInfoMonitor
 	go func() {
-		time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
+		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second)
 		_ = c.nodeInfoMonitorPeriodic.Start()
 	}()
 
 	log.Printf("[%s: %d] Start report node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	// delay to start userReport
 	go func() {
-		time.Sleep(time.Duration(c.config.UpdatePeriodic) * time.Second)
+		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second)
 		_ = c.userReportPeriodic.Start()
 	}()
-	if c.config.EnableDynamicSpeedLimit {
+	if c.EnableDynamicSpeedLimit {
 		// Check dynamic speed limit task
 		c.DynamicSpeedLimitPeriodic = &task.Periodic{
-			Interval: time.Duration(c.config.DynamicSpeedLimitConfig.Periodic) * time.Second,
+			Interval: time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second,
 			Execute:  c.dynamicSpeedLimit,
 		}
 		go func() {
-			time.Sleep(time.Duration(c.config.DynamicSpeedLimitConfig.Periodic) * time.Second)
+			time.Sleep(time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second)
 			_ = c.DynamicSpeedLimitPeriodic.Start()
 		}()
 		log.Printf("[%s: %d] Start dynamic speed limit", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	}
-	if c.config.EnableIpRecorder {
-		switch c.config.IpRecorderConfig.Type {
+	if c.EnableIpRecorder {
+		switch c.IpRecorderConfig.Type {
 		case "Recorder":
-			c.ipRecorder = iprecoder.NewRecorder(c.config.IpRecorderConfig.RecorderConfig)
+			c.ipRecorder = iprecoder.NewRecorder(c.IpRecorderConfig.RecorderConfig)
 		case "Redis":
-			c.ipRecorder = iprecoder.NewRedis(c.config.IpRecorderConfig.RedisConfig)
+			c.ipRecorder = iprecoder.NewRedis(c.IpRecorderConfig.RedisConfig)
 		default:
-			log.Printf("recorder type: %s is not vail, disable recorder", c.config.IpRecorderConfig.Type)
+			log.Printf("recorder type: %s is not vail, disable recorder", c.IpRecorderConfig.Type)
 			return nil
 		}
 		// report and fetch online ip list task
 		c.onlineIpReportPeriodic = &task.Periodic{
-			Interval: time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second,
+			Interval: time.Duration(c.IpRecorderConfig.Periodic) * time.Second,
 			Execute:  c.reportOnlineIp,
 		}
 		go func() {
-			time.Sleep(time.Duration(c.config.IpRecorderConfig.Periodic) * time.Second)
+			time.Sleep(time.Duration(c.IpRecorderConfig.Periodic) * time.Second)
 			_ = c.onlineIpReportPeriodic.Start()
 		}()
 		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
@@ -144,7 +140,6 @@ func (c *Node) Close() error {
 			log.Panicf("node info periodic close failed: %s", err)
 		}
 	}
-
 	if c.nodeInfoMonitorPeriodic != nil {
 		err := c.userReportPeriodic.Close()
 		if err != nil {
@@ -167,5 +162,5 @@ func (c *Node) Close() error {
 }
 
 func (c *Node) buildNodeTag() string {
-	return fmt.Sprintf("%s_%s_%d", c.nodeInfo.NodeType, c.config.ListenIP, c.nodeInfo.NodeId)
+	return fmt.Sprintf("%s_%s_%d", c.nodeInfo.NodeType, c.ListenIP, c.nodeInfo.NodeId)
 }

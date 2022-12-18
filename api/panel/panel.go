@@ -1,11 +1,15 @@
 package panel
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/go-resty/resty/v2"
 	"log"
+	"os"
+	"regexp"
 	"strconv"
-	"sync"
+	"strings"
 	"time"
 )
 
@@ -19,28 +23,22 @@ type ClientInfo struct {
 }
 
 type Client struct {
-	client   *resty.Client
-	APIHost  string
-	NodeID   int
-	Key      string
-	NodeType string
-	//EnableSS2022     bool
-	EnableVless     bool
-	EnableXTLS      bool
-	SpeedLimit      float64
-	DeviceLimit     int
-	LocalRuleList   *DetectRule
-	RemoteRuleCache []Rule
-	access          sync.Mutex
-	NodeInfoRspMd5  [16]byte
-	NodeRuleRspMd5  [16]byte
+	client        *resty.Client
+	APIHost       string
+	Key           string
+	NodeType      string
+	NodeId        int
+	SpeedLimit    int
+	DeviceLimit   int
+	LocalRuleList []DestinationRule
+	etag          string
 }
 
-func New(apiConfig *conf.ApiConfig) Panel {
+func New(c *conf.ApiConfig) (Panel, error) {
 	client := resty.New()
 	client.SetRetryCount(3)
-	if apiConfig.Timeout > 0 {
-		client.SetTimeout(time.Duration(apiConfig.Timeout) * time.Second)
+	if c.Timeout > 0 {
+		client.SetTimeout(time.Duration(c.Timeout) * time.Second)
 	} else {
 		client.SetTimeout(5 * time.Second)
 	}
@@ -51,25 +49,57 @@ func New(apiConfig *conf.ApiConfig) Panel {
 			log.Print(v.Err)
 		}
 	})
-	client.SetBaseURL(apiConfig.APIHost)
+	client.SetBaseURL(c.APIHost)
+	// Check node type
+	if c.NodeType != "V2ray" &&
+		c.NodeType != "Trojan" &&
+		c.NodeType != "Shadowsocks" {
+		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
+	}
 	// Create Key for each requests
 	client.SetQueryParams(map[string]string{
-		"node_id": strconv.Itoa(apiConfig.NodeID),
-		"token":   apiConfig.Key,
+		"node_type": strings.ToLower(c.NodeType),
+		"node_id":   strconv.Itoa(c.NodeID),
+		"token":     c.Key,
 	})
 	// Read local rule list
-	localRuleList := readLocalRuleList(apiConfig.RuleListPath)
+	localRuleList := readLocalRuleList(c.RuleListPath)
 	return &Client{
-		client:   client,
-		NodeID:   apiConfig.NodeID,
-		Key:      apiConfig.Key,
-		APIHost:  apiConfig.APIHost,
-		NodeType: apiConfig.NodeType,
-		//EnableSS2022:  apiConfig.EnableSS2022,
-		EnableVless:   apiConfig.EnableVless,
-		EnableXTLS:    apiConfig.EnableXTLS,
-		SpeedLimit:    apiConfig.SpeedLimit,
-		DeviceLimit:   apiConfig.DeviceLimit,
+		client:        client,
+		Key:           c.Key,
+		APIHost:       c.APIHost,
+		NodeType:      c.NodeType,
+		SpeedLimit:    c.SpeedLimit,
+		DeviceLimit:   c.DeviceLimit,
+		NodeId:        c.NodeID,
 		LocalRuleList: localRuleList,
+	}, nil
+}
+
+// readLocalRuleList reads the local rule list file
+func readLocalRuleList(path string) (LocalRuleList []DestinationRule) {
+	LocalRuleList = make([]DestinationRule, 0)
+	if path != "" {
+		// open the file
+		file, err := os.Open(path)
+		//handle errors while opening
+		if err != nil {
+			log.Printf("Error when opening file: %s", err)
+			return
+		}
+		fileScanner := bufio.NewScanner(file)
+		// read line by line
+		for fileScanner.Scan() {
+			LocalRuleList = append(LocalRuleList, DestinationRule{
+				ID:      -1,
+				Pattern: regexp.MustCompile(fileScanner.Text()),
+			})
+		}
+		// handle first encountered error while reading
+		if err := fileScanner.Err(); err != nil {
+			log.Fatalf("Error while reading file: %s", err)
+			return
+		}
 	}
+	return
 }

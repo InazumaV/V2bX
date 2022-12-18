@@ -5,6 +5,5 @@ type Panel interface {
 	GetUserList() (userList []UserInfo, err error)
 	ReportUserTraffic(userTraffic []UserTraffic) (err error)
 	Describe() ClientInfo
-	GetNodeRule() (ruleList *DetectRule, err error)
 	Debug()
 }

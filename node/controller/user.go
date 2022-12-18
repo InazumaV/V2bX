@@ -3,14 +3,14 @@ package controller
 import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"strings"
-
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/infra/conf"
 	"github.com/xtls/xray-core/proxy/shadowsocks"
+	"github.com/xtls/xray-core/proxy/shadowsocks_2022"
 	"github.com/xtls/xray-core/proxy/trojan"
 	"github.com/xtls/xray-core/proxy/vless"
+	"strings"
 )
 
 func (c *Node) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
@@ -23,7 +23,7 @@ func (c *Node) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.Use
 
 func (c *Node) buildVmessUser(userInfo *panel.UserInfo, serverAlterID uint16) (user *protocol.User) {
 	vmessAccount := &conf.VMessAccount{
-		ID:       userInfo.V2rayUser.Uuid,
+		ID:       userInfo.Uuid,
 		AlterIds: serverAlterID,
 		Security: "auto",
 	}
@@ -44,7 +44,7 @@ func (c *Node) buildVlessUsers(userInfo []panel.UserInfo) (users []*protocol.Use
 
 func (c *Node) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	vlessAccount := &vless.Account{
-		Id:   userInfo.V2rayUser.Uuid,
+		Id:   userInfo.Uuid,
 		Flow: "xtls-rprx-direct",
 	}
 	return &protocol.User{
@@ -64,7 +64,7 @@ func (c *Node) buildTrojanUsers(userInfo []panel.UserInfo) (users []*protocol.Us
 
 func (c *Node) buildTrojanUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	trojanAccount := &trojan.Account{
-		Password: userInfo.TrojanUser.Password,
+		Password: userInfo.Uuid,
 		Flow:     "xtls-rprx-direct",
 	}
 	return &protocol.User{
@@ -98,17 +98,28 @@ func (c *Node) buildSSUsers(userInfo []panel.UserInfo, cypher shadowsocks.Cipher
 }
 
 func (c *Node) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherType) (user *protocol.User) {
-	ssAccount := &shadowsocks.Account{
-		Password:   userInfo.Secret,
-		CipherType: cypher,
-	}
-	return &protocol.User{
-		Level:   0,
-		Email:   c.buildUserTag(userInfo),
-		Account: serial.ToTypedMessage(ssAccount),
+	if c.nodeInfo.ServerKey == "" {
+		ssAccount := &shadowsocks.Account{
+			Password:   userInfo.Uuid,
+			CipherType: cypher,
+		}
+		return &protocol.User{
+			Level:   0,
+			Email:   c.buildUserTag(userInfo),
+			Account: serial.ToTypedMessage(ssAccount),
+		}
+	} else {
+		ssAccount := &shadowsocks_2022.User{
+			Key: userInfo.Uuid,
+		}
+		return &protocol.User{
+			Level:   0,
+			Email:   c.buildUserTag(userInfo),
+			Account: serial.ToTypedMessage(ssAccount),
+		}
 	}
 }
 
 func (c *Node) buildUserTag(user *panel.UserInfo) string {
-	return fmt.Sprintf("%s|%s|%d", c.Tag, user.GetUserEmail(), user.UID)
+	return fmt.Sprintf("%s|%s|%d", c.Tag, user.Uuid, user.Id)
 }

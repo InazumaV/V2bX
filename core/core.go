@@ -1,10 +1,10 @@
 package core
 
 import (
-	"encoding/json"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	_ "github.com/Yuzuki616/V2bX/core/distro/all"
+	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/app/proxyman"
 	"github.com/xtls/xray-core/app/stats"
 	"github.com/xtls/xray-core/common/serial"

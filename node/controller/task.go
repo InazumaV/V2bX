@@ -6,8 +6,8 @@ import (
 	"github.com/Yuzuki616/V2bX/node/controller/legoCmd"
 	"github.com/xtls/xray-core/common/protocol"
 	"log"
-	"reflect"
 	"runtime"
+	"strconv"
 	"time"
 )
 
@@ -21,53 +21,41 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	var nodeInfoChanged = false
 	// If nodeInfo changed
 	if newNodeInfo != nil {
-		if c.nodeInfo.SS == nil || !reflect.DeepEqual(c.nodeInfo.SS, newNodeInfo.SS) {
-			// Remove old tag
-			oldTag := c.Tag
-			err := c.removeOldTag(oldTag)
-			if err != nil {
-				log.Print(err)
-				return nil
-			}
-			// Add new tag
-			c.nodeInfo = newNodeInfo
-			c.Tag = c.buildNodeTag()
-			err = c.addNewTag(newNodeInfo)
-			if err != nil {
-				log.Print(err)
-				return nil
-			}
-			nodeInfoChanged = true
-			// Remove Old limiter
-			if err = c.server.DeleteInboundLimiter(oldTag); err != nil {
-				log.Print(err)
-				return nil
-			}
+		// Remove old tag
+		oldTag := c.Tag
+		err := c.removeOldTag(oldTag)
+		if err != nil {
+			log.Print(err)
+			return nil
+		}
+		// Add new tag
+		c.nodeInfo = newNodeInfo
+		c.Tag = c.buildNodeTag()
+		err = c.addNewTag(newNodeInfo)
+		if err != nil {
+			log.Print(err)
+			return nil
+		}
+		nodeInfoChanged = true
+		// Remove Old limiter
+		if err = c.server.DeleteInboundLimiter(oldTag); err != nil {
+			log.Print(err)
+			return nil
+		}
+		if err := c.server.UpdateRule(c.Tag, newNodeInfo.Rules); err != nil {
+			log.Print(err)
 		}
 	}
-
-	// Check Rule
-	if !c.config.DisableGetRule {
-		if ruleList, err := c.apiClient.GetNodeRule(); err != nil {
-			log.Printf("Get rule list filed: %s", err)
-		} else if ruleList != nil {
-			if err := c.server.UpdateRule(c.Tag, ruleList); err != nil {
-				log.Print(err)
-			}
-
-		}
-	}
-
 	// Check Cert
-	if c.nodeInfo.EnableTls && c.config.CertConfig.CertMode != "none" &&
-		(c.config.CertConfig.CertMode == "dns" || c.config.CertConfig.CertMode == "http") {
+	if c.nodeInfo.EnableTls && c.CertConfig.CertMode != "none" &&
+		(c.CertConfig.CertMode == "dns" || c.CertConfig.CertMode == "http") {
 		lego, err := legoCmd.New()
 		if err != nil {
 			log.Print(err)
 		}
 		// Core-core supports the OcspStapling certification hot renew
-		_, _, err = lego.RenewCert(c.config.CertConfig.CertDomain, c.config.CertConfig.Email,
-			c.config.CertConfig.CertMode, c.config.CertConfig.Provider, c.config.CertConfig.DNSEnv)
+		_, _, err = lego.RenewCert(c.CertConfig.CertDomain, c.CertConfig.Email,
+			c.CertConfig.CertMode, c.CertConfig.Provider, c.CertConfig.DNSEnv)
 		if err != nil {
 			log.Print(err)
 		}
@@ -80,27 +68,42 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	}
 	if nodeInfoChanged {
 		c.userList = newUserInfo
-		newUserInfo = nil
 		err = c.addNewUser(c.userList, newNodeInfo)
 		if err != nil {
 			log.Print(err)
 			return nil
 		}
-		newNodeInfo = nil
 		// Add Limiter
-		if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo); err != nil {
+		if err := c.server.AddInboundLimiter(c.Tag, newNodeInfo, newUserInfo); err != nil {
 			log.Print(err)
 			return nil
 		}
-		runtime.GC()
+		// Check interval
+		if c.nodeInfoMonitorPeriodic.Interval != time.Duration(newNodeInfo.BaseConfig.PullInterval.(int))*time.Second {
+			c.nodeInfoMonitorPeriodic.Interval = time.Duration(newNodeInfo.BaseConfig.PullInterval.(int)) * time.Second
+			_ = c.nodeInfoMonitorPeriodic.Close()
+			go func() {
+				time.Sleep(c.nodeInfoMonitorPeriodic.Interval)
+				_ = c.nodeInfoMonitorPeriodic.Start()
+			}()
+		}
+		if c.userReportPeriodic.Interval != time.Duration(newNodeInfo.BaseConfig.PushInterval.(int))*time.Second {
+			c.userReportPeriodic.Interval = time.Duration(newNodeInfo.BaseConfig.PushInterval.(int)) * time.Second
+			_ = c.userReportPeriodic.Close()
+			go func() {
+				time.Sleep(c.userReportPeriodic.Interval)
+				_ = c.userReportPeriodic.Start()
+			}()
+		}
 	} else {
 		deleted, added := compareUserList(c.userList, newUserInfo)
 		if len(deleted) > 0 {
 			deletedEmail := make([]string, len(deleted))
 			for i := range deleted {
-				deletedEmail[i] = fmt.Sprintf("%s|%s|%d", c.Tag,
-					(deleted)[i].GetUserEmail(),
-					(deleted)[i].UID)
+				deletedEmail[i] = fmt.Sprintf("%s|%s|%d",
+					c.Tag,
+					(deleted)[i].Uuid,
+					(deleted)[i].Id)
 			}
 			err := c.server.RemoveUsers(deletedEmail, c.Tag)
 			if err != nil {
@@ -114,16 +117,14 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			}
 		}
 		if len(added) > 0 || len(deleted) > 0 {
-			defer runtime.GC()
 			// Update Limiter
-			if err := c.server.UpdateInboundLimiter(c.Tag, deleted); err != nil {
+			if err := c.server.UpdateInboundLimiter(c.Tag, added, deleted); err != nil {
 				log.Print(err)
 			}
 		}
 		log.Printf("[%s: %d] %d user deleted, %d user added", c.nodeInfo.NodeType, c.nodeInfo.NodeId,
 			len(deleted), len(added))
 		c.userList = newUserInfo
-		newUserInfo = nil
 	}
 	return nil
 }
@@ -141,24 +142,21 @@ func (c *Node) removeOldTag(oldTag string) (err error) {
 }
 
 func (c *Node) addNewTag(newNodeInfo *panel.NodeInfo) (err error) {
-	inboundConfig, err := buildInbound(c.config, newNodeInfo, c.Tag)
+	inboundConfig, err := buildInbound(c.ControllerConfig, newNodeInfo, c.Tag)
 	if err != nil {
-		return err
+		return fmt.Errorf("build inbound error: %s", err)
 	}
 	err = c.server.AddInbound(inboundConfig)
 	if err != nil {
-
-		return err
+		return fmt.Errorf("add inbound error: %s", err)
 	}
-	outBoundConfig, err := buildOutbound(c.config, newNodeInfo, c.Tag)
+	outBoundConfig, err := buildOutbound(c.ControllerConfig, newNodeInfo, c.Tag)
 	if err != nil {
-
-		return err
+		return fmt.Errorf("build outbound error: %s", err)
 	}
 	err = c.server.AddOutbound(outBoundConfig)
 	if err != nil {
-
-		return err
+		return fmt.Errorf("add outbound error: %s", err)
 	}
 	return nil
 }
@@ -174,13 +172,13 @@ func (c *Node) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (
 	} else if nodeInfo.NodeType == "Trojan" {
 		users = c.buildTrojanUsers(userInfo)
 	} else if nodeInfo.NodeType == "Shadowsocks" {
-		users = c.buildSSUsers(userInfo, getCipherFromString(nodeInfo.SS.CypherMethod))
+		users = c.buildSSUsers(userInfo, getCipherFromString(nodeInfo.Cipher))
 	} else {
 		return fmt.Errorf("unsupported node type: %s", nodeInfo.NodeType)
 	}
 	err = c.server.AddUsers(users, c.Tag)
 	if err != nil {
-		return err
+		return fmt.Errorf("add users error: %s", err)
 	}
 	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(userInfo))
 	return nil
@@ -190,24 +188,24 @@ func compareUserList(old, new []panel.UserInfo) (deleted, added []panel.UserInfo
 	tmp := map[string]struct{}{}
 	tmp2 := map[string]struct{}{}
 	for i := range old {
-		tmp[(old)[i].GetUserEmail()] = struct{}{}
+		tmp[old[i].Uuid+strconv.Itoa(old[i].SpeedLimit)] = struct{}{}
 	}
 	l := len(tmp)
 	for i := range new {
-		e := (new)[i].GetUserEmail()
+		e := new[i].Uuid + strconv.Itoa(new[i].SpeedLimit)
 		tmp[e] = struct{}{}
 		tmp2[e] = struct{}{}
 		if l != len(tmp) {
-			added = append(added, (new)[i])
+			added = append(added, new[i])
 			l++
 		}
 	}
 	tmp = nil
 	l = len(tmp2)
 	for i := range old {
-		tmp2[(old)[i].GetUserEmail()] = struct{}{}
+		tmp2[old[i].Uuid+strconv.Itoa(old[i].SpeedLimit)] = struct{}{}
 		if l != len(tmp2) {
-			deleted = append(deleted, (old)[i])
+			deleted = append(deleted, old[i])
 			l++
 		}
 	}
@@ -220,16 +218,16 @@ func (c *Node) reportUserTraffic() (err error) {
 	for i := range c.userList {
 		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), true)
 		if up > 0 || down > 0 {
-			if c.config.EnableDynamicSpeedLimit {
+			if c.EnableDynamicSpeedLimit {
 				c.userList[i].Traffic += up + down
 			}
 			userTraffic = append(userTraffic, panel.UserTraffic{
-				UID:      (c.userList)[i].UID,
+				UID:      (c.userList)[i].Id,
 				Upload:   up,
 				Download: down})
 		}
 	}
-	if len(userTraffic) > 0 && !c.config.DisableUploadTraffic {
+	if len(userTraffic) > 0 && !c.DisableUploadTraffic {
 		err = c.apiClient.ReportUserTraffic(userTraffic)
 		if err != nil {
 			log.Printf("Report user traffic faild: %s", err)
@@ -238,7 +236,7 @@ func (c *Node) reportUserTraffic() (err error) {
 		}
 	}
 	userTraffic = nil
-	if !c.config.EnableIpRecorder {
+	if !c.EnableIpRecorder {
 		c.server.ClearOnlineIp(c.Tag)
 	}
 	runtime.GC()
@@ -256,7 +254,7 @@ func (c *Node) reportOnlineIp() (err error) {
 		log.Print("Report online ip error: ", err)
 		c.server.ClearOnlineIp(c.Tag)
 	}
-	if c.config.IpRecorderConfig.EnableIpSync {
+	if c.IpRecorderConfig.EnableIpSync {
 		c.server.UpdateOnlineIp(c.Tag, onlineIp)
 		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
 	}
@@ -265,14 +263,14 @@ func (c *Node) reportOnlineIp() (err error) {
 }
 
 func (c *Node) dynamicSpeedLimit() error {
-	if c.config.EnableDynamicSpeedLimit {
+	if c.EnableDynamicSpeedLimit {
 		for i := range c.userList {
 			up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), false)
-			if c.userList[i].Traffic+down+up/1024/1024 > c.config.DynamicSpeedLimitConfig.Traffic {
+			if c.userList[i].Traffic+down+up/1024/1024 > c.DynamicSpeedLimitConfig.Traffic {
 				err := c.server.AddUserSpeedLimit(c.Tag,
 					&c.userList[i],
-					c.config.DynamicSpeedLimitConfig.SpeedLimit,
-					time.Now().Add(time.Second*time.Duration(c.config.DynamicSpeedLimitConfig.ExpireTime)).Unix())
+					c.DynamicSpeedLimitConfig.SpeedLimit,
+					time.Now().Add(time.Second*time.Duration(c.DynamicSpeedLimitConfig.ExpireTime)).Unix())
 				if err != nil {
 					log.Print(err)
 				}

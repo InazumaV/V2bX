@@ -12,7 +12,7 @@ A V2board node server based on Xray-core, modified from XrayR
 
 如对脚本不放心，可使用此沙箱先测一遍再使用：https://killercoda.com/playgrounds/scenario/ubuntu
 
-目前可以结合 [IpRecorder](https://github.com/Yuzuki616/IpRecorder) 实现跨节点IP数限制和每日IP连接地区数超限提醒，请参考 [配置文件说明](https://yuzuki-1.gitbook.io/v2bx-doc/v2bx-pei-zhi-wen-jian-shuo-ming/config#wai-bu-ji-lu-qi-pei-zhi) 配置IpRecorder。
+**注意：1.1.0将更换为V2board1.7.0之后新增的Api，原Api将被移除，请1.7.0之前的用户使用1.1.0之前的版本。**
 
 ## 免责声明
 
@@ -32,26 +32,26 @@ A V2board node server based on Xray-core, modified from XrayR
 
 ## 功能介绍
 
-| 功能            | v2ray | trojan | shadowsocks |
-| --------------- | ----- | ------ | ----------- |
+| 功能        | v2ray | trojan | shadowsocks |
+|-----------|-------|--------|-------------|
 | 获取节点信息    | √     | √      | √           |
 | 获取用户信息    | √     | √      | √           |
 | 用户流量统计    | √     | √      | √           |
 | 自动申请tls证书 | √     | √      | √           |
 | 自动续签tls证书 | √     | √      | √           |
 | 在线人数统计    | √     | √      | √           |
-| 在线IP数限制    | √     | √      | √           |
-| 跨节点IP数限制   | √    | √     | √          |
-| 审计规则        | √     | √      | √           |
+| 在线IP数限制   | √     | √      | √           |
+| 跨节点IP数限制  | √     | √      | √           |
+| 审计规则      | √     | √      | √           |
 | 按照用户限速    | √     | √      | √           |
-| 自定义DNS       | √     | √      | √           |
-| 动态限速(未测试)       | √     | √     | √             
+| 自定义DNS    | √     | √      | √           |
+| 动态限速(未测试) | √     | √      | √           |
 
 ## 支持前端
 
-| 前端                                                   | v2ray | trojan | shadowsocks                    |
-| ------------------------------------------------------ | ----- | ------ | ------------------------------ |
-| v2board                                                | √     | √      | √                              |
+| 前端      | v2ray | trojan | shadowsocks |
+|---------|-------|--------|-------------|
+| v2board | √     | √      | √           |
 
 ## TODO
 
@@ -87,7 +87,6 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 [Mozilla Public License Version 2.0](https://github.com/XrayR-project/XrayR/blob/master/LICENSE)
 
 ## Telgram
-
 
 ## Stars 增长记录
 

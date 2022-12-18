@@ -3,8 +3,8 @@ package cmd
 import (
 	"bytes"
 	"crypto/x509"
-	"encoding/json"
 	"github.com/Yuzuki616/V2bX/node/controller/legoCmd/log"
+	"github.com/goccy/go-json"
 	"io/ioutil"
 	"os"
 	"path/filepath"

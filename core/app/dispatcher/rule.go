@@ -16,7 +16,7 @@ func NewRule() *Rule {
 	}
 }
 
-func (r *Rule) UpdateRule(tag string, newRuleList *panel.DetectRule) error {
+func (r *Rule) UpdateRule(tag string, newRuleList []panel.DestinationRule) error {
 	if value, ok := r.Rule.LoadOrStore(tag, newRuleList); ok {
 		oldRuleList := value.([]panel.DestinationRule)
 		if !reflect.DeepEqual(oldRuleList, newRuleList) {
@@ -30,18 +30,11 @@ func (r *Rule) Detect(tag string, destination string, protocol string) (reject b
 	reject = false
 	// If we have some rule for this inbound
 	if value, ok := r.Rule.Load(tag); ok {
-		ruleList := value.(*panel.DetectRule)
-		for i, _ := range ruleList.DestinationRule {
-			if ruleList.DestinationRule[i].Pattern.Match([]byte(destination)) {
+		ruleList := value.([]panel.DestinationRule)
+		for i := range ruleList {
+			if ruleList[i].Pattern.Match([]byte(destination)) {
 				reject = true
 				break
-			}
-		}
-		if !reject {
-			for _, v := range ruleList.ProtocolRule {
-				if v == protocol {
-					return true
-				}
 			}
 		}
 	}

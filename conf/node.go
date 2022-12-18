@@ -41,16 +41,15 @@ type IpReportConfig struct {
 }
 
 type DynamicSpeedLimitConfig struct {
-	Periodic   int    `yaml:"Periodic"`
-	Traffic    int64  `yaml:"Traffic"`
-	SpeedLimit uint64 `yaml:"SpeedLimit"`
-	ExpireTime int    `yaml:"ExpireTime"`
+	Periodic   int   `yaml:"Periodic"`
+	Traffic    int64 `yaml:"Traffic"`
+	SpeedLimit int   `yaml:"SpeedLimit"`
+	ExpireTime int   `yaml:"ExpireTime"`
 }
 
 type ControllerConfig struct {
 	ListenIP                string                   `yaml:"ListenIP"`
 	SendIP                  string                   `yaml:"SendIP"`
-	UpdatePeriodic          int                      `yaml:"UpdatePeriodic"`
 	EnableDNS               bool                     `yaml:"EnableDNS"`
 	DNSType                 string                   `yaml:"DNSType"`
 	DisableUploadTraffic    bool                     `yaml:"DisableUploadTraffic"`
@@ -68,18 +67,17 @@ type ControllerConfig struct {
 }
 
 type ApiConfig struct {
-	APIHost     string `yaml:"ApiHost"`
-	NodeID      int    `yaml:"NodeID"`
-	Key         string `yaml:"ApiKey"`
-	NodeType    string `yaml:"NodeType"`
-	EnableVless bool   `yaml:"EnableVless"`
-	EnableXTLS  bool   `yaml:"EnableXTLS"`
-	//EnableSS2022        bool    `yaml:"EnableSS2022"`
-	Timeout             int     `yaml:"Timeout"`
-	SpeedLimit          float64 `yaml:"SpeedLimit"`
-	DeviceLimit         int     `yaml:"DeviceLimit"`
-	RuleListPath        string  `yaml:"RuleListPath"`
-	DisableCustomConfig bool    `yaml:"DisableCustomConfig"`
+	APIHost             string `yaml:"ApiHost"`
+	NodeID              int    `yaml:"NodeID"`
+	Key                 string `yaml:"ApiKey"`
+	NodeType            string `yaml:"NodeType"`
+	EnableVless         bool   `yaml:"EnableVless"`
+	EnableXTLS          bool   `yaml:"EnableXTLS"`
+	Timeout             int    `yaml:"Timeout"`
+	SpeedLimit          int    `yaml:"SpeedLimit"`
+	DeviceLimit         int    `yaml:"DeviceLimit"`
+	RuleListPath        string `yaml:"RuleListPath"`
+	DisableCustomConfig bool   `yaml:"DisableCustomConfig"`
 }
 
 type NodeConfig struct {

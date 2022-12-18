@@ -28,7 +28,6 @@ Nodes:
     ControllerConfig:
       ListenIP: 0.0.0.0 # IP address you want to listen
       SendIP: 0.0.0.0 # IP address you want to send pacakage
-      UpdatePeriodic: 60 # Time to update the nodeinfo, how many sec.
       EnableDNS: false # Use custom DNS config, Please ensure that you set the dns.json well
       DNSType: AsIs # AsIs, UseIP, UseIPv4, UseIPv6, DNS strategy
       EnableProxyProtocol: false # Only works for WebSocket and TCP
@@ -83,7 +82,6 @@ Nodes:
   #     DeviceLimit: 0 # Local settings will replace remote settings
   #   ControllerConfig:
   #     ListenIP: 0.0.0.0 # IP address you want to listen
-  #     UpdatePeriodic: 10 # Time to update the nodeinfo, how many sec.
   #     EnableDNS: false # Use custom DNS config, Please ensure that you set the dns.json well
   #     CertConfig:
   #       CertMode: dns # Option about how to get certificate: none, file, http, dns

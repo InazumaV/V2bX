@@ -12,15 +12,15 @@ import (
 )
 
 type UserLimitInfo struct {
-	UID        int
-	SpeedLimit uint64
-	ExpireTime int64
-	//DeviceLimit int
+	UID               int
+	SpeedLimit        int
+	DynamicSpeedLimit int
+	ExpireTime        int64
 }
 
 type InboundInfo struct {
 	Tag             string
-	NodeSpeedLimit  uint64
+	NodeSpeedLimit  int
 	NodeDeviceLimit int
 	UserLimitInfo   *sync.Map // Key: Uid value: UserLimitInfo
 	SpeedLimiter    *sync.Map // key: Uid, value: *ratelimit.Bucket
@@ -37,27 +37,47 @@ func NewLimiter() *Limiter {
 	}
 }
 
-func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo) error {
+func (l *Limiter) AddInboundLimiter(tag string, nodeInfo *panel.NodeInfo, users []panel.UserInfo) error {
 	inboundInfo := &InboundInfo{
 		Tag:             tag,
 		NodeSpeedLimit:  nodeInfo.SpeedLimit,
 		NodeDeviceLimit: nodeInfo.DeviceLimit,
+		UserLimitInfo:   new(sync.Map),
 		SpeedLimiter:    new(sync.Map),
 		UserOnlineIP:    new(sync.Map),
+	}
+	for i := range users {
+		if users[i].SpeedLimit != 0 {
+			userLimit := &UserLimitInfo{
+				UID:        users[i].Id,
+				SpeedLimit: users[i].SpeedLimit,
+				ExpireTime: 0,
+			}
+			inboundInfo.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d", tag, users[i].Uuid, users[i].Id), userLimit)
+		}
 	}
 	inboundInfo.UserLimitInfo = new(sync.Map)
 	l.InboundInfo.Store(tag, inboundInfo) // Replace the old inbound info
 	return nil
 }
 
-func (l *Limiter) UpdateInboundLimiter(tag string, deleted []panel.UserInfo) error {
+func (l *Limiter) UpdateInboundLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo) error {
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		for i := range deleted {
 			inboundInfo.UserLimitInfo.Delete(fmt.Sprintf("%s|%s|%d", tag,
-				(deleted)[i].GetUserEmail(), (deleted)[i].UID))
-			inboundInfo.SpeedLimiter.Delete(fmt.Sprintf("%s|%s|%d", tag,
-				(deleted)[i].GetUserEmail(), (deleted)[i].UID)) // Delete limiter bucket
+				(deleted)[i].Uuid, (deleted)[i].Id))
+		}
+		for i := range added {
+			if added[i].SpeedLimit != 0 {
+				userLimit := &UserLimitInfo{
+					UID:        added[i].Id,
+					SpeedLimit: added[i].SpeedLimit,
+					ExpireTime: 0,
+				}
+				inboundInfo.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d", tag,
+					(added)[i].Uuid, (added)[i].Id), userLimit)
+			}
 		}
 	} else {
 		return fmt.Errorf("no such inbound in limiter: %s", tag)
@@ -70,14 +90,14 @@ func (l *Limiter) DeleteInboundLimiter(tag string) error {
 	return nil
 }
 
-func (l *Limiter) AddUserSpeedLimit(tag string, userInfo *panel.UserInfo, limit uint64, expire int64) error {
+func (l *Limiter) AddDynamicSpeedLimit(tag string, userInfo *panel.UserInfo, limit int, expire int64) error {
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		userLimit := &UserLimitInfo{
-			SpeedLimit: limit,
-			ExpireTime: time.Now().Add(time.Duration(expire) * time.Second).Unix(),
+			DynamicSpeedLimit: limit,
+			ExpireTime:        time.Now().Add(time.Duration(expire) * time.Second).Unix(),
 		}
-		inboundInfo.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d", tag, userInfo.GetUserEmail(), userInfo.UID), userLimit)
+		inboundInfo.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d", tag, userInfo.Uuid, userInfo.Id), userLimit)
 		return nil
 	} else {
 		return fmt.Errorf("no such inbound in limiter: %s", tag)
@@ -167,15 +187,17 @@ func (l *Limiter) CheckSpeedAndDeviceLimit(tag string, email string, ip string) 
 	if value, ok := l.InboundInfo.Load(tag); ok {
 		inboundInfo := value.(*InboundInfo)
 		nodeLimit := inboundInfo.NodeSpeedLimit
-		var userLimit uint64 = 0
+		userLimit := 0
 		expired := false
 		if v, ok := inboundInfo.UserLimitInfo.Load(email); ok {
 			u := v.(*UserLimitInfo)
 			if u.ExpireTime < time.Now().Unix() && u.ExpireTime != 0 {
-				userLimit = 0
+				if u.SpeedLimit != 0 {
+					userLimit = u.SpeedLimit
+				}
 				expired = true
 			} else {
-				userLimit = u.SpeedLimit
+				userLimit = determineSpeedLimit(u.SpeedLimit, u.DynamicSpeedLimit)
 			}
 		}
 		ipMap := new(sync.Map)
@@ -200,9 +222,9 @@ func (l *Limiter) CheckSpeedAndDeviceLimit(tag string, email string, ip string) 
 				}
 			}
 		}
-		limit := determineSpeedLimit(nodeLimit, userLimit) // If you need the Speed limit
+		limit := int64(determineSpeedLimit(nodeLimit, userLimit)) * 1000000 / 8 // If you need the Speed limit
 		if limit > 0 {
-			limiter := ratelimit.NewBucketWithQuantum(time.Second, int64(limit), int64(limit)) // Byte/s
+			limiter := ratelimit.NewBucketWithQuantum(time.Second, limit, limit) // Byte/s
 			if v, ok := inboundInfo.SpeedLimiter.LoadOrStore(email, limiter); ok {
 				if expired {
 					inboundInfo.SpeedLimiter.Store(email, limiter)
@@ -246,22 +268,22 @@ func (w *Writer) WriteMultiBuffer(mb buf.MultiBuffer) error {
 }
 
 // determineSpeedLimit returns the minimum non-zero rate
-func determineSpeedLimit(nodeLimit, userLimit uint64) (limit uint64) {
-	if nodeLimit == 0 || userLimit == 0 {
-		if nodeLimit > userLimit {
-			return nodeLimit
-		} else if nodeLimit < userLimit {
-			return userLimit
+func determineSpeedLimit(limit1, limit2 int) (limit int) {
+	if limit1 == 0 || limit2 == 0 {
+		if limit1 > limit2 {
+			return limit1
+		} else if limit1 < limit2 {
+			return limit2
 		} else {
 			return 0
 		}
 	} else {
-		if nodeLimit > userLimit {
-			return userLimit
-		} else if nodeLimit < userLimit {
-			return nodeLimit
+		if limit1 > limit2 {
+			return limit2
+		} else if limit1 < limit2 {
+			return limit1
 		} else {
-			return nodeLimit
+			return limit1
 		}
 	}
 }

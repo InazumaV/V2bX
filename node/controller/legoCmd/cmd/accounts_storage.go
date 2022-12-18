@@ -3,11 +3,11 @@ package cmd
 import (
 	"crypto"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/node/controller/legoCmd/log"
+	"github.com/goccy/go-json"
 	"io/ioutil"
 	"net/url"
 	"os"
