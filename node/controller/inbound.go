@@ -50,7 +50,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 		sniffingConfig.Enabled = false
 	}
 	inbound.SniffingConfig = sniffingConfig
-	if nodeInfo.NodeType == "tcp" {
+	if *inbound.StreamSetting.Network == "tcp" {
 		if inbound.StreamSetting.TCPSettings != nil {
 			inbound.StreamSetting.TCPSettings.AcceptProxyProtocol = config.EnableProxyProtocol
 		} else {
@@ -59,7 +59,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			} //Enable proxy protocol
 			inbound.StreamSetting.TCPSettings = tcpSetting
 		}
-	} else if nodeInfo.NodeType == "ws" {
+	} else if *inbound.StreamSetting.Network == "ws" {
 		inbound.StreamSetting.WSSettings = &coreConf.WebSocketConfig{
 			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
 	}
