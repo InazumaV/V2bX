@@ -60,7 +60,7 @@ func (c *Client) ReportUserTraffic(userTraffic []UserTraffic) error {
 	for i := range userTraffic {
 		data[userTraffic[i].UID] = []int64{userTraffic[i].Upload, userTraffic[i].Download}
 	}
-	const path = "/api/v1/server/UniProxy/user"
+	const path = "/api/v1/server/UniProxy/push"
 	res, err := c.client.R().
 		SetBody(userTraffic).
 		ForceContentType("application/json").
