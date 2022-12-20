@@ -41,14 +41,14 @@ func New(server *core.Core, api panel.Panel, config *conf.ControllerConfig) *Nod
 func (c *Node) Start() error {
 	c.clientInfo = c.apiClient.Describe()
 	// First fetch Node Info
-	newNodeInfo, err := c.apiClient.GetNodeInfo()
+	var err error
+	c.nodeInfo, err = c.apiClient.GetNodeInfo()
 	if err != nil {
 		return fmt.Errorf("get node info failed: %s", err)
 	}
-	c.nodeInfo = newNodeInfo
 	c.Tag = c.buildNodeTag()
 	// Add new tag
-	err = c.addNewTag(newNodeInfo)
+	err = c.addNewTag(c.nodeInfo)
 	if err != nil {
 		return fmt.Errorf("add new tag failed: %s", err)
 	}
@@ -60,7 +60,7 @@ func (c *Node) Start() error {
 	if len(c.userList) == 0 {
 		return errors.New("add users failed: not have any user")
 	}
-	err = c.addNewUser(c.userList, newNodeInfo)
+	err = c.addNewUser(c.userList, c.nodeInfo)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (c *Node) Start() error {
 	}
 	// Add Rule Manager
 	if !c.DisableGetRule {
-		if err := c.server.UpdateRule(c.Tag, newNodeInfo.Rules); err != nil {
+		if err := c.server.UpdateRule(c.Tag, c.nodeInfo.Rules); err != nil {
 			log.Printf("Update rule filed: %s", err)
 		}
 	}
