@@ -6,7 +6,9 @@ import (
 	"testing"
 )
 
-func TestClient_GetNodeInfo(t *testing.T) {
+var client Panel
+
+func init() {
 	c, err := New(&conf.ApiConfig{
 		APIHost:  "http://127.0.0.1",
 		Key:      "token",
@@ -14,7 +16,21 @@ func TestClient_GetNodeInfo(t *testing.T) {
 		NodeID:   1,
 	})
 	if err != nil {
-		log.Print(err)
+		log.Panic(err)
 	}
-	log.Println(c.GetNodeInfo())
+	client = c
+}
+
+func TestClient_GetNodeInfo(t *testing.T) {
+	log.Println(client.GetNodeInfo())
+}
+
+func TestClient_ReportUserTraffic(t *testing.T) {
+	log.Println(client.ReportUserTraffic([]UserTraffic{
+		{
+			UID:      10372,
+			Upload:   1000,
+			Download: 1000,
+		},
+	}))
 }

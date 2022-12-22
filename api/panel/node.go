@@ -4,7 +4,6 @@ import (
 	"github.com/goccy/go-json"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 type NodeInfo struct {
@@ -62,12 +61,10 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	nodeInfo.NodeType = c.NodeType
 	for i := range nodeInfo.Routes { // parse rules from routes
 		if nodeInfo.Routes[i].Action == "block" {
-			for _, v := range strings.Split(nodeInfo.Routes[i].Match, ",") {
-				nodeInfo.Rules = append(nodeInfo.Rules, DestinationRule{
-					ID:      nodeInfo.Routes[i].Id,
-					Pattern: regexp.MustCompile(v),
-				})
-			}
+			nodeInfo.Rules = append(nodeInfo.Rules, DestinationRule{
+				ID:      nodeInfo.Routes[i].Id,
+				Pattern: regexp.MustCompile(nodeInfo.Routes[i].Match),
+			})
 		}
 	}
 	nodeInfo.Routes = nil

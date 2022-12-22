@@ -62,7 +62,7 @@ func (c *Client) ReportUserTraffic(userTraffic []UserTraffic) error {
 	}
 	const path = "/api/v1/server/UniProxy/push"
 	res, err := c.client.R().
-		SetBody(userTraffic).
+		SetBody(data).
 		ForceContentType("application/json").
 		Post(path)
 	err = c.checkResponse(res, path, err)
