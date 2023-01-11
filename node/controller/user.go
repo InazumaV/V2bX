@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/xtls/xray-core/common/protocol"
@@ -110,7 +111,7 @@ func (c *Node) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherTy
 		}
 	} else {
 		ssAccount := &shadowsocks_2022.User{
-			Key: userInfo.Uuid,
+			Key: base64.StdEncoding.EncodeToString([]byte(userInfo.Uuid[:32])),
 		}
 		return &protocol.User{
 			Level:   0,
