@@ -2,14 +2,86 @@ package controller
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api/iprecoder"
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/node/controller/legoCmd"
+	"github.com/Yuzuki616/V2bX/node/controller/lego"
 	"github.com/xtls/xray-core/common/protocol"
+	"github.com/xtls/xray-core/common/task"
 	"log"
 	"runtime"
 	"strconv"
 	"time"
 )
+
+func (c *Node) initTask() {
+	// fetch node info task
+	c.nodeInfoMonitorPeriodic = &task.Periodic{
+		Interval: time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second,
+		Execute:  c.nodeInfoMonitor,
+	}
+	// fetch user list task
+	c.userReportPeriodic = &task.Periodic{
+		Interval: time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second,
+		Execute:  c.reportUserTraffic,
+	}
+	log.Printf("[%s: %d] Start monitor node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
+	// delay to start nodeInfoMonitor
+	go func() {
+		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second)
+		_ = c.nodeInfoMonitorPeriodic.Start()
+	}()
+	log.Printf("[%s: %d] Start report node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
+	// delay to start userReport
+	go func() {
+		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second)
+		_ = c.userReportPeriodic.Start()
+	}()
+	if c.nodeInfo.EnableTls && c.CertConfig.CertMode != "none" &&
+		(c.CertConfig.CertMode == "dns" || c.CertConfig.CertMode == "http") {
+		c.renewCertPeriodic = &task.Periodic{
+			Interval: time.Hour * 24,
+			Execute:  c.reportUserTraffic,
+		}
+		log.Printf("[%s: %d] Start renew cert", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
+		// delay to start renewCert
+		go func() {
+			_ = c.renewCertPeriodic.Start()
+		}()
+	}
+	if c.EnableDynamicSpeedLimit {
+		// Check dynamic speed limit task
+		c.dynamicSpeedLimitPeriodic = &task.Periodic{
+			Interval: time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second,
+			Execute:  c.dynamicSpeedLimit,
+		}
+		go func() {
+			time.Sleep(time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second)
+			_ = c.dynamicSpeedLimitPeriodic.Start()
+		}()
+		log.Printf("[%s: %d] Start dynamic speed limit", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
+	}
+	if c.EnableIpRecorder {
+		switch c.IpRecorderConfig.Type {
+		case "Recorder":
+			c.ipRecorder = iprecoder.NewRecorder(c.IpRecorderConfig.RecorderConfig)
+		case "Redis":
+			c.ipRecorder = iprecoder.NewRedis(c.IpRecorderConfig.RedisConfig)
+		default:
+			log.Printf("recorder type: %s is not vail, disable recorder", c.IpRecorderConfig.Type)
+			return
+		}
+		// report and fetch online ip list task
+		c.onlineIpReportPeriodic = &task.Periodic{
+			Interval: time.Duration(c.IpRecorderConfig.Periodic) * time.Second,
+			Execute:  c.reportOnlineIp,
+		}
+		go func() {
+			time.Sleep(time.Duration(c.IpRecorderConfig.Periodic) * time.Second)
+			_ = c.onlineIpReportPeriodic.Start()
+		}()
+		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
+	}
+}
 
 func (c *Node) nodeInfoMonitor() (err error) {
 	// First fetch Node Info
@@ -43,20 +115,6 @@ func (c *Node) nodeInfoMonitor() (err error) {
 			return nil
 		}
 		if err := c.server.UpdateRule(c.Tag, newNodeInfo.Rules); err != nil {
-			log.Print(err)
-		}
-	}
-	// Check Cert
-	if c.nodeInfo.EnableTls && c.CertConfig.CertMode != "none" &&
-		(c.CertConfig.CertMode == "dns" || c.CertConfig.CertMode == "http") {
-		lego, err := legoCmd.New()
-		if err != nil {
-			log.Print(err)
-		}
-		// Core-core supports the OcspStapling certification hot renew
-		_, _, err = lego.RenewCert(c.CertConfig.CertDomain, c.CertConfig.Email,
-			c.CertConfig.CertMode, c.CertConfig.Provider, c.CertConfig.DNSEnv)
-		if err != nil {
 			log.Print(err)
 		}
 	}
@@ -279,4 +337,17 @@ func (c *Node) dynamicSpeedLimit() error {
 		}
 	}
 	return nil
+}
+
+func (c *Node) RenewCert() {
+	l, err := lego.New(c.CertConfig)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	err = l.RenewCert()
+	if err != nil {
+		log.Print(err)
+		return
+	}
 }

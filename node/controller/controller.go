@@ -9,7 +9,6 @@ import (
 	"github.com/Yuzuki616/V2bX/core"
 	"github.com/xtls/xray-core/common/task"
 	"log"
-	"time"
 )
 
 type Node struct {
@@ -22,8 +21,9 @@ type Node struct {
 	ipRecorder                iprecoder.IpRecorder
 	nodeInfoMonitorPeriodic   *task.Periodic
 	userReportPeriodic        *task.Periodic
+	renewCertPeriodic         *task.Periodic
+	dynamicSpeedLimitPeriodic *task.Periodic
 	onlineIpReportPeriodic    *task.Periodic
-	DynamicSpeedLimitPeriodic *task.Periodic
 	*conf.ControllerConfig
 }
 
@@ -73,62 +73,7 @@ func (c *Node) Start() error {
 			log.Printf("Update rule filed: %s", err)
 		}
 	}
-	// fetch node info task
-	c.nodeInfoMonitorPeriodic = &task.Periodic{
-		Interval: time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second,
-		Execute:  c.nodeInfoMonitor,
-	}
-	// fetch user list task
-	c.userReportPeriodic = &task.Periodic{
-		Interval: time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second,
-		Execute:  c.reportUserTraffic,
-	}
-	log.Printf("[%s: %d] Start monitor node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
-	// delay to start nodeInfoMonitor
-	go func() {
-		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second)
-		_ = c.nodeInfoMonitorPeriodic.Start()
-	}()
-
-	log.Printf("[%s: %d] Start report node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
-	// delay to start userReport
-	go func() {
-		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second)
-		_ = c.userReportPeriodic.Start()
-	}()
-	if c.EnableDynamicSpeedLimit {
-		// Check dynamic speed limit task
-		c.DynamicSpeedLimitPeriodic = &task.Periodic{
-			Interval: time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second,
-			Execute:  c.dynamicSpeedLimit,
-		}
-		go func() {
-			time.Sleep(time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second)
-			_ = c.DynamicSpeedLimitPeriodic.Start()
-		}()
-		log.Printf("[%s: %d] Start dynamic speed limit", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
-	}
-	if c.EnableIpRecorder {
-		switch c.IpRecorderConfig.Type {
-		case "Recorder":
-			c.ipRecorder = iprecoder.NewRecorder(c.IpRecorderConfig.RecorderConfig)
-		case "Redis":
-			c.ipRecorder = iprecoder.NewRedis(c.IpRecorderConfig.RedisConfig)
-		default:
-			log.Printf("recorder type: %s is not vail, disable recorder", c.IpRecorderConfig.Type)
-			return nil
-		}
-		// report and fetch online ip list task
-		c.onlineIpReportPeriodic = &task.Periodic{
-			Interval: time.Duration(c.IpRecorderConfig.Periodic) * time.Second,
-			Execute:  c.reportOnlineIp,
-		}
-		go func() {
-			time.Sleep(time.Duration(c.IpRecorderConfig.Periodic) * time.Second)
-			_ = c.onlineIpReportPeriodic.Start()
-		}()
-		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
-	}
+	c.initTask()
 	return nil
 }
 
@@ -146,16 +91,22 @@ func (c *Node) Close() error {
 			log.Panicf("user report periodic close failed: %s", err)
 		}
 	}
+	if c.renewCertPeriodic != nil {
+		err := c.renewCertPeriodic.Close()
+		if err != nil {
+			log.Panicf("renew cert periodic close failed: %s", err)
+		}
+	}
+	if c.dynamicSpeedLimitPeriodic != nil {
+		err := c.dynamicSpeedLimitPeriodic.Close()
+		if err != nil {
+			log.Panicf("dynamic speed limit periodic close failed: %s", err)
+		}
+	}
 	if c.onlineIpReportPeriodic != nil {
 		err := c.onlineIpReportPeriodic.Close()
 		if err != nil {
 			log.Panicf("online ip report periodic close failed: %s", err)
-		}
-	}
-	if c.DynamicSpeedLimitPeriodic != nil {
-		err := c.DynamicSpeedLimitPeriodic.Close()
-		if err != nil {
-			log.Panicf("dynamic speed limit periodic close failed: %s", err)
 		}
 	}
 	return nil

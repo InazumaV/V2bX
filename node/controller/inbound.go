@@ -6,8 +6,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/common/file"
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/node/controller/legoCmd"
+	"github.com/Yuzuki616/V2bX/node/controller/lego"
 	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/core"
@@ -220,31 +221,25 @@ func buildShadowsocks(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, i
 }
 
 func getCertFile(certConfig *conf.CertConfig) (certFile string, keyFile string, err error) {
-	if certConfig.CertMode == "file" {
-		if certConfig.CertFile == "" || certConfig.KeyFile == "" {
-			return "", "", fmt.Errorf("cert file path or key file path not exist")
+	if certConfig.CertFile == "" || certConfig.KeyFile == "" {
+		return "", "", fmt.Errorf("cert file path or key file path not exist")
+	}
+	switch certConfig.CertMode {
+	case "file":
+		return certConfig.CertFile, certConfig.KeyFile, nil
+	case "dns", "http":
+		if file.IsExist(certConfig.CertFile) && file.IsExist(certConfig.KeyFile) {
+			return certConfig.CertFile, certConfig.KeyFile, nil
+		}
+		l, err := lego.New(certConfig)
+		if err != nil {
+			return "", "", fmt.Errorf("create lego object error: %s", err)
+		}
+		err = l.CreateCert()
+		if err != nil {
+			return "", "", fmt.Errorf("create cert error: %s", err)
 		}
 		return certConfig.CertFile, certConfig.KeyFile, nil
-	} else if certConfig.CertMode == "dns" {
-		lego, err := legoCmd.New()
-		if err != nil {
-			return "", "", err
-		}
-		certPath, keyPath, err := lego.DNSCert(certConfig.CertDomain, certConfig.Email, certConfig.Provider, certConfig.DNSEnv)
-		if err != nil {
-			return "", "", err
-		}
-		return certPath, keyPath, err
-	} else if certConfig.CertMode == "http" {
-		lego, err := legoCmd.New()
-		if err != nil {
-			return "", "", err
-		}
-		certPath, keyPath, err := lego.HTTPCert(certConfig.CertDomain, certConfig.Email)
-		if err != nil {
-			return "", "", err
-		}
-		return certPath, keyPath, err
 	}
 	return "", "", fmt.Errorf("unsupported certmode: %s", certConfig.CertMode)
 }

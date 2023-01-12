@@ -8,10 +8,9 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/juju/ratelimit v1.0.2
-	github.com/stretchr/testify v1.8.1
-	github.com/urfave/cli v1.22.10
+	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/xtls/xray-core v1.7.2
-	golang.org/x/net v0.5.0
+	golang.org/x/net v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1
 )
@@ -47,7 +46,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cloudflare/cloudflare-go v0.49.0 // indirect
 	github.com/cpu/goacmedns v0.1.1 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.10.1 // indirect
 	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
@@ -115,10 +113,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/otp v1.3.0 // indirect
-	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2 // indirect
 	github.com/refraction-networking/utls v1.2.0 // indirect
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sacloud/libsacloud v1.36.2 // indirect
 	github.com/sagernet/sing v0.1.2 // indirect
 	github.com/sagernet/sing-shadowsocks v0.1.0 // indirect
