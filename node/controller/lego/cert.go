@@ -2,13 +2,11 @@ package lego
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/common/file"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge/http01"
 	"github.com/go-acme/lego/v4/providers/dns"
 	"os"
-	"path"
 	"strings"
 	"time"
 )
@@ -86,21 +84,17 @@ func (l *Lego) parseParmas(path string) string {
 	return r.Replace(path)
 }
 func (l *Lego) writeCert(certificates *certificate.Resource) error {
-	if !file.IsExist(path.Dir(l.config.CertFile)) {
-		err := os.MkdirAll(path.Dir(l.config.CertFile), 0755)
-		if err != nil {
-			return fmt.Errorf("create dir error: %s", err)
-		}
+	err := checkPath(l.config.CertFile)
+	if err != nil {
+		return fmt.Errorf("check path error: %s", err)
 	}
-	err := os.WriteFile(l.parseParmas(l.config.CertFile), certificates.Certificate, 0644)
+	err = os.WriteFile(l.parseParmas(l.config.CertFile), certificates.Certificate, 0644)
 	if err != nil {
 		return err
 	}
-	if !file.IsExist(path.Dir(l.config.KeyFile)) {
-		err := os.MkdirAll(path.Dir(l.config.CertFile), 0755)
-		if err != nil {
-			return fmt.Errorf("create dir error: %s", err)
-		}
+	err = checkPath(l.config.KeyFile)
+	if err != nil {
+		return fmt.Errorf("check path error: %s", err)
 	}
 	err = os.WriteFile(l.parseParmas(l.config.KeyFile), certificates.PrivateKey, 0644)
 	if err != nil {
