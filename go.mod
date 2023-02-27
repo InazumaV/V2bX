@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/go-acme/lego/v4 v4.10.0
+	github.com/go-acme/lego/v4 v4.10.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.10.0
