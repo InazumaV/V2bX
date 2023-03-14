@@ -7,7 +7,7 @@ require (
 	github.com/go-acme/lego/v4 v4.10.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/goccy/go-json v0.10.0
+	github.com/goccy/go-json v0.10.1
 	github.com/juju/ratelimit v1.0.2
 	github.com/xtls/xray-core v1.7.5
 	google.golang.org/protobuf v1.28.1
