@@ -10,7 +10,7 @@ require (
 	github.com/goccy/go-json v0.10.0
 	github.com/juju/ratelimit v1.0.2
 	github.com/xtls/xray-core v1.7.5
-	google.golang.org/protobuf v1.28.1
+	google.golang.org/protobuf v1.29.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
