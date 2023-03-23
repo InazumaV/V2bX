@@ -66,27 +66,16 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	}
 	// Set TLS and XTLS settings
 	if nodeInfo.EnableTls && config.CertConfig.CertMode != "none" {
-		inbound.StreamSetting.Security = nodeInfo.TLSType
+		inbound.StreamSetting.Security = "tls"
 		certFile, keyFile, err := getCertFile(config.CertConfig)
 		if err != nil {
 			return nil, err
 		}
-		if nodeInfo.TLSType == "tls" {
-			tlsSettings := &coreConf.TLSConfig{
-				RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
-			}
-			tlsSettings.Certs = append(tlsSettings.Certs, &coreConf.TLSCertConfig{CertFile: certFile, KeyFile: keyFile, OcspStapling: 3600})
-			inbound.StreamSetting.TLSSettings = tlsSettings
-		} else if nodeInfo.TLSType == "xtls" {
-			xtlsSettings := &coreConf.XTLSConfig{
-				RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
-			}
-			xtlsSettings.Certs = append(xtlsSettings.Certs, &coreConf.XTLSCertConfig{
-				CertFile:     certFile,
-				KeyFile:      keyFile,
-				OcspStapling: 3600})
-			inbound.StreamSetting.XTLSSettings = xtlsSettings
+		tlsSettings := &coreConf.TLSConfig{
+			RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
 		}
+		tlsSettings.Certs = append(tlsSettings.Certs, &coreConf.TLSCertConfig{CertFile: certFile, KeyFile: keyFile, OcspStapling: 3600})
+		inbound.StreamSetting.TLSSettings = tlsSettings
 	}
 	// Support ProxyProtocol for any transport protocol
 	if *inbound.StreamSetting.Network != "tcp" &&

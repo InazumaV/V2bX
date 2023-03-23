@@ -72,7 +72,6 @@ type ApiConfig struct {
 	Key                 string `yaml:"ApiKey"`
 	NodeType            string `yaml:"NodeType"`
 	EnableVless         bool   `yaml:"EnableVless"`
-	EnableXTLS          bool   `yaml:"EnableXTLS"`
 	Timeout             int    `yaml:"Timeout"`
 	SpeedLimit          int    `yaml:"SpeedLimit"`
 	DeviceLimit         int    `yaml:"DeviceLimit"`

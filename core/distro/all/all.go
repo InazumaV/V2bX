@@ -4,8 +4,7 @@ import (
 	// The following are necessary as they register handlers in their init functions.
 
 	// Mandatory features. Can't remove unless there are replacements.
-	// _ "github.com/xtls/xray-core/app/dispatcher"
-	_ "github.com/Yuzuki616/V2bX/core/app/dispatcher"
+	_ "github.com/xtls/xray-core/app/dispatcher"
 	_ "github.com/xtls/xray-core/app/proxyman/inbound"
 	_ "github.com/xtls/xray-core/app/proxyman/outbound"
 
@@ -32,7 +31,7 @@ import (
 	_ "github.com/xtls/xray-core/transport/internet/tagged/taggedimpl"
 
 	// Developer preview features
-	//_ "github.com/xtls/xray-core/app/observatory"
+	_ "github.com/xtls/xray-core/app/observatory"
 
 	// Inbound and outbound proxies.
 	_ "github.com/xtls/xray-core/proxy/blackhole"
@@ -49,6 +48,7 @@ import (
 	_ "github.com/xtls/xray-core/proxy/vless/outbound"
 	_ "github.com/xtls/xray-core/proxy/vmess/inbound"
 	_ "github.com/xtls/xray-core/proxy/vmess/outbound"
+	_ "github.com/xtls/xray-core/proxy/wireguard"
 
 	// Transports
 	_ "github.com/xtls/xray-core/transport/internet/domainsocket"
@@ -56,11 +56,11 @@ import (
 	_ "github.com/xtls/xray-core/transport/internet/http"
 	_ "github.com/xtls/xray-core/transport/internet/kcp"
 	_ "github.com/xtls/xray-core/transport/internet/quic"
+	_ "github.com/xtls/xray-core/transport/internet/reality"
 	_ "github.com/xtls/xray-core/transport/internet/tcp"
 	_ "github.com/xtls/xray-core/transport/internet/tls"
 	_ "github.com/xtls/xray-core/transport/internet/udp"
 	_ "github.com/xtls/xray-core/transport/internet/websocket"
-	_ "github.com/xtls/xray-core/transport/internet/xtls"
 
 	// Transport headers
 	_ "github.com/xtls/xray-core/transport/internet/headers/http"
@@ -70,12 +70,15 @@ import (
 	_ "github.com/xtls/xray-core/transport/internet/headers/utp"
 	_ "github.com/xtls/xray-core/transport/internet/headers/wechat"
 	_ "github.com/xtls/xray-core/transport/internet/headers/wireguard"
+
 	// JSON & TOML & YAML
 	//_ "github.com/xtls/xray-core/main/json"
 	//_ "github.com/xtls/xray-core/main/toml"
 	//_ "github.com/xtls/xray-core/main/yaml"
+
 	// Load config from file or http(s)
 	//_ "github.com/xtls/xray-core/main/confloader/external"
+
 	// Commands
-	//_ "github.com/xtls/xray-core/main/commands/all"
+	_ "github.com/xtls/xray-core/main/commands/all"
 )

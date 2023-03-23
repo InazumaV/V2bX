@@ -38,7 +38,6 @@ type DestinationRule struct {
 type localNodeConfig struct {
 	NodeId      int
 	NodeType    string
-	TLSType     string
 	EnableVless bool
 	EnableTls   bool
 	SpeedLimit  int
