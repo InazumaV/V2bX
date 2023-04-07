@@ -56,16 +56,14 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 		for {
 			select {
 			case event := <-watcher.Events:
-				if event.Op&fsnotify.Chmod == fsnotify.Chmod {
-					if event.Name == filePath {
-						log.Println("config file changed, reloading...")
-						err := p.LoadFromPath(filePath)
-						if err != nil {
-							log.Printf("reload config error: %s", err)
-						}
-						log.Println("reload config success")
-						reload()
+				if event.Has(fsnotify.Write) {
+					log.Println("config dir changed, reloading...")
+					err := p.LoadFromPath(filePath)
+					if err != nil {
+						log.Printf("reload config error: %s", err)
 					}
+					log.Println("reload config success")
+					reload()
 				}
 			case err := <-watcher.Errors:
 				if err != nil {
