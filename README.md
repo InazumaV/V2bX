@@ -55,8 +55,8 @@ A V2board node server based on Xray-core, modified from XrayR
 
 ## TODO
 
-* 进一步优化内存占用
-* 增加SS2022支持
+* 抽象化Core包以摆脱对Xray-Core的强依赖性
+* 增加Hysteria支持
 
 ## 软件安装
 
