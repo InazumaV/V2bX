@@ -50,21 +50,21 @@ A V2board node server based on Xray-core, modified from XrayR
 
 ## 支持前端
 
-| 前端      | v2ray | trojan | shadowsocks |
+| 前端      | v2ray | trojan | shadowsocks
 |---------|-------|--------|-------------|
 | v2board | √     | √      | √           |
 
 ## TODO
 
-* ~~ 抽象化Core包以摆脱对Xray-Core的强依赖性
-* ~~ 增加Hysteria支持
+* ~~抽象化Core包以摆脱对Xray-Core的强依赖性~~ 后续将会基于singbox开发新项目
+* ~~增加Hysteria支持~~ 后续将会基于singbox开发新项目
 
 ## 软件安装
 
 ### 一键安装
 
-```
-wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh && bash install.sh
+`
+wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh && ash install.sh
 ```
 
 ### 手动安装
