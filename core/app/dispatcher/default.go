@@ -237,7 +237,9 @@ func (d *DefaultDispatcher) getLink(ctx context.Context, network net.Network, sn
 			return nil, nil, nil, newError("Get limit info error: ", err)
 		}
 		// Speed Limit and Device Limit
-		w, reject := limit.CheckLimit(user.Email, sessionInbound.Source.Address.IP().String())
+		w, reject := limit.CheckLimit(user.Email,
+			sessionInbound.Source.Address.IP().String(),
+			network == net.Network_TCP)
 		if reject {
 			newError("Limited ", user.Email, " by conn or ip").AtWarning().WriteToLog()
 			common.Close(outboundLink.Writer)
@@ -473,7 +475,7 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 				common.Interrupt(link.Reader)
 				return
 			}
-		} else {
+		} else if destination.Network == net.Network_TCP {
 			defer func() {
 				l.ConnLimiter.DelConnCount(sessionInbound.User.Email, sessionInbound.Source.Address.IP().String())
 			}()

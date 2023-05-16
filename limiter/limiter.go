@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/juju/ratelimit"
+	"github.com/xtls/xray-core/common/task"
+	"log"
 	"sync"
 	"time"
 )
@@ -14,6 +16,15 @@ var limiter map[string]*Limiter
 
 func Init() {
 	limiter = map[string]*Limiter{}
+	c := task.Periodic{
+		Interval: time.Minute * 2,
+		Execute:  ClearPacketOnlineIP,
+	}
+	go func() {
+		log.Println("Limiter: ClearPacketOnlineIP started")
+		time.Sleep(time.Minute * 2)
+		c.Start()
+	}()
 }
 
 type Limiter struct {
@@ -104,9 +115,9 @@ func DeleteLimiter(tag string) {
 	limitLock.Unlock()
 }
 
-func (l *Limiter) CheckLimit(email string, ip string) (Bucket *ratelimit.Bucket, Reject bool) {
+func (l *Limiter) CheckLimit(email string, ip string, isTcp bool) (Bucket *ratelimit.Bucket, Reject bool) {
 	// ip and conn limiter
-	if l.ConnLimiter.AddConnCount(email, ip) {
+	if l.ConnLimiter.AddConnCount(email, ip, isTcp) {
 		return nil, true
 	}
 	// check and gen speed limit Bucket
