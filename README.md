@@ -40,11 +40,12 @@ A V2board node server based on Xray-core, modified from XrayR
 | 自动申请tls证书 | √     | √      | √           |
 | 自动续签tls证书 | √     | √      | √           |
 | 在线人数统计    | √     | √      | √           |
-| 在线IP数限制   | √     | √      | √           |
-| 跨节点IP数限制  | √     | √      | √           |
 | 审计规则      | √     | √      | √           |
-| 按照用户限速    | √     | √      | √           |
 | 自定义DNS    | √     | √      | √           |
+| 在线IP数限制   | √     | √      | √           |
+| 连接数限制  | √     | √      | √           |
+| 跨节点IP数限制  | √     | √      | √           |
+| 按照用户限速    | √     | √      | √           |
 | 动态限速(未测试) | √     | √      | √           |
 
 ## 支持前端
@@ -55,8 +56,8 @@ A V2board node server based on Xray-core, modified from XrayR
 
 ## TODO
 
-* 抽象化Core包以摆脱对Xray-Core的强依赖性
-* 增加Hysteria支持
+* ~~ 抽象化Core包以摆脱对Xray-Core的强依赖性
+* ~~ 增加Hysteria支持
 
 ## 软件安装
 
