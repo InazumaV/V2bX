@@ -9,7 +9,7 @@ type ConnLimiter struct {
 	ipLimit   int
 	connLimit int
 	count     sync.Map // map[string]int
-	ip        sync.Map // map[string]map[string]int or map[string]struct{}
+	ip        sync.Map // map[string]map[string]int
 }
 
 func NewConnLimiter(conn int, ip int) *ConnLimiter {
@@ -55,10 +55,7 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 				ips.Store(ip, online.(int)+2)
 			}
 		} else {
-			// not online ip for tcp
-			if _, ok = ips.Load(ip + "o"); ok {
-				return false
-			}
+			// not online ip
 			ips.Range(func(_, _ interface{}) bool {
 				cn++
 				if cn >= c.ipLimit {
@@ -105,7 +102,7 @@ func (c *ConnLimiter) DelConnCount(user string, ip string) {
 			notDel := false
 			c.ip.Range(func(_, _ any) bool {
 				notDel = true
-				return true
+				return false
 			})
 			if !notDel {
 				c.ip.Delete(user)
