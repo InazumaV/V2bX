@@ -1,4 +1,4 @@
-package controller_test
+package node_test
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
 	_ "github.com/Yuzuki616/V2bX/core/distro/all"
-	. "github.com/Yuzuki616/V2bX/node/controller"
+	. "github.com/Yuzuki616/V2bX/node"
 	xCore "github.com/xtls/xray-core/core"
 	coreConf "github.com/xtls/xray-core/infra/conf"
 	"os"

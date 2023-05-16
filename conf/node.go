@@ -52,6 +52,11 @@ type ControllerConfig struct {
 	SendIP                  string                   `yaml:"SendIP"`
 	EnableDNS               bool                     `yaml:"EnableDNS"`
 	DNSType                 string                   `yaml:"DNSType"`
+	EnableVless             bool                     `yaml:"EnableVless"`
+	EnableTls               bool                     `yaml:"EnableTls"`
+	SpeedLimit              int                      `yaml:"SpeedLimit"`
+	IPLimit                 int                      `yaml:"DeviceLimit"`
+	ConnLimit               int                      `yaml:"ConnLimit"`
 	DisableUploadTraffic    bool                     `yaml:"DisableUploadTraffic"`
 	DisableGetRule          bool                     `yaml:"DisableGetRule"`
 	EnableProxyProtocol     bool                     `yaml:"EnableProxyProtocol"`
@@ -67,16 +72,12 @@ type ControllerConfig struct {
 }
 
 type ApiConfig struct {
-	APIHost             string `yaml:"ApiHost"`
-	NodeID              int    `yaml:"NodeID"`
-	Key                 string `yaml:"ApiKey"`
-	NodeType            string `yaml:"NodeType"`
-	EnableVless         bool   `yaml:"EnableVless"`
-	Timeout             int    `yaml:"Timeout"`
-	SpeedLimit          int    `yaml:"SpeedLimit"`
-	DeviceLimit         int    `yaml:"DeviceLimit"`
-	RuleListPath        string `yaml:"RuleListPath"`
-	DisableCustomConfig bool   `yaml:"DisableCustomConfig"`
+	APIHost      string `yaml:"ApiHost"`
+	NodeID       int    `yaml:"NodeID"`
+	Key          string `yaml:"ApiKey"`
+	NodeType     string `yaml:"NodeType"`
+	Timeout      int    `yaml:"Timeout"`
+	RuleListPath string `yaml:"RuleListPath"`
 }
 
 type NodeConfig struct {

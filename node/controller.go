@@ -1,4 +1,4 @@
-package controller
+package node
 
 import (
 	"errors"
@@ -7,11 +7,12 @@ import (
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/xtls/xray-core/common/task"
 	"log"
 )
 
-type Node struct {
+type Controller struct {
 	server                    *core.Core
 	clientInfo                panel.ClientInfo
 	apiClient                 panel.Panel
@@ -27,9 +28,9 @@ type Node struct {
 	*conf.ControllerConfig
 }
 
-// New return a Node service with default parameters.
-func New(server *core.Core, api panel.Panel, config *conf.ControllerConfig) *Node {
-	controller := &Node{
+// NewController return a Node controller with default parameters.
+func NewController(server *core.Core, api panel.Panel, config *conf.ControllerConfig) *Controller {
+	controller := &Controller{
 		server:           server,
 		ControllerConfig: config,
 		apiClient:        api,
@@ -38,19 +39,13 @@ func New(server *core.Core, api panel.Panel, config *conf.ControllerConfig) *Nod
 }
 
 // Start implement the Start() function of the service interface
-func (c *Node) Start() error {
+func (c *Controller) Start() error {
 	c.clientInfo = c.apiClient.Describe()
 	// First fetch Node Info
 	var err error
 	c.nodeInfo, err = c.apiClient.GetNodeInfo()
 	if err != nil {
 		return fmt.Errorf("get node info failed: %s", err)
-	}
-	c.Tag = c.buildNodeTag()
-	// Add new tag
-	err = c.addNewTag(c.nodeInfo)
-	if err != nil {
-		return fmt.Errorf("add new tag failed: %s", err)
 	}
 	// Update user
 	c.userList, err = c.apiClient.GetUserList()
@@ -60,25 +55,36 @@ func (c *Node) Start() error {
 	if len(c.userList) == 0 {
 		return errors.New("add users failed: not have any user")
 	}
+	c.Tag = c.buildNodeTag()
+
+	// add limiter
+	l := limiter.AddLimiter(c.Tag, &limiter.LimitConfig{
+		SpeedLimit: c.SpeedLimit,
+		IpLimit:    c.IPLimit,
+		ConnLimit:  c.ConnLimit,
+	}, c.userList)
+	// add rule limiter
+	if !c.DisableGetRule {
+		if err = l.UpdateRule(c.nodeInfo.Rules); err != nil {
+			log.Printf("Update rule filed: %s", err)
+		}
+	}
+	// Add new tag
+	err = c.addNewNode(c.nodeInfo)
+	if err != nil {
+		return fmt.Errorf("add new tag failed: %s", err)
+	}
 	err = c.addNewUser(c.userList, c.nodeInfo)
 	if err != nil {
 		return err
-	}
-	if err := c.server.AddInboundLimiter(c.Tag, c.nodeInfo, c.userList); err != nil {
-		return fmt.Errorf("add inbound limiter failed: %s", err)
-	}
-	// Add Rule Manager
-	if !c.DisableGetRule {
-		if err := c.server.UpdateRule(c.Tag, c.nodeInfo.Rules); err != nil {
-			log.Printf("Update rule filed: %s", err)
-		}
 	}
 	c.initTask()
 	return nil
 }
 
 // Close implement the Close() function of the service interface
-func (c *Node) Close() error {
+func (c *Controller) Close() error {
+	limiter.DeleteLimiter(c.Tag)
 	if c.nodeInfoMonitorPeriodic != nil {
 		err := c.nodeInfoMonitorPeriodic.Close()
 		if err != nil {
@@ -112,6 +118,6 @@ func (c *Node) Close() error {
 	return nil
 }
 
-func (c *Node) buildNodeTag() string {
+func (c *Controller) buildNodeTag() string {
 	return fmt.Sprintf("%s_%s_%d", c.nodeInfo.NodeType, c.ListenIP, c.nodeInfo.NodeId)
 }

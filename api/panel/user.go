@@ -10,18 +10,9 @@ type OnlineUser struct {
 	IP  string
 }
 
-type V2RayUserInfo struct {
-	Uuid    string `json:"uuid"`
-	Email   string `json:"email"`
-	AlterId int    `json:"alter_id"`
-}
-type TrojanUserInfo struct {
-	Password string `json:"password"`
-}
 type UserInfo struct {
 	Id         int    `json:"id"`
 	Uuid       string `json:"uuid"`
-	Email      string `json:"-"`
 	SpeedLimit int    `json:"speed_limit"`
 	Traffic    int64  `json:"-"`
 }

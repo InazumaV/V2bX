@@ -1,7 +1,9 @@
 package iprecoder
 
-import "github.com/Yuzuki616/V2bX/core/app/dispatcher"
+import (
+	"github.com/Yuzuki616/V2bX/limiter"
+)
 
 type IpRecorder interface {
-	SyncOnlineIp(Ips []dispatcher.UserIpList) ([]dispatcher.UserIpList, error)
+	SyncOnlineIp(Ips []limiter.UserIpList) ([]limiter.UserIpList, error)
 }

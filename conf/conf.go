@@ -67,7 +67,7 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 				}
 			case err := <-watcher.Errors:
 				if err != nil {
-					log.Panicf("watcher error: %s", err)
+					log.Printf("File watcher error: %s", err)
 				}
 			}
 		}

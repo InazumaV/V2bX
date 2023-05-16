@@ -5,6 +5,8 @@ package dispatcher
 import (
 	"context"
 	"fmt"
+	"github.com/Yuzuki616/V2bX/common/rate"
+	"github.com/Yuzuki616/V2bX/limiter"
 	routingSession "github.com/xtls/xray-core/features/routing/session"
 	"strings"
 	"sync"
@@ -89,14 +91,12 @@ func (r *cachedReader) Interrupt() {
 
 // DefaultDispatcher is a default implementation of Dispatcher.
 type DefaultDispatcher struct {
-	ohm         outbound.Manager
-	router      routing.Router
-	policy      policy.Manager
-	stats       stats.Manager
-	dns         dns.Client
-	fdns        dns.FakeDNSEngine
-	Limiter     *Limiter
-	RuleManager *Rule
+	ohm    outbound.Manager
+	router routing.Router
+	policy policy.Manager
+	stats  stats.Manager
+	dns    dns.Client
+	fdns   dns.FakeDNSEngine
 }
 
 func init() {
@@ -121,8 +121,6 @@ func (d *DefaultDispatcher) Init(config *Config, om outbound.Manager, router rou
 	d.policy = pm
 	d.stats = sm
 	d.dns = dns
-	d.Limiter = NewLimiter()
-	d.RuleManager = NewRule()
 	return nil
 }
 
@@ -139,7 +137,7 @@ func (*DefaultDispatcher) Start() error {
 // Close implements common.Closable.
 func (*DefaultDispatcher) Close() error { return nil }
 
-func (d *DefaultDispatcher) getLink(ctx context.Context, network net.Network, sniffing session.SniffingRequest) (*transport.Link, *transport.Link) {
+func (d *DefaultDispatcher) getLink(ctx context.Context, network net.Network, sniffing session.SniffingRequest) (*transport.Link, *transport.Link, *limiter.Limiter, error) {
 	downOpt := pipe.OptionsFromContext(ctx)
 	upOpt := downOpt
 
@@ -226,21 +224,31 @@ func (d *DefaultDispatcher) getLink(ctx context.Context, network net.Network, sn
 	if sessionInbound != nil {
 		user = sessionInbound.User
 	}
-
+	var limit *limiter.Limiter
 	if user != nil && len(user.Email) > 0 {
-		// Speed Limit and Device Limit
-		bucket, ok, reject := d.Limiter.CheckSpeedAndDeviceLimit(sessionInbound.Tag, user.Email, sessionInbound.Source.Address.IP().String())
-		if reject {
-			newError("Devices reach the limit: ", user.Email).AtError().WriteToLog()
+		var err error
+		limit, err = limiter.GetLimiter(sessionInbound.Tag)
+		if err != nil {
+			newError("Get limit info error: ", err).AtError().WriteToLog()
 			common.Close(outboundLink.Writer)
 			common.Close(inboundLink.Writer)
 			common.Interrupt(outboundLink.Reader)
 			common.Interrupt(inboundLink.Reader)
-			return nil, nil
+			return nil, nil, nil, newError("Get limit info error: ", err)
 		}
-		if ok {
-			inboundLink.Writer = d.Limiter.RateWriter(inboundLink.Writer, bucket)
-			outboundLink.Writer = d.Limiter.RateWriter(outboundLink.Writer, bucket)
+		// Speed Limit and Device Limit
+		w, reject := limit.CheckLimit(user.Email, sessionInbound.Source.Address.IP().String())
+		if reject {
+			newError("Limited ", user.Email, " by conn or ip").AtWarning().WriteToLog()
+			common.Close(outboundLink.Writer)
+			common.Close(inboundLink.Writer)
+			common.Interrupt(outboundLink.Reader)
+			common.Interrupt(inboundLink.Reader)
+			return nil, nil, nil, newError("Limited ", user.Email, " by conn or ip")
+		}
+		if w != nil {
+			inboundLink.Writer = rate.NewRateLimitWriter(inboundLink.Writer, w)
+			outboundLink.Writer = rate.NewRateLimitWriter(outboundLink.Writer, w)
 		}
 		p := d.policy.ForLevel(user.Level)
 		if p.Stats.UserUplink {
@@ -263,7 +271,7 @@ func (d *DefaultDispatcher) getLink(ctx context.Context, network net.Network, sn
 		}
 	}
 
-	return inboundLink, outboundLink
+	return inboundLink, outboundLink, limit, nil
 }
 
 func (d *DefaultDispatcher) shouldOverride(ctx context.Context, result SniffResult, request session.SniffingRequest, destination net.Destination) bool {
@@ -313,11 +321,13 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 		content = new(session.Content)
 		ctx = session.ContextWithContent(ctx, content)
 	}
-
 	sniffingRequest := content.SniffingRequest
-	inbound, outbound := d.getLink(ctx, destination.Network, sniffingRequest)
+	inbound, outbound, l, err := d.getLink(ctx, destination.Network, sniffingRequest)
+	if err != nil {
+		return nil, err
+	}
 	if !sniffingRequest.Enabled {
-		go d.routedDispatch(ctx, outbound, destination, "")
+		go d.routedDispatch(ctx, outbound, destination, l)
 	} else {
 		go func() {
 			cReader := &cachedReader{
@@ -338,7 +348,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 					ob.Target = destination
 				}
 			}
-			d.routedDispatch(ctx, outbound, destination, content.Protocol)
+			d.routedDispatch(ctx, outbound, destination, l)
 		}()
 	}
 	return inbound, nil
@@ -360,7 +370,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 	}
 	sniffingRequest := content.SniffingRequest
 	if !sniffingRequest.Enabled {
-		go d.routedDispatch(ctx, outbound, destination, content.Protocol)
+		go d.routedDispatch(ctx, outbound, destination, nil)
 	} else {
 		go func() {
 			cReader := &cachedReader{
@@ -381,10 +391,9 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 					ob.Target = destination
 				}
 			}
-			d.routedDispatch(ctx, outbound, destination, content.Protocol)
+			d.routedDispatch(ctx, outbound, destination, nil)
 		}()
 	}
-
 	return nil
 }
 
@@ -434,7 +443,7 @@ func sniffer(ctx context.Context, cReader *cachedReader, metadataOnly bool, netw
 	return contentResult, contentErr
 }
 
-func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.Link, destination net.Destination, protocol string) {
+func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.Link, destination net.Destination, l *limiter.Limiter) {
 	ob := session.OutboundFromContext(ctx)
 	if hosts, ok := d.dns.(dns.HostsLookup); ok && destination.Address.Family().IsDomain() {
 		proxied := hosts.LookupHosts(ob.Target.String())
@@ -455,9 +464,22 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	sessionInbound := session.InboundFromContext(ctx)
 	// Whether the inbound connection contains a user
 	if sessionInbound.User != nil {
-		if d.RuleManager.Detect(sessionInbound.Tag, destination.String(), protocol) {
+		if l == nil {
+			var err error
+			l, err = limiter.GetLimiter(sessionInbound.Tag)
+			if err != nil {
+				newError("Get limiter error: ", err).AtError().WriteToLog()
+				common.Close(link.Writer)
+				common.Interrupt(link.Reader)
+				return
+			}
+		} else {
+			defer func() {
+				l.ConnLimiter.DelConnCount(sessionInbound.User.Email, sessionInbound.Source.Address.IP().String())
+			}()
+		}
+		if l.CheckDomainRule(destination.String()) {
 			newError(fmt.Sprintf("User %s access %s reject by rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()
-			newError("destination is reject by rule")
 			common.Close(link.Writer)
 			common.Interrupt(link.Reader)
 			return

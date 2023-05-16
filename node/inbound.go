@@ -1,4 +1,4 @@
-package controller
+package node
 
 import (
 	"crypto/rand"
@@ -8,7 +8,7 @@ import (
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/common/file"
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/node/controller/lego"
+	"github.com/Yuzuki616/V2bX/node/lego"
 	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/core"
@@ -65,7 +65,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
 	}
 	// Set TLS and XTLS settings
-	if nodeInfo.EnableTls && config.CertConfig.CertMode != "none" {
+	if config.EnableTls && config.CertConfig.CertMode != "none" {
 		inbound.StreamSetting.Security = "tls"
 		certFile, keyFile, err := getCertFile(config.CertConfig)
 		if err != nil {
@@ -91,7 +91,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 }
 
 func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
-	if nodeInfo.EnableVless {
+	if config.EnableVless {
 		//Set vless
 		inbound.Protocol = "vless"
 		if config.EnableFallback {

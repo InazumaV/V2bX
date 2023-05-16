@@ -3,8 +3,6 @@ package core
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/proxy"
 )
@@ -78,20 +76,4 @@ func (p *Core) GetUserTraffic(email string, reset bool) (up int64, down int64) {
 		}
 	}
 	return up, down
-}
-
-func (p *Core) AddUserSpeedLimit(tag string, user *panel.UserInfo, speedLimit int, expire int64) error {
-	return p.dispatcher.Limiter.AddDynamicSpeedLimit(tag, user, speedLimit, expire)
-}
-
-func (p *Core) ListOnlineIp(tag string) ([]dispatcher.UserIpList, error) {
-	return p.dispatcher.Limiter.ListOnlineUserIp(tag)
-}
-
-func (p *Core) UpdateOnlineIp(tag string, ips []dispatcher.UserIpList) {
-	p.dispatcher.Limiter.UpdateOnlineUserIP(tag, ips)
-}
-
-func (p *Core) ClearOnlineIp(tag string) {
-	p.dispatcher.Limiter.ClearOnlineUserIpAndSpeedLimiter(tag)
 }

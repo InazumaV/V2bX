@@ -1,10 +1,10 @@
-package controller
+package node
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/iprecoder"
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/node/controller/lego"
+	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/Yuzuki616/V2bX/node/lego"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/task"
 	"log"
@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func (c *Node) initTask() {
+func (c *Controller) initTask() {
 	// fetch node info task
 	c.nodeInfoMonitorPeriodic = &task.Periodic{
 		Interval: time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second,
@@ -36,7 +36,7 @@ func (c *Node) initTask() {
 		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second)
 		_ = c.userReportPeriodic.Start()
 	}()
-	if c.nodeInfo.EnableTls && c.CertConfig.CertMode != "none" &&
+	if c.EnableTls && c.CertConfig.CertMode != "none" &&
 		(c.CertConfig.CertMode == "dns" || c.CertConfig.CertMode == "http") {
 		c.renewCertPeriodic = &task.Periodic{
 			Interval: time.Hour * 24,
@@ -48,42 +48,9 @@ func (c *Node) initTask() {
 			_ = c.renewCertPeriodic.Start()
 		}()
 	}
-	if c.EnableDynamicSpeedLimit {
-		// Check dynamic speed limit task
-		c.dynamicSpeedLimitPeriodic = &task.Periodic{
-			Interval: time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second,
-			Execute:  c.dynamicSpeedLimit,
-		}
-		go func() {
-			time.Sleep(time.Duration(c.DynamicSpeedLimitConfig.Periodic) * time.Second)
-			_ = c.dynamicSpeedLimitPeriodic.Start()
-		}()
-		log.Printf("[%s: %d] Start dynamic speed limit", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
-	}
-	if c.EnableIpRecorder {
-		switch c.IpRecorderConfig.Type {
-		case "Recorder":
-			c.ipRecorder = iprecoder.NewRecorder(c.IpRecorderConfig.RecorderConfig)
-		case "Redis":
-			c.ipRecorder = iprecoder.NewRedis(c.IpRecorderConfig.RedisConfig)
-		default:
-			log.Printf("recorder type: %s is not vail, disable recorder", c.IpRecorderConfig.Type)
-			return
-		}
-		// report and fetch online ip list task
-		c.onlineIpReportPeriodic = &task.Periodic{
-			Interval: time.Duration(c.IpRecorderConfig.Periodic) * time.Second,
-			Execute:  c.reportOnlineIp,
-		}
-		go func() {
-			time.Sleep(time.Duration(c.IpRecorderConfig.Periodic) * time.Second)
-			_ = c.onlineIpReportPeriodic.Start()
-		}()
-		log.Printf("[%s: %d] Start report online ip", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
-	}
 }
 
-func (c *Node) nodeInfoMonitor() (err error) {
+func (c *Controller) nodeInfoMonitor() (err error) {
 	// First fetch Node Info
 	newNodeInfo, err := c.apiClient.GetNodeInfo()
 	if err != nil {
@@ -95,28 +62,22 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	if newNodeInfo != nil {
 		// Remove old tag
 		oldTag := c.Tag
-		err := c.removeOldTag(oldTag)
+		err := c.removeOldNode(oldTag)
 		if err != nil {
 			log.Print(err)
 			return nil
 		}
+		// Remove Old limiter
+		limiter.DeleteLimiter(oldTag)
 		// Add new tag
 		c.nodeInfo = newNodeInfo
 		c.Tag = c.buildNodeTag()
-		err = c.addNewTag(newNodeInfo)
+		err = c.addNewNode(newNodeInfo)
 		if err != nil {
 			log.Print(err)
 			return nil
 		}
 		nodeInfoChanged = true
-		// Remove Old limiter
-		if err = c.server.DeleteInboundLimiter(oldTag); err != nil {
-			log.Print(err)
-			return nil
-		}
-		if err := c.server.UpdateRule(c.Tag, newNodeInfo.Rules); err != nil {
-			log.Print(err)
-		}
 	}
 	// Update User
 	newUserInfo, err := c.apiClient.GetUserList()
@@ -126,15 +87,20 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	}
 	if nodeInfoChanged {
 		c.userList = newUserInfo
-		err = c.addNewUser(c.userList, newNodeInfo)
+		// Add new Limiter
+		l := limiter.AddLimiter(c.Tag, &limiter.LimitConfig{
+			SpeedLimit: c.SpeedLimit,
+			IpLimit:    c.IPLimit,
+			ConnLimit:  c.ConnLimit,
+		}, newUserInfo)
+		err = c.addNewUser(newUserInfo, newNodeInfo)
 		if err != nil {
 			log.Print(err)
 			return nil
 		}
-		// Add Limiter
-		if err := c.server.AddInboundLimiter(c.Tag, newNodeInfo, newUserInfo); err != nil {
-			log.Print(err)
-			return nil
+		err = l.UpdateRule(newNodeInfo.Rules)
+		if err != nil {
+			log.Printf("Update Rule error: %s", err)
 		}
 		// Check interval
 		if c.nodeInfoMonitorPeriodic.Interval != time.Duration(newNodeInfo.BaseConfig.PullInterval.(int))*time.Second {
@@ -176,8 +142,9 @@ func (c *Node) nodeInfoMonitor() (err error) {
 		}
 		if len(added) > 0 || len(deleted) > 0 {
 			// Update Limiter
-			if err := c.server.UpdateInboundLimiter(c.Tag, added, deleted); err != nil {
-				log.Print(err)
+			err = limiter.UpdateLimiter(c.Tag, added, deleted)
+			if err != nil {
+				log.Print("update limiter:", err)
 			}
 		}
 		log.Printf("[%s: %d] %d user deleted, %d user added", c.nodeInfo.NodeType, c.nodeInfo.NodeId,
@@ -187,7 +154,7 @@ func (c *Node) nodeInfoMonitor() (err error) {
 	return nil
 }
 
-func (c *Node) removeOldTag(oldTag string) (err error) {
+func (c *Controller) removeOldNode(oldTag string) (err error) {
 	err = c.server.RemoveInbound(oldTag)
 	if err != nil {
 		return err
@@ -199,7 +166,7 @@ func (c *Node) removeOldTag(oldTag string) (err error) {
 	return nil
 }
 
-func (c *Node) addNewTag(newNodeInfo *panel.NodeInfo) (err error) {
+func (c *Controller) addNewNode(newNodeInfo *panel.NodeInfo) (err error) {
 	inboundConfig, err := buildInbound(c.ControllerConfig, newNodeInfo, c.Tag)
 	if err != nil {
 		return fmt.Errorf("build inbound error: %s", err)
@@ -219,10 +186,10 @@ func (c *Node) addNewTag(newNodeInfo *panel.NodeInfo) (err error) {
 	return nil
 }
 
-func (c *Node) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (err error) {
+func (c *Controller) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (err error) {
 	users := make([]*protocol.User, 0)
 	if nodeInfo.NodeType == "V2ray" {
-		if nodeInfo.EnableVless {
+		if c.EnableVless {
 			users = c.buildVlessUsers(userInfo)
 		} else {
 			users = c.buildVmessUsers(userInfo)
@@ -270,7 +237,7 @@ func compareUserList(old, new []panel.UserInfo) (deleted, added []panel.UserInfo
 	return deleted, added
 }
 
-func (c *Node) reportUserTraffic() (err error) {
+func (c *Controller) reportUserTraffic() (err error) {
 	// Get User traffic
 	userTraffic := make([]panel.UserTraffic, 0)
 	for i := range c.userList {
@@ -294,52 +261,11 @@ func (c *Node) reportUserTraffic() (err error) {
 		}
 	}
 	userTraffic = nil
-	if !c.EnableIpRecorder {
-		c.server.ClearOnlineIp(c.Tag)
-	}
 	runtime.GC()
 	return nil
 }
 
-func (c *Node) reportOnlineIp() (err error) {
-	onlineIp, err := c.server.ListOnlineIp(c.Tag)
-	if err != nil {
-		log.Print(err)
-		return nil
-	}
-	onlineIp, err = c.ipRecorder.SyncOnlineIp(onlineIp)
-	if err != nil {
-		log.Print("Report online ip error: ", err)
-		c.server.ClearOnlineIp(c.Tag)
-	}
-	if c.IpRecorderConfig.EnableIpSync {
-		c.server.UpdateOnlineIp(c.Tag, onlineIp)
-		log.Printf("[Node: %d] Updated %d online ip", c.nodeInfo.NodeId, len(onlineIp))
-	}
-	log.Printf("[Node: %d] Report %d online ip", c.nodeInfo.NodeId, len(onlineIp))
-	return nil
-}
-
-func (c *Node) dynamicSpeedLimit() error {
-	if c.EnableDynamicSpeedLimit {
-		for i := range c.userList {
-			up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), false)
-			if c.userList[i].Traffic+down+up/1024/1024 > c.DynamicSpeedLimitConfig.Traffic {
-				err := c.server.AddUserSpeedLimit(c.Tag,
-					&c.userList[i],
-					c.DynamicSpeedLimitConfig.SpeedLimit,
-					time.Now().Add(time.Second*time.Duration(c.DynamicSpeedLimitConfig.ExpireTime)).Unix())
-				if err != nil {
-					log.Print(err)
-				}
-			}
-			c.userList[i].Traffic = 0
-		}
-	}
-	return nil
-}
-
-func (c *Node) RenewCert() {
+func (c *Controller) RenewCert() {
 	l, err := lego.New(c.CertConfig)
 	if err != nil {
 		log.Print(err)

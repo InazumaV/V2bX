@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/go-redis/redis/v8"
 	"strconv"
 	"time"
@@ -26,7 +26,7 @@ func NewRedis(c *conf.RedisConfig) *Redis {
 	}
 }
 
-func (r *Redis) SyncOnlineIp(Ips []dispatcher.UserIpList) ([]dispatcher.UserIpList, error) {
+func (r *Redis) SyncOnlineIp(Ips []limiter.UserIpList) ([]limiter.UserIpList, error) {
 	ctx := context.Background()
 	for i := range Ips {
 		err := r.client.SAdd(ctx, "UserList", Ips[i].Uid).Err()
@@ -46,7 +46,7 @@ func (r *Redis) SyncOnlineIp(Ips []dispatcher.UserIpList) ([]dispatcher.UserIpLi
 	if c.Err() != nil {
 		return nil, fmt.Errorf("get user list failed: %s", c.Err())
 	}
-	Ips = make([]dispatcher.UserIpList, 0, len(c.Val()))
+	Ips = make([]limiter.UserIpList, 0, len(c.Val()))
 	for _, uid := range c.Val() {
 		uidInt, err := strconv.Atoi(uid)
 		if err != nil {
@@ -56,7 +56,7 @@ func (r *Redis) SyncOnlineIp(Ips []dispatcher.UserIpList) ([]dispatcher.UserIpLi
 		if ips.Err() != nil {
 			return nil, fmt.Errorf("get ip list failed: %s", ips.Err())
 		}
-		Ips = append(Ips, dispatcher.UserIpList{
+		Ips = append(Ips, limiter.UserIpList{
 			Uid:    uidInt,
 			IpList: ips.Val(),
 		})

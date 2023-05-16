@@ -3,7 +3,7 @@ package iprecoder
 import (
 	"errors"
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/go-resty/resty/v2"
 	"github.com/goccy/go-json"
 	"time"
@@ -21,7 +21,7 @@ func NewRecorder(c *conf.RecorderConfig) *Recorder {
 	}
 }
 
-func (r *Recorder) SyncOnlineIp(ips []dispatcher.UserIpList) ([]dispatcher.UserIpList, error) {
+func (r *Recorder) SyncOnlineIp(ips []limiter.UserIpList) ([]limiter.UserIpList, error) {
 	rsp, err := r.client.R().
 		SetBody(ips).
 		Post(r.Url + "/api/v1/SyncOnlineIp?token=" + r.Token)
@@ -31,7 +31,7 @@ func (r *Recorder) SyncOnlineIp(ips []dispatcher.UserIpList) ([]dispatcher.UserI
 	if rsp.StatusCode() != 200 {
 		return nil, errors.New(rsp.String())
 	}
-	ips = []dispatcher.UserIpList{}
+	ips = []limiter.UserIpList{}
 	err = json.Unmarshal(rsp.Body(), &ips)
 	if err != nil {
 		return nil, err

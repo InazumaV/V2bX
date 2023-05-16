@@ -1,4 +1,4 @@
-package controller
+package node
 
 import (
 	"encoding/base64"
@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-func (c *Node) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
+func (c *Controller) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i, user := range userInfo {
 		users[i] = c.buildVmessUser(&user, 0)
@@ -22,7 +22,7 @@ func (c *Node) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.Use
 	return users
 }
 
-func (c *Node) buildVmessUser(userInfo *panel.UserInfo, serverAlterID uint16) (user *protocol.User) {
+func (c *Controller) buildVmessUser(userInfo *panel.UserInfo, serverAlterID uint16) (user *protocol.User) {
 	vmessAccount := &conf.VMessAccount{
 		ID:       userInfo.Uuid,
 		AlterIds: serverAlterID,
@@ -35,7 +35,7 @@ func (c *Node) buildVmessUser(userInfo *panel.UserInfo, serverAlterID uint16) (u
 	}
 }
 
-func (c *Node) buildVlessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
+func (c *Controller) buildVlessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
 		users[i] = c.buildVlessUser(&(userInfo)[i])
@@ -43,7 +43,7 @@ func (c *Node) buildVlessUsers(userInfo []panel.UserInfo) (users []*protocol.Use
 	return users
 }
 
-func (c *Node) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
+func (c *Controller) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	vlessAccount := &vless.Account{
 		Id:   userInfo.Uuid,
 		Flow: "xtls-rprx-direct",
@@ -55,7 +55,7 @@ func (c *Node) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	}
 }
 
-func (c *Node) buildTrojanUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
+func (c *Controller) buildTrojanUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
 		users[i] = c.buildTrojanUser(&(userInfo)[i])
@@ -63,7 +63,7 @@ func (c *Node) buildTrojanUsers(userInfo []panel.UserInfo) (users []*protocol.Us
 	return users
 }
 
-func (c *Node) buildTrojanUser(userInfo *panel.UserInfo) (user *protocol.User) {
+func (c *Controller) buildTrojanUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	trojanAccount := &trojan.Account{
 		Password: userInfo.Uuid,
 		Flow:     "xtls-rprx-direct",
@@ -90,7 +90,7 @@ func getCipherFromString(c string) shadowsocks.CipherType {
 	}
 }
 
-func (c *Node) buildSSUsers(userInfo []panel.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
+func (c *Controller) buildSSUsers(userInfo []panel.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
 		users[i] = c.buildSSUser(&(userInfo)[i], cypher)
@@ -98,7 +98,7 @@ func (c *Node) buildSSUsers(userInfo []panel.UserInfo, cypher shadowsocks.Cipher
 	return users
 }
 
-func (c *Node) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherType) (user *protocol.User) {
+func (c *Controller) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherType) (user *protocol.User) {
 	if c.nodeInfo.ServerKey == "" {
 		ssAccount := &shadowsocks.Account{
 			Password:   userInfo.Uuid,
@@ -121,6 +121,6 @@ func (c *Node) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherTy
 	}
 }
 
-func (c *Node) buildUserTag(user *panel.UserInfo) string {
+func (c *Controller) buildUserTag(user *panel.UserInfo) string {
 	return fmt.Sprintf("%s|%s|%d", c.Tag, user.Uuid, user.Id)
 }

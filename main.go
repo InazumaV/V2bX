@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/Yuzuki616/V2bX/node"
 	"log"
 	"os"
@@ -40,6 +41,7 @@ func main() {
 	if err != nil {
 		log.Panicf("can't unmarshal config file: %s \n", err)
 	}
+	limiter.Init()
 	log.Println("Start V2bX...")
 	x := core.New(config)
 	err = x.Start()
@@ -69,9 +71,9 @@ func main() {
 			log.Panicf("watch config file error: %s", err)
 		}
 	}
-	//Explicitly triggering GC to remove garbage from config loading.
+	// clear memory
 	runtime.GC()
-	// Running backend
+	// wait exit signal
 	{
 		osSignals := make(chan os.Signal, 1)
 		signal.Notify(osSignals, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM)

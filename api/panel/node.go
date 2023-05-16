@@ -36,12 +36,8 @@ type DestinationRule struct {
 	Pattern *regexp.Regexp
 }
 type localNodeConfig struct {
-	NodeId      int
-	NodeType    string
-	EnableVless bool
-	EnableTls   bool
-	SpeedLimit  int
-	DeviceLimit int
+	NodeId   int
+	NodeType string
 }
 
 func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {

@@ -4,11 +4,10 @@ import (
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/core"
-	"github.com/Yuzuki616/V2bX/node/controller"
 )
 
 type Node struct {
-	controllers []*controller.Node
+	controllers []*Controller
 }
 
 func New() *Node {
@@ -16,14 +15,14 @@ func New() *Node {
 }
 
 func (n *Node) Start(nodes []*conf.NodeConfig, core *core.Core) error {
-	n.controllers = make([]*controller.Node, len(nodes))
+	n.controllers = make([]*Controller, len(nodes))
 	for i, c := range nodes {
 		p, err := panel.New(c.ApiConfig)
 		if err != nil {
 			return err
 		}
 		// Register controller service
-		n.controllers[i] = controller.New(core, p, c.ControllerConfig)
+		n.controllers[i] = NewController(core, p, c.ControllerConfig)
 		err = n.controllers[i].Start()
 		if err != nil {
 			return err

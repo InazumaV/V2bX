@@ -28,8 +28,6 @@ type Client struct {
 	Key           string
 	NodeType      string
 	NodeId        int
-	SpeedLimit    int
-	DeviceLimit   int
 	LocalRuleList []DestinationRule
 	etag          string
 }
@@ -69,8 +67,6 @@ func New(c *conf.ApiConfig) (Panel, error) {
 		Key:           c.Key,
 		APIHost:       c.APIHost,
 		NodeType:      c.NodeType,
-		SpeedLimit:    c.SpeedLimit,
-		DeviceLimit:   c.DeviceLimit,
 		NodeId:        c.NodeID,
 		LocalRuleList: localRuleList,
 	}, nil

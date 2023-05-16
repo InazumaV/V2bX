@@ -2,7 +2,7 @@ package iprecoder
 
 import (
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/core/app/dispatcher"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"log"
 	"testing"
 )
@@ -13,7 +13,7 @@ func TestRedis_SyncOnlineIp(t *testing.T) {
 		Password: "",
 		Db:       0,
 	})
-	users, err := r.SyncOnlineIp([]dispatcher.UserIpList{
+	users, err := r.SyncOnlineIp([]limiter.UserIpList{
 		{1, []string{"5.5.5.5", "4.4.4.4"}},
 	})
 	if err != nil {

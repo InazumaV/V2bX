@@ -1,8 +1,8 @@
-package controller_test
+package node_test
 
 import (
 	"github.com/Yuzuki616/V2bX/api/panel"
-	. "github.com/Yuzuki616/V2bX/node/controller"
+	. "github.com/Yuzuki616/V2bX/node"
 	"testing"
 )
 
