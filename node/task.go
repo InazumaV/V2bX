@@ -88,11 +88,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	if nodeInfoChanged {
 		c.userList = newUserInfo
 		// Add new Limiter
-		l := limiter.AddLimiter(c.Tag, &limiter.LimitConfig{
-			SpeedLimit: c.SpeedLimit,
-			IpLimit:    c.IPLimit,
-			ConnLimit:  c.ConnLimit,
-		}, newUserInfo)
+		l := limiter.AddLimiter(c.Tag, &c.LimitConfig, newUserInfo)
 		err = c.addNewUser(newUserInfo, newNodeInfo)
 		if err != nil {
 			log.Print(err)
@@ -243,7 +239,7 @@ func (c *Controller) reportUserTraffic() (err error) {
 	for i := range c.userList {
 		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), true)
 		if up > 0 || down > 0 {
-			if c.EnableDynamicSpeedLimit {
+			if c.LimitConfig.EnableDynamicSpeedLimit {
 				c.userList[i].Traffic += up + down
 			}
 			userTraffic = append(userTraffic, panel.UserTraffic{

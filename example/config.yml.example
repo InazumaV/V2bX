@@ -13,33 +13,34 @@ ConnetionConfig:
   DownlinkOnly: 4 # Time limit when the connection is closed after the uplink is closed, Second
   BufferSize: 64 # The internal cache size of each connection, kB 
 Nodes:
-  -
-    ApiConfig:
+  - ApiConfig:
       ApiHost: "http://127.0.0.1:667"
       ApiKey: "123"
       NodeID: 41
       NodeType: V2ray # Node type: V2ray, Shadowsocks, Trojan
       Timeout: 30 # Timeout for the api request
-      EnableVless: false # Enable Vless for V2ray Type
-      SpeedLimit: 0 # Mbps, Local settings will replace remote settings, 0 means disable
-      DeviceLimit: 0 # Local settings will replace remote settings, 0 means disable
       RuleListPath: # /etc/XrayR/rulelist Path to local rulelist file
     ControllerConfig:
       ListenIP: 0.0.0.0 # IP address you want to listen
       SendIP: 0.0.0.0 # IP address you want to send pacakage
       EnableDNS: false # Use custom DNS config, Please ensure that you set the dns.json well
       DNSType: AsIs # AsIs, UseIP, UseIPv4, UseIPv6, DNS strategy
+      EnableVless: false # Enable Vless for V2ray Type
       EnableProxyProtocol: false # Only works for WebSocket and TCP
       EnableFallback: false # Only support for Trojan and Vless
-      FallBackConfigs:  # Support multiple fallbacks
-        -
-          SNI: # TLS SNI(Server Name Indication), Empty for any
+      FallBackConfigs: # Support multiple fallbacks
+        - SNI: # TLS SNI(Server Name Indication), Empty for any
           Alpn: # Alpn, Empty for any
           Path: # HTTP PATH, Empty for any
           Dest: 80 # Required, Destination of fallback, check https://xtls.github.io/config/features/fallback.html for details.
           ProxyProtocolVer: 0 # Send PROXY protocol version, 0 for dsable
-      EnableIpRecorder: false # Enable online ip report
-      IpRecorderConfig:
+      LimitConfig:
+        EnableRealtime: false # Check device limit on real time
+        SpeedLimit: 0 # Mbps, Local settings will replace remote settings, 0 means disable
+        DeviceLimit: 0 # Local settings will replace remote settings, 0 means disable
+        ConnLimit: 0 # Connecting limit, only working for TCP, 0mean
+        EnableIpRecorder: false # Enable online ip report
+        IpRecorderConfig:
           Type: "Recorder" # Recorder type: Recorder, Redis
           RecorderConfig:
             Url: "http://127.0.0.1:123" # Report url
@@ -52,12 +53,12 @@ Nodes:
             Expiry: 60 # redis expiry time, sec.
           Periodic: 60 # Report interval, sec.
           EnableIpSync: false # Enable online ip sync
-      EnableDynamicSpeedLimit: false # Enable dynamic speed limit
-      DynamicSpeedLimitConfig:
-        Periodic: 60 # Time to check the user traffic , sec.
-        Traffic: 0 # Traffic limit, MB
-        SpeedLimit: 0 # Speed limit, Mbps
-        ExpireTime: 0 # Time limit, sec.
+        EnableDynamicSpeedLimit: false # Enable dynamic speed limit
+        DynamicSpeedLimitConfig:
+          Periodic: 60 # Time to check the user traffic , sec.
+          Traffic: 0 # Traffic limit, MB
+          SpeedLimit: 0 # Speed limit, Mbps
+          ExpireTime: 0 # Time limit, sec.
       CertConfig:
         CertMode: dns # Option about how to get certificate: none, file, http, dns. Choose "none" will forcedly disable the tls config.
         CertDomain: "node1.test.com" # Domain to cert

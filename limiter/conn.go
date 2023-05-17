@@ -5,15 +5,16 @@ import (
 )
 
 type ConnLimiter struct {
-	realTime  bool
+	realtime  bool
 	ipLimit   int
 	connLimit int
 	count     sync.Map // map[string]int
 	ip        sync.Map // map[string]map[string]int
 }
 
-func NewConnLimiter(conn int, ip int) *ConnLimiter {
+func NewConnLimiter(conn int, ip int, realtime bool) *ConnLimiter {
 	return &ConnLimiter{
+		realtime:  realtime,
 		connLimit: conn,
 		ipLimit:   ip,
 		count:     sync.Map{},
@@ -38,10 +39,14 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 	}
 	// default user map
 	ipMap := new(sync.Map)
-	if isTcp {
-		ipMap.Store(ip, 2)
+	if c.realtime {
+		if isTcp {
+			ipMap.Store(ip, 2)
+		} else {
+			ipMap.Store(ip, 1)
+		}
 	} else {
-		ipMap.Store(ip, 1)
+		ipMap.Store(ip, struct{}{})
 	}
 	// check user online ip
 	if v, ok := c.ip.LoadOrStore(user, ipMap); ok {
@@ -50,9 +55,11 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 		cn := 0
 		if online, ok := ips.Load(ip); ok {
 			// online ip
-			if isTcp {
-				// count add
-				ips.Store(ip, online.(int)+2)
+			if c.realtime {
+				if online.(int)%2 == 0 && isTcp {
+					// count add
+					ips.Store(ip, online.(int)+2)
+				}
 			}
 		} else {
 			// not online ip
@@ -67,10 +74,14 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 			if limit {
 				return
 			}
-			if isTcp {
-				ips.Store(ip, 2)
+			if c.realtime {
+				if isTcp {
+					ips.Store(ip, 2)
+				} else {
+					ips.Store(ip, 1)
+				}
 			} else {
-				ips.Store(ip, 1)
+				ips.Store(ip, struct{}{})
 			}
 		}
 	}
@@ -79,6 +90,9 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 
 // DelConnCount Delete tcp connection count, no tcp do not use
 func (c *ConnLimiter) DelConnCount(user string, ip string) {
+	if !c.realtime {
+		return
+	}
 	if c.connLimit != 0 {
 		if v, ok := c.count.Load(user); ok {
 			if v.(int) == 1 {
@@ -111,12 +125,18 @@ func (c *ConnLimiter) DelConnCount(user string, ip string) {
 	}
 }
 
-// ClearPacketOnlineIP Clear udp,icmp and other packet protocol online ip
-func (c *ConnLimiter) ClearPacketOnlineIP() {
+// ClearOnlineIP Clear udp,icmp and other packet protocol online ip
+func (c *ConnLimiter) ClearOnlineIP() {
 	c.ip.Range(func(_, v any) bool {
 		userIp := v.(*sync.Map)
 		userIp.Range(func(ip, v any) bool {
+			if c.realtime {
+				// clear not realtime ip
+				userIp.Delete(ip)
+				return true
+			}
 			if v.(int) == 1 {
+				// clear packet ip for realtime
 				userIp.Delete(ip)
 			}
 			return true

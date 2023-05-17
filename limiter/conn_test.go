@@ -26,7 +26,7 @@ func TestConnLimiter_DelConnCount(t *testing.T) {
 func TestConnLimiter_ClearPacketOnlineIP(t *testing.T) {
 	t.Log(c.AddConnCount("1", "1", false))
 	t.Log(c.AddConnCount("1", "2", false))
-	c.ClearPacketOnlineIP()
+	c.ClearOnlineIP()
 	t.Log(c.AddConnCount("1", "2", true))
 	c.DelConnCount("1", "2")
 	t.Log(c.AddConnCount("1", "1", false))

@@ -2,13 +2,13 @@ package limiter
 
 import "log"
 
-func ClearPacketOnlineIP() error {
-	log.Println("Limiter: Clear packet online ip...")
+func ClearOnlineIP() error {
+	log.Println("Limiter: Clear online ip...")
 	limitLock.RLock()
 	for _, l := range limiter {
-		l.ConnLimiter.ClearPacketOnlineIP()
+		l.ConnLimiter.ClearOnlineIP()
 	}
 	limitLock.RUnlock()
-	log.Println("Limiter: Clear packet online ip done")
+	log.Println("Limiter: Clear online ip done")
 	return nil
 }

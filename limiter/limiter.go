@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/juju/ratelimit"
 	"github.com/xtls/xray-core/common/task"
 	"log"
@@ -18,10 +19,10 @@ func Init() {
 	limiter = map[string]*Limiter{}
 	c := task.Periodic{
 		Interval: time.Minute * 2,
-		Execute:  ClearPacketOnlineIP,
+		Execute:  ClearOnlineIP,
 	}
 	go func() {
-		log.Println("Limiter: ClearPacketOnlineIP started")
+		log.Println("Limiter: ClearOnlineIP started")
 		time.Sleep(time.Minute * 2)
 		c.Start()
 	}()
@@ -43,17 +44,11 @@ type UserLimitInfo struct {
 	ExpireTime        int64
 }
 
-type LimitConfig struct {
-	SpeedLimit int
-	IpLimit    int
-	ConnLimit  int
-}
-
-func AddLimiter(tag string, l *LimitConfig, users []panel.UserInfo) *Limiter {
+func AddLimiter(tag string, l *conf.LimitConfig, users []panel.UserInfo) *Limiter {
 	info := &Limiter{
 		SpeedLimit:    l.SpeedLimit,
 		UserLimitInfo: new(sync.Map),
-		ConnLimiter:   NewConnLimiter(l.ConnLimit, l.IpLimit),
+		ConnLimiter:   NewConnLimiter(l.ConnLimit, l.IPLimit, l.EnableRealtime),
 		SpeedLimiter:  new(sync.Map),
 	}
 	for i := range users {

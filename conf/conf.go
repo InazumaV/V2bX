@@ -58,6 +58,7 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 			case event := <-watcher.Events:
 				if event.Has(fsnotify.Write) {
 					log.Println("config dir changed, reloading...")
+					*p = *New()
 					err := p.LoadFromPath(filePath)
 					if err != nil {
 						log.Printf("reload config error: %s", err)

@@ -58,11 +58,7 @@ func (c *Controller) Start() error {
 	c.Tag = c.buildNodeTag()
 
 	// add limiter
-	l := limiter.AddLimiter(c.Tag, &limiter.LimitConfig{
-		SpeedLimit: c.SpeedLimit,
-		IpLimit:    c.IPLimit,
-		ConnLimit:  c.ConnLimit,
-	}, c.userList)
+	l := limiter.AddLimiter(c.Tag, &c.LimitConfig, c.userList)
 	// add rule limiter
 	if !c.DisableGetRule {
 		if err = l.UpdateRule(c.nodeInfo.Rules); err != nil {
