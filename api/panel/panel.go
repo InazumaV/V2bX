@@ -32,7 +32,7 @@ type Client struct {
 	etag          string
 }
 
-func New(c *conf.ApiConfig) (Panel, error) {
+func New(c *conf.ApiConfig) (*Client, error) {
 	client := resty.New()
 	client.SetRetryCount(3)
 	if c.Timeout > 0 {

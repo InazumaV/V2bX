@@ -15,7 +15,7 @@ import (
 type Controller struct {
 	server                    *core.Core
 	clientInfo                panel.ClientInfo
-	apiClient                 panel.Panel
+	apiClient                 *panel.Client
 	nodeInfo                  *panel.NodeInfo
 	Tag                       string
 	userList                  []panel.UserInfo
@@ -29,7 +29,7 @@ type Controller struct {
 }
 
 // NewController return a Node controller with default parameters.
-func NewController(server *core.Core, api panel.Panel, config *conf.ControllerConfig) *Controller {
+func NewController(server *core.Core, api *panel.Client, config *conf.ControllerConfig) *Controller {
 	controller := &Controller{
 		server:           server,
 		ControllerConfig: config,

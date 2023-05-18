@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var client Panel
+var client *Client
 
 func init() {
 	c, err := New(&conf.ApiConfig{

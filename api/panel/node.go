@@ -2,9 +2,11 @@ package panel
 
 import (
 	"github.com/goccy/go-json"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type NodeInfo struct {
@@ -73,13 +75,24 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 	}
 	nodeInfo.Routes = nil
 	if _, ok := nodeInfo.BaseConfig.PullInterval.(int); !ok {
-		i, _ := strconv.Atoi(nodeInfo.BaseConfig.PullInterval.(string))
-		nodeInfo.BaseConfig.PullInterval = i
+		nodeInfo.BaseConfig.PullInterval = intervalToTime(nodeInfo.BaseConfig.PullInterval)
 	}
 	if _, ok := nodeInfo.BaseConfig.PushInterval.(int); !ok {
-		i, _ := strconv.Atoi(nodeInfo.BaseConfig.PushInterval.(string))
-		nodeInfo.BaseConfig.PushInterval = i
+		nodeInfo.BaseConfig.PushInterval = intervalToTime(nodeInfo.BaseConfig.PullInterval)
 	}
 	c.etag = r.Header().Get("Etag")
 	return
+}
+
+func intervalToTime(i interface{}) time.Duration {
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Int:
+		return time.Duration(i.(int)) * time.Second
+	case reflect.String:
+		i, _ := strconv.Atoi(i.(string))
+		return time.Duration(i) * time.Second
+	case reflect.Float64:
+		return time.Duration(i.(float64)) * time.Second
+	}
+	return 0
 }

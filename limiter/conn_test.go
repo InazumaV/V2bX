@@ -8,7 +8,7 @@ import (
 var c *ConnLimiter
 
 func init() {
-	c = NewConnLimiter(1, 1)
+	c = NewConnLimiter(1, 1, true)
 }
 
 func TestConnLimiter_AddConnCount(t *testing.T) {

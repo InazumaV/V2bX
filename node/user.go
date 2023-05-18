@@ -11,8 +11,33 @@ import (
 	"github.com/xtls/xray-core/proxy/shadowsocks_2022"
 	"github.com/xtls/xray-core/proxy/trojan"
 	"github.com/xtls/xray-core/proxy/vless"
+	"log"
 	"strings"
 )
+
+func (c *Controller) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (err error) {
+	users := make([]*protocol.User, 0, len(userInfo))
+	switch nodeInfo.NodeType {
+	case "v2ray":
+		if c.EnableVless {
+			users = c.buildVlessUsers(userInfo)
+		} else {
+			users = c.buildVmessUsers(userInfo)
+		}
+	case "Trojan":
+		users = c.buildTrojanUsers(userInfo)
+	case "Shadowsocks":
+		users = c.buildSSUsers(userInfo, getCipherFromString(nodeInfo.Cipher))
+	default:
+		return fmt.Errorf("unsupported node type: %s", nodeInfo.NodeType)
+	}
+	err = c.server.AddUsers(users, c.Tag)
+	if err != nil {
+		return fmt.Errorf("add users error: %s", err)
+	}
+	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(userInfo))
+	return nil
+}
 
 func (c *Controller) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))

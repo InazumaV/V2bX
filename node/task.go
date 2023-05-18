@@ -5,7 +5,6 @@ import (
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/Yuzuki616/V2bX/node/lego"
-	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/task"
 	"log"
 	"runtime"
@@ -99,16 +98,18 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			log.Printf("Update Rule error: %s", err)
 		}
 		// Check interval
-		if c.nodeInfoMonitorPeriodic.Interval != time.Duration(newNodeInfo.BaseConfig.PullInterval.(int))*time.Second {
-			c.nodeInfoMonitorPeriodic.Interval = time.Duration(newNodeInfo.BaseConfig.PullInterval.(int)) * time.Second
+		if c.nodeInfoMonitorPeriodic.Interval != newNodeInfo.BaseConfig.PullInterval.(time.Duration) &&
+			newNodeInfo.BaseConfig.PullInterval.(time.Duration) != 0 {
+			c.nodeInfoMonitorPeriodic.Interval = newNodeInfo.BaseConfig.PullInterval.(time.Duration)
 			_ = c.nodeInfoMonitorPeriodic.Close()
 			go func() {
 				time.Sleep(c.nodeInfoMonitorPeriodic.Interval)
 				_ = c.nodeInfoMonitorPeriodic.Start()
 			}()
 		}
-		if c.userReportPeriodic.Interval != time.Duration(newNodeInfo.BaseConfig.PushInterval.(int))*time.Second {
-			c.userReportPeriodic.Interval = time.Duration(newNodeInfo.BaseConfig.PushInterval.(int)) * time.Second
+		if c.userReportPeriodic.Interval != newNodeInfo.BaseConfig.PushInterval.(time.Duration) &&
+			newNodeInfo.BaseConfig.PushInterval.(time.Duration) != 0 {
+			c.userReportPeriodic.Interval = newNodeInfo.BaseConfig.PullInterval.(time.Duration)
 			_ = c.userReportPeriodic.Close()
 			go func() {
 				time.Sleep(c.userReportPeriodic.Interval)
@@ -179,29 +180,6 @@ func (c *Controller) addNewNode(newNodeInfo *panel.NodeInfo) (err error) {
 	if err != nil {
 		return fmt.Errorf("add outbound error: %s", err)
 	}
-	return nil
-}
-
-func (c *Controller) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (err error) {
-	users := make([]*protocol.User, 0)
-	if nodeInfo.NodeType == "V2ray" {
-		if c.EnableVless {
-			users = c.buildVlessUsers(userInfo)
-		} else {
-			users = c.buildVmessUsers(userInfo)
-		}
-	} else if nodeInfo.NodeType == "Trojan" {
-		users = c.buildTrojanUsers(userInfo)
-	} else if nodeInfo.NodeType == "Shadowsocks" {
-		users = c.buildSSUsers(userInfo, getCipherFromString(nodeInfo.Cipher))
-	} else {
-		return fmt.Errorf("unsupported node type: %s", nodeInfo.NodeType)
-	}
-	err = c.server.AddUsers(users, c.Tag)
-	if err != nil {
-		return fmt.Errorf("add users error: %s", err)
-	}
-	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(userInfo))
 	return nil
 }
 
