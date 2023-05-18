@@ -63,8 +63,8 @@ A V2board node server based on Xray-core, modified from XrayR
 
 ### 一键安装
 
-`
-wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh && ash install.sh
+```
+wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh && bash install.sh
 ```
 
 ### 手动安装
@@ -73,7 +73,7 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 
 ## 配置文件及详细使用教程
 
-[详细使用教程](https://crackair.gitbook.io/xrayr-project/)
+[详细使用教程](https://yuzuki-1.gitbook.io/v2bx-doc/)
 
 ## Thanks
 
