@@ -233,7 +233,7 @@ func getCertFile(certConfig *conf.CertConfig) (certFile string, keyFile string, 
 	return "", "", fmt.Errorf("unsupported certmode: %s", certConfig.CertMode)
 }
 
-func buildVlessFallbacks(fallbackConfigs []*conf.FallBackConfig) ([]*coreConf.VLessInboundFallback, error) {
+func buildVlessFallbacks(fallbackConfigs []conf.FallBackConfig) ([]*coreConf.VLessInboundFallback, error) {
 	if fallbackConfigs == nil {
 		return nil, fmt.Errorf("you must provide FallBackConfigs")
 	}
@@ -258,7 +258,7 @@ func buildVlessFallbacks(fallbackConfigs []*conf.FallBackConfig) ([]*coreConf.VL
 	return vlessFallBacks, nil
 }
 
-func buildTrojanFallbacks(fallbackConfigs []*conf.FallBackConfig) ([]*coreConf.TrojanInboundFallback, error) {
+func buildTrojanFallbacks(fallbackConfigs []conf.FallBackConfig) ([]*coreConf.TrojanInboundFallback, error) {
 	if fallbackConfigs == nil {
 		return nil, fmt.Errorf("you must provide FallBackConfigs")
 	}
