@@ -27,18 +27,23 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 	if c.connLimit != 0 {
 		if v, ok := c.count.Load(user); ok {
 			if v.(int) >= c.connLimit {
+				// over connection limit
 				return true
-			} else if isTcp { // tcp protocol
+			} else if isTcp {
+				// tcp protocol
+				// connection count add
 				c.count.Store(user, v.(int)+1)
 			}
-		} else if isTcp { // tcp protocol
+		} else if isTcp {
+			// tcp protocol
+			// store connection count
 			c.count.Store(user, 1)
 		}
 	}
 	if c.ipLimit == 0 {
 		return false
 	}
-	// default user map
+	// first user map
 	ipMap := new(sync.Map)
 	if c.realtime {
 		if isTcp {
@@ -57,11 +62,12 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 		if online, ok := ips.Load(ip); ok {
 			// online ip
 			if c.realtime {
-				if online.(int)%2 == 0 && isTcp {
-					// count add
+				if isTcp {
+					// tcp count add
 					ips.Store(ip, online.(int)+2)
 				}
 			} else {
+				// update connect time for not realtime
 				ips.Store(ip, time.Now())
 			}
 		} else {
@@ -75,6 +81,7 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 				return true
 			})
 			if limit {
+				// over ip limit
 				return
 			}
 			if c.realtime {

@@ -10,13 +10,13 @@ import (
 )
 
 type Conf struct {
-	LogConfig          *LogConfig       `yaml:"Log"`
-	DnsConfigPath      string           `yaml:"DnsConfigPath"`
-	InboundConfigPath  string           `yaml:"InboundConfigPath"`
-	OutboundConfigPath string           `yaml:"OutboundConfigPath"`
-	RouteConfigPath    string           `yaml:"RouteConfigPath"`
-	ConnectionConfig   *ConnetionConfig `yaml:"ConnectionConfig"`
-	NodesConfig        []*NodeConfig    `yaml:"Nodes"`
+	LogConfig          *LogConfig        `yaml:"Log"`
+	DnsConfigPath      string            `yaml:"DnsConfigPath"`
+	InboundConfigPath  string            `yaml:"InboundConfigPath"`
+	OutboundConfigPath string            `yaml:"OutboundConfigPath"`
+	RouteConfigPath    string            `yaml:"RouteConfigPath"`
+	ConnectionConfig   *ConnectionConfig `yaml:"ConnectionConfig"`
+	NodesConfig        []*NodeConfig     `yaml:"Nodes"`
 }
 
 func New() *Conf {
@@ -26,7 +26,7 @@ func New() *Conf {
 		InboundConfigPath:  "",
 		OutboundConfigPath: "",
 		RouteConfigPath:    "",
-		ConnectionConfig:   NewConnetionConfig(),
+		ConnectionConfig:   NewConnectionConfig(),
 		NodesConfig:        []*NodeConfig{},
 	}
 }
@@ -55,17 +55,15 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 		defer watcher.Close()
 		for {
 			select {
-			case event := <-watcher.Events:
-				if event.Has(fsnotify.Write) {
-					log.Println("config dir changed, reloading...")
-					*p = *New()
-					err := p.LoadFromPath(filePath)
-					if err != nil {
-						log.Printf("reload config error: %s", err)
-					}
-					log.Println("reload config success")
-					reload()
+			case <-watcher.Events:
+				log.Println("config dir changed, reloading...")
+				*p = *New()
+				err := p.LoadFromPath(filePath)
+				if err != nil {
+					log.Printf("reload config error: %s", err)
 				}
+				reload()
+				log.Println("reload config success")
 			case err := <-watcher.Errors:
 				if err != nil {
 					log.Printf("File watcher error: %s", err)

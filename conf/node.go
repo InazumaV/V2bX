@@ -15,21 +15,21 @@ type ApiConfig struct {
 }
 
 type ControllerConfig struct {
-	ListenIP             string            `yaml:"ListenIP"`
-	SendIP               string            `yaml:"SendIP"`
-	EnableDNS            bool              `yaml:"EnableDNS"`
-	DNSType              string            `yaml:"DNSType"`
-	EnableVless          bool              `yaml:"EnableVless"`
-	EnableTls            bool              `yaml:"EnableTls"`
-	LimitConfig          LimitConfig       `yaml:"LimitConfig"`
-	DisableUploadTraffic bool              `yaml:"DisableUploadTraffic"`
-	DisableGetRule       bool              `yaml:"DisableGetRule"`
-	EnableProxyProtocol  bool              `yaml:"EnableProxyProtocol"`
-	EnableFallback       bool              `yaml:"EnableFallback"`
-	DisableIVCheck       bool              `yaml:"DisableIVCheck"`
-	DisableSniffing      bool              `yaml:"DisableSniffing"`
-	FallBackConfigs      []*FallBackConfig `yaml:"FallBackConfigs"`
-	CertConfig           *CertConfig       `yaml:"CertConfig"`
+	ListenIP             string           `yaml:"ListenIP"`
+	SendIP               string           `yaml:"SendIP"`
+	EnableDNS            bool             `yaml:"EnableDNS"`
+	DNSType              string           `yaml:"DNSType"`
+	EnableVless          bool             `yaml:"EnableVless"`
+	EnableTls            bool             `yaml:"EnableTls"`
+	LimitConfig          LimitConfig      `yaml:"LimitConfig"`
+	DisableUploadTraffic bool             `yaml:"DisableUploadTraffic"`
+	DisableGetRule       bool             `yaml:"DisableGetRule"`
+	EnableProxyProtocol  bool             `yaml:"EnableProxyProtocol"`
+	EnableFallback       bool             `yaml:"EnableFallback"`
+	DisableIVCheck       bool             `yaml:"DisableIVCheck"`
+	DisableSniffing      bool             `yaml:"DisableSniffing"`
+	FallBackConfigs      []FallBackConfig `yaml:"FallBackConfigs"`
+	CertConfig           *CertConfig      `yaml:"CertConfig"`
 }
 
 type LimitConfig struct {

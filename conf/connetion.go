@@ -1,6 +1,6 @@
 package conf
 
-type ConnetionConfig struct {
+type ConnectionConfig struct {
 	Handshake    uint32 `yaml:"handshake"`
 	ConnIdle     uint32 `yaml:"connIdle"`
 	UplinkOnly   uint32 `yaml:"uplinkOnly"`
@@ -8,8 +8,8 @@ type ConnetionConfig struct {
 	BufferSize   int32  `yaml:"bufferSize"`
 }
 
-func NewConnetionConfig() *ConnetionConfig {
-	return &ConnetionConfig{
+func NewConnectionConfig() *ConnectionConfig {
+	return &ConnectionConfig{
 		Handshake:    4,
 		ConnIdle:     30,
 		UplinkOnly:   2,

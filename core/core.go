@@ -33,7 +33,7 @@ func New(c *conf.Conf) *Core {
 	return &Core{Server: getCore(c)}
 }
 
-func parseConnectionConfig(c *conf.ConnetionConfig) (policy *coreConf.Policy) {
+func parseConnectionConfig(c *conf.ConnectionConfig) (policy *coreConf.Policy) {
 	policy = &coreConf.Policy{
 		StatsUserUplink:   true,
 		StatsUserDownlink: true,
