@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"sync"
+	"time"
 )
 
 type ConnLimiter struct {
@@ -46,7 +47,7 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 			ipMap.Store(ip, 1)
 		}
 	} else {
-		ipMap.Store(ip, struct{}{})
+		ipMap.Store(ip, time.Now())
 	}
 	// check user online ip
 	if v, ok := c.ip.LoadOrStore(user, ipMap); ok {
@@ -60,6 +61,8 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 					// count add
 					ips.Store(ip, online.(int)+2)
 				}
+			} else {
+				ips.Store(ip, time.Now())
 			}
 		} else {
 			// not online ip
@@ -81,7 +84,7 @@ func (c *ConnLimiter) AddConnCount(user string, ip string, isTcp bool) (limit bo
 					ips.Store(ip, 1)
 				}
 			} else {
-				ips.Store(ip, struct{}{})
+				ips.Store(ip, time.Now())
 			}
 		}
 	}
@@ -130,14 +133,18 @@ func (c *ConnLimiter) ClearOnlineIP() {
 	c.ip.Range(func(_, v any) bool {
 		userIp := v.(*sync.Map)
 		userIp.Range(func(ip, v any) bool {
-			if c.realtime {
-				// clear not realtime ip
-				userIp.Delete(ip)
+			if _, ok := v.(int); ok {
+				if v.(int) == 1 {
+					// clear packet ip for realtime
+					userIp.Delete(ip)
+				}
 				return true
-			}
-			if v.(int) == 1 {
-				// clear packet ip for realtime
-				userIp.Delete(ip)
+			} else {
+				// clear ip for not realtime
+				if v.(time.Time).Before(time.Now().Add(time.Minute)) {
+					// 1 minute no active
+					userIp.Delete(ip)
+				}
 			}
 			return true
 		})
