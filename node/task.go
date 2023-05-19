@@ -15,24 +15,24 @@ import (
 func (c *Controller) initTask() {
 	// fetch node info task
 	c.nodeInfoMonitorPeriodic = &task.Periodic{
-		Interval: time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second,
+		Interval: c.nodeInfo.BaseConfig.PullInterval.(time.Duration),
 		Execute:  c.nodeInfoMonitor,
 	}
 	// fetch user list task
 	c.userReportPeriodic = &task.Periodic{
-		Interval: time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second,
+		Interval: c.nodeInfo.BaseConfig.PushInterval.(time.Duration),
 		Execute:  c.reportUserTraffic,
 	}
 	log.Printf("[%s: %d] Start monitor node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	// delay to start nodeInfoMonitor
 	go func() {
-		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PullInterval.(int)) * time.Second)
+		time.Sleep(c.nodeInfo.BaseConfig.PullInterval.(time.Duration))
 		_ = c.nodeInfoMonitorPeriodic.Start()
 	}()
 	log.Printf("[%s: %d] Start report node status", c.nodeInfo.NodeType, c.nodeInfo.NodeId)
 	// delay to start userReport
 	go func() {
-		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second)
+		time.Sleep(c.nodeInfo.BaseConfig.PushInterval.(time.Duration))
 		_ = c.userReportPeriodic.Start()
 	}()
 	if c.nodeInfo.Tls != 0 && c.CertConfig.CertMode != "none" &&
