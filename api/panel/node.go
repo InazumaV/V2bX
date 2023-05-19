@@ -74,12 +74,8 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 		}
 	}
 	nodeInfo.Routes = nil
-	if _, ok := nodeInfo.BaseConfig.PullInterval.(int); !ok {
-		nodeInfo.BaseConfig.PullInterval = intervalToTime(nodeInfo.BaseConfig.PullInterval)
-	}
-	if _, ok := nodeInfo.BaseConfig.PushInterval.(int); !ok {
-		nodeInfo.BaseConfig.PushInterval = intervalToTime(nodeInfo.BaseConfig.PullInterval)
-	}
+	nodeInfo.BaseConfig.PullInterval = intervalToTime(nodeInfo.BaseConfig.PullInterval)
+	nodeInfo.BaseConfig.PushInterval = intervalToTime(nodeInfo.BaseConfig.PushInterval)
 	c.etag = r.Header().Get("Etag")
 	return
 }
@@ -93,6 +89,7 @@ func intervalToTime(i interface{}) time.Duration {
 		return time.Duration(i) * time.Second
 	case reflect.Float64:
 		return time.Duration(i.(float64)) * time.Second
+	default:
+		return time.Duration(reflect.ValueOf(i).Int()) * time.Second
 	}
-	return 0
 }
