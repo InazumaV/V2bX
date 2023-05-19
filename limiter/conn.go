@@ -130,9 +130,11 @@ func (c *ConnLimiter) DelConnCount(user string, ip string) {
 
 // ClearOnlineIP Clear udp,icmp and other packet protocol online ip
 func (c *ConnLimiter) ClearOnlineIP() {
-	c.ip.Range(func(_, v any) bool {
+	c.ip.Range(func(u, v any) bool {
 		userIp := v.(*sync.Map)
+		notDel := false
 		userIp.Range(func(ip, v any) bool {
+			notDel = true
 			if _, ok := v.(int); ok {
 				if v.(int) == 1 {
 					// clear packet ip for realtime
@@ -148,6 +150,9 @@ func (c *ConnLimiter) ClearOnlineIP() {
 			}
 			return true
 		})
+		if !notDel {
+			c.ip.Delete(u)
+		}
 		return true
 	})
 }
