@@ -49,14 +49,15 @@ func New(c *conf.ApiConfig) (*Client, error) {
 	})
 	client.SetBaseURL(c.APIHost)
 	// Check node type
-	if c.NodeType != "V2ray" &&
-		c.NodeType != "Trojan" &&
-		c.NodeType != "Shadowsocks" {
+	c.NodeType = strings.ToLower(c.NodeType)
+	if c.NodeType != "v2ray" &&
+		c.NodeType != "trojan" &&
+		c.NodeType != "shadowsocks" {
 		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
 	}
 	// Create Key for each requests
 	client.SetQueryParams(map[string]string{
-		"node_type": strings.ToLower(c.NodeType),
+		"node_type": c.NodeType,
 		"node_id":   strconv.Itoa(c.NodeID),
 		"token":     c.Key,
 	})

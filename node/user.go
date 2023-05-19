@@ -24,9 +24,9 @@ func (c *Controller) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeI
 		} else {
 			users = c.buildVmessUsers(userInfo)
 		}
-	case "Trojan":
+	case "trojan":
 		users = c.buildTrojanUsers(userInfo)
-	case "Shadowsocks":
+	case "shadowsocks":
 		users = c.buildSSUsers(userInfo, getCipherFromString(nodeInfo.Cipher))
 	default:
 		return fmt.Errorf("unsupported node type: %s", nodeInfo.NodeType)

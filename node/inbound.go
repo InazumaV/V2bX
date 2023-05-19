@@ -23,11 +23,11 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	inbound.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	var err error
 	switch nodeInfo.NodeType {
-	case "V2ray":
+	case "v2ray":
 		err = buildV2ray(config, nodeInfo, inbound)
-	case "Trojan":
+	case "trojan":
 		err = buildTrojan(config, nodeInfo, inbound)
-	case "Shadowsocks":
+	case "shadowsocks":
 		err = buildShadowsocks(config, nodeInfo, inbound)
 	default:
 		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks", nodeInfo.NodeType)
