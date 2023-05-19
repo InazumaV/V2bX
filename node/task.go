@@ -35,7 +35,7 @@ func (c *Controller) initTask() {
 		time.Sleep(time.Duration(c.nodeInfo.BaseConfig.PushInterval.(int)) * time.Second)
 		_ = c.userReportPeriodic.Start()
 	}()
-	if c.EnableTls && c.CertConfig.CertMode != "none" &&
+	if c.nodeInfo.Tls != 0 && c.CertConfig.CertMode != "none" &&
 		(c.CertConfig.CertMode == "dns" || c.CertConfig.CertMode == "http") {
 		c.renewCertPeriodic = &task.Periodic{
 			Interval: time.Hour * 24,

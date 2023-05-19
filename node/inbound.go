@@ -65,7 +65,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
 	}
 	// Set TLS and XTLS settings
-	if config.EnableTls && config.CertConfig.CertMode != "none" {
+	if nodeInfo.Tls != 0 && config.CertConfig.CertMode != "none" {
 		inbound.StreamSetting.Security = "tls"
 		certFile, keyFile, err := getCertFile(config.CertConfig)
 		if err != nil {
