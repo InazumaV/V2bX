@@ -2,21 +2,10 @@
 
 [![](https://img.shields.io/badge/TgChat-%E4%BA%A4%E6%B5%81%E7%BE%A4-blue)](https://t.me/YuzukiProjects)
 
-A V2board node server based on Xray-core, modified from XrayR
-
+A V2board node server based on Xray-core, modified from XrayR.  
 一个基于Xray-core的V2board节点服务端，修改自XrayR，支持V2ay,Trojan,Shadowsocks协议。
 
-如果您喜欢本项目，可以右上角点个star+watch，持续关注本项目的进展。
-
-使用教程：[详细使用教程](https://yuzuki-1.gitbook.io/v2bx-doc/)
-
-如对脚本不放心，可使用此沙箱先测一遍再使用：https://killercoda.com/playgrounds/scenario/ubuntu
-
 **注意：1.1.0将更换为V2board1.7.0之后新增的Api，原Api将被移除，请1.7.0之前的用户使用1.1.0之前的版本。**
-
-## 免责声明
-
-本项目只是本人个人学习开发并维护，本人不保证任何可用性，也不对使用本软件造成的任何后果负责。
 
 ## 特点
 
@@ -24,7 +13,8 @@ A V2board node server based on Xray-core, modified from XrayR
 * 支持V2ray，Trojan， Shadowsocks多种协议。
 * 支持Vless和XTLS等新特性。
 * 支持单实例对接多面板、多节点，无需重复启动。
-* 支持限制在线IP
+* 支持限制在线IP。
+* 支持限制Tcp连接数。
 * 支持节点端口级别、用户级别限速。
 * 配置简单明了。
 * 修改配置自动重启实例。
@@ -34,30 +24,23 @@ A V2board node server based on Xray-core, modified from XrayR
 
 | 功能        | v2ray | trojan | shadowsocks |
 |-----------|-------|--------|-------------|
-| 获取节点信息    | √     | √      | √           |
-| 获取用户信息    | √     | √      | √           |
-| 用户流量统计    | √     | √      | √           |
 | 自动申请tls证书 | √     | √      | √           |
 | 自动续签tls证书 | √     | √      | √           |
 | 在线人数统计    | √     | √      | √           |
 | 审计规则      | √     | √      | √           |
 | 自定义DNS    | √     | √      | √           |
 | 在线IP数限制   | √     | √      | √           |
-| 连接数限制  | √     | √      | √           |
+| 连接数限制     | √     | √      | √           |
 | 跨节点IP数限制  | √     | √      | √           |
 | 按照用户限速    | √     | √      | √           |
 | 动态限速(未测试) | √     | √      | √           |
 
-## 支持前端
-
-| 前端      | v2ray | trojan | shadowsocks
-|---------|-------|--------|-------------|
-| v2board | √     | √      | √           |
-
 ## TODO
 
-* ~~抽象化Core包以摆脱对Xray-Core的强依赖性~~ 后续将会基于singbox开发新项目
-* ~~增加Hysteria支持~~ 后续将会基于singbox开发新项目
+- [ ] 重新实现动态限速
+- [ ] 重新实现在线IP同步（跨节点在线IP限制）
+- [ ] 集成基本操作Command(Start, Stop, Restart, Status, Uninstall)
+- [ ] 完善使用文档
 
 ## 软件安装
 
@@ -69,11 +52,18 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 
 ### 手动安装
 
-[手动安装教程](https://crackair.gitbook.io/xrayr-project/xrayr-xia-zai-he-an-zhuang/install/manual)
+[手动安装教程](https://yuzuki-1.gitbook.io/v2bx-doc//xrayr-xia-zai-he-an-zhuang/install/manual)
 
 ## 配置文件及详细使用教程
 
 [详细使用教程](https://yuzuki-1.gitbook.io/v2bx-doc/)
+
+## 免责声明
+
+* 此项目用于本人自用，因此本人不能保证向后兼容性。
+* 由于本人能力有限，不能保证所有功能的可用性，如果出现问题请在Issues反馈。
+* 本人不对任何人使用本项目造成的任何后果承担责任。
+* 本人比较多变，因此本项目可能会随想法或思路的变动随性更改项目结构或大规模重构代码，若不能接受请勿使用。
 
 ## Thanks
 
@@ -81,13 +71,7 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 * [V2Fly](https://github.com/v2fly)
 * [VNet-V2ray](https://github.com/ProxyPanel/VNet-V2ray)
 * [Air-Universe](https://github.com/crossfw/Air-Universe)
-* [XrayR](https://github.com/Misaka-blog/XrayR)
-
-## Licence
-
-[Mozilla Public License Version 2.0](https://github.com/XrayR-project/XrayR/blob/master/LICENSE)
-
-## Telgram
+* [XrayR](https://github.com/XrayR/XrayR)
 
 ## Stars 增长记录
 

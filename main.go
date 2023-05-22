@@ -21,13 +21,17 @@ var (
 )
 
 var (
-	version  = "TempVersion" //use ldflags replace
-	codename = "V2bX"
-	intro    = "A V2board backend based on Xray-core"
+	version   = "TempVersion" //use ldflags replace
+	codename  = "V2bX"
+	intro     = "A V2board backend based on Xray-core"
+	warnColor = "\033[0;31m"
 )
 
 func showVersion() {
 	fmt.Printf("%s %s (%s) \n", codename, version, intro)
+	// Warning
+	fmt.Printf("%sThis version need V2board version >= 1.7.0.", warnColor)
+	fmt.Printf("%sThis version changed config file. Please check config file before running.", warnColor)
 }
 
 func main() {
