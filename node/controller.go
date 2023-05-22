@@ -64,11 +64,12 @@ func (c *Controller) Start() error {
 		}
 	}
 	// Add new tag
-	err = c.addNewNode(c.nodeInfo)
+	err = c.server.AddNode(c.Tag, c.nodeInfo, c.ControllerConfig)
 	if err != nil {
 		return fmt.Errorf("add new tag failed: %s", err)
 	}
-	err = c.addNewUser(c.userList, c.nodeInfo)
+	added, err := c.server.AddUsers(&core.AddUsersParams{})
+	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, added)
 	if err != nil {
 		return err
 	}

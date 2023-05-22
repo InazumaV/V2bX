@@ -3,6 +3,8 @@ package node
 import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/common/builder"
+	"github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/Yuzuki616/V2bX/node/lego"
 	"github.com/xtls/xray-core/common/task"
@@ -61,7 +63,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	if newNodeInfo != nil {
 		// Remove old tag
 		oldTag := c.Tag
-		err := c.removeOldNode(oldTag)
+		err := c.server.DelNode(oldTag)
 		if err != nil {
 			log.Print(err)
 			return nil
@@ -71,7 +73,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		// Add new tag
 		c.nodeInfo = newNodeInfo
 		c.Tag = c.buildNodeTag()
-		err = c.addNewNode(newNodeInfo)
+		err = c.server.AddNode(c.Tag, newNodeInfo, c.ControllerConfig)
 		if err != nil {
 			log.Print(err)
 			return nil
@@ -88,7 +90,10 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		c.userList = newUserInfo
 		// Add new Limiter
 		l := limiter.AddLimiter(c.Tag, &c.LimitConfig, newUserInfo)
-		err = c.addNewUser(newUserInfo, newNodeInfo)
+		_, err = c.server.AddUsers(&core.AddUsersParams{
+			Tag:    c.Tag,
+			Config: c.ControllerConfig,
+		})
 		if err != nil {
 			log.Print(err)
 			return nil
@@ -132,7 +137,12 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			}
 		}
 		if len(added) > 0 {
-			err = c.addNewUser(added, c.nodeInfo)
+			_, err := c.server.AddUsers(&core.AddUsersParams{
+				Tag:      c.Tag,
+				Config:   c.ControllerConfig,
+				UserInfo: added,
+				NodeInfo: c.nodeInfo,
+			})
 			if err != nil {
 				log.Print(err)
 			}
@@ -147,38 +157,6 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		log.Printf("[%s: %d] %d user deleted, %d user added", c.nodeInfo.NodeType, c.nodeInfo.NodeId,
 			len(deleted), len(added))
 		c.userList = newUserInfo
-	}
-	return nil
-}
-
-func (c *Controller) removeOldNode(oldTag string) (err error) {
-	err = c.server.RemoveInbound(oldTag)
-	if err != nil {
-		return err
-	}
-	err = c.server.RemoveOutbound(oldTag)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *Controller) addNewNode(newNodeInfo *panel.NodeInfo) (err error) {
-	inboundConfig, err := BuildInbound(c.ControllerConfig, newNodeInfo, c.Tag)
-	if err != nil {
-		return fmt.Errorf("build inbound error: %s", err)
-	}
-	err = c.server.AddInbound(inboundConfig)
-	if err != nil {
-		return fmt.Errorf("add inbound error: %s", err)
-	}
-	outBoundConfig, err := buildOutbound(c.ControllerConfig, newNodeInfo, c.Tag)
-	if err != nil {
-		return fmt.Errorf("build outbound error: %s", err)
-	}
-	err = c.server.AddOutbound(outBoundConfig)
-	if err != nil {
-		return fmt.Errorf("add outbound error: %s", err)
 	}
 	return nil
 }
@@ -215,7 +193,7 @@ func (c *Controller) reportUserTraffic() (err error) {
 	// Get User traffic
 	userTraffic := make([]panel.UserTraffic, 0)
 	for i := range c.userList {
-		up, down := c.server.GetUserTraffic(c.buildUserTag(&(c.userList)[i]), true)
+		up, down := c.server.GetUserTraffic(builder.BuildUserTag(c.Tag, &c.userList[i]), true)
 		if up > 0 || down > 0 {
 			if c.LimitConfig.EnableDynamicSpeedLimit {
 				c.userList[i].Traffic += up + down

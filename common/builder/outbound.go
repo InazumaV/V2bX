@@ -1,18 +1,17 @@
-package node
+package builder
 
 import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	conf2 "github.com/Yuzuki616/V2bX/conf"
 	"github.com/goccy/go-json"
-
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/infra/conf"
 )
 
-// buildOutbound build freedom outbund config for addoutbound
-func buildOutbound(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.OutboundHandlerConfig, error) {
+// BuildOutbound build freedom outbund config for addoutbound
+func BuildOutbound(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.OutboundHandlerConfig, error) {
 	outboundDetourConfig := &conf.OutboundDetourConfig{}
 	outboundDetourConfig.Protocol = "freedom"
 	outboundDetourConfig.Tag = tag

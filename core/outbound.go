@@ -7,13 +7,13 @@ import (
 	"github.com/xtls/xray-core/features/outbound"
 )
 
-func (p *Core) RemoveOutbound(tag string) error {
-	err := p.ohm.RemoveHandler(context.Background(), tag)
+func (c *Core) RemoveOutbound(tag string) error {
+	err := c.ohm.RemoveHandler(context.Background(), tag)
 	return err
 }
 
-func (p *Core) AddOutbound(config *core.OutboundHandlerConfig) error {
-	rawHandler, err := core.CreateObject(p.Server, config)
+func (c *Core) AddOutbound(config *core.OutboundHandlerConfig) error {
+	rawHandler, err := core.CreateObject(c.Server, config)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (p *Core) AddOutbound(config *core.OutboundHandlerConfig) error {
 	if !ok {
 		return fmt.Errorf("not an InboundHandler: %s", err)
 	}
-	if err := p.ohm.AddHandler(context.Background(), handler); err != nil {
+	if err := c.ohm.AddHandler(context.Background(), handler); err != nil {
 		return err
 	}
 	return nil

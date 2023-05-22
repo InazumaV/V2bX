@@ -1,4 +1,4 @@
-package node
+package builder
 
 import (
 	"crypto/rand"
@@ -17,18 +17,18 @@ import (
 
 // BuildInbound build Inbound config for different protocol
 func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
-	inbound := &coreConf.InboundDetourConfig{}
+	in := &coreConf.InboundDetourConfig{}
 	// Set network protocol
 	t := coreConf.TransportProtocol(nodeInfo.Network)
-	inbound.StreamSetting = &coreConf.StreamConfig{Network: &t}
+	in.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	var err error
 	switch nodeInfo.NodeType {
 	case "v2ray":
-		err = buildV2ray(config, nodeInfo, inbound)
+		err = buildV2ray(config, nodeInfo, in)
 	case "trojan":
-		err = buildTrojan(config, nodeInfo, inbound)
+		err = buildTrojan(config, nodeInfo, in)
 	case "shadowsocks":
-		err = buildShadowsocks(config, nodeInfo, inbound)
+		err = buildShadowsocks(config, nodeInfo, in)
 	default:
 		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks", nodeInfo.NodeType)
 	}
@@ -36,12 +36,12 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 		return nil, err
 	}
 	// Set server port
-	inbound.PortList = &coreConf.PortList{
+	in.PortList = &coreConf.PortList{
 		Range: []coreConf.PortRange{{From: uint32(nodeInfo.ServerPort), To: uint32(nodeInfo.ServerPort)}},
 	}
 	// Set Listen IP address
 	ipAddress := net.ParseAddress(config.ListenIP)
-	inbound.ListenOn = &coreConf.Address{Address: ipAddress}
+	in.ListenOn = &coreConf.Address{Address: ipAddress}
 	// Set SniffingConfig
 	sniffingConfig := &coreConf.SniffingConfig{
 		Enabled:      true,
@@ -50,30 +50,30 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	if config.DisableSniffing {
 		sniffingConfig.Enabled = false
 	}
-	inbound.SniffingConfig = sniffingConfig
-	if *inbound.StreamSetting.Network == "tcp" {
-		if inbound.StreamSetting.TCPSettings != nil {
-			inbound.StreamSetting.TCPSettings.AcceptProxyProtocol = config.EnableProxyProtocol
+	in.SniffingConfig = sniffingConfig
+	if *in.StreamSetting.Network == "tcp" {
+		if in.StreamSetting.TCPSettings != nil {
+			in.StreamSetting.TCPSettings.AcceptProxyProtocol = config.EnableProxyProtocol
 		} else {
 			tcpSetting := &coreConf.TCPConfig{
 				AcceptProxyProtocol: config.EnableProxyProtocol,
 			} //Enable proxy protocol
-			inbound.StreamSetting.TCPSettings = tcpSetting
+			in.StreamSetting.TCPSettings = tcpSetting
 		}
-	} else if *inbound.StreamSetting.Network == "ws" {
-		inbound.StreamSetting.WSSettings = &coreConf.WebSocketConfig{
+	} else if *in.StreamSetting.Network == "ws" {
+		in.StreamSetting.WSSettings = &coreConf.WebSocketConfig{
 			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
 	}
 	// Set TLS and XTLS settings
 	if nodeInfo.Tls != 0 {
 		if config.CertConfig.CertMode != "none" {
 			// Normal tls
-			inbound.StreamSetting.Security = "tls"
+			in.StreamSetting.Security = "tls"
 			certFile, keyFile, err := getCertFile(config.CertConfig)
 			if err != nil {
 				return nil, err
 			}
-			inbound.StreamSetting.TLSSettings = &coreConf.TLSConfig{
+			in.StreamSetting.TLSSettings = &coreConf.TLSConfig{
 				Certs: []*coreConf.TLSCertConfig{
 					{
 						CertFile:     certFile,
@@ -85,12 +85,12 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			}
 		} else if config.EnableReality {
 			// Reality
-			inbound.StreamSetting.Security = "reality"
+			in.StreamSetting.Security = "reality"
 			d, err := json.Marshal(config.RealityConfig.Dest)
 			if err != nil {
 				return nil, fmt.Errorf("marshal reality dest error: %s", err)
 			}
-			inbound.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
+			in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
 				Dest:         d,
 				Xver:         config.RealityConfig.Xver,
 				ServerNames:  config.RealityConfig.ServerNames,
@@ -103,16 +103,16 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 		}
 	}
 	// Support ProxyProtocol for any transport protocol
-	if *inbound.StreamSetting.Network != "tcp" &&
-		*inbound.StreamSetting.Network != "ws" &&
+	if *in.StreamSetting.Network != "tcp" &&
+		*in.StreamSetting.Network != "ws" &&
 		config.EnableProxyProtocol {
 		sockoptConfig := &coreConf.SocketConfig{
 			AcceptProxyProtocol: config.EnableProxyProtocol,
 		} //Enable proxy protocol
-		inbound.StreamSetting.SocketSettings = sockoptConfig
+		in.StreamSetting.SocketSettings = sockoptConfig
 	}
-	inbound.Tag = tag
-	return inbound.Build()
+	in.Tag = tag
+	return in.Build()
 }
 
 func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {

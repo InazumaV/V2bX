@@ -150,38 +150,38 @@ func getCore(v2bXConfig *conf.Conf) *core.Instance {
 }
 
 // Start the Core
-func (p *Core) Start() error {
-	p.access.Lock()
-	defer p.access.Unlock()
-	if err := p.Server.Start(); err != nil {
+func (c *Core) Start() error {
+	c.access.Lock()
+	defer c.access.Unlock()
+	if err := c.Server.Start(); err != nil {
 		return err
 	}
-	p.shm = p.Server.GetFeature(statsFeature.ManagerType()).(statsFeature.Manager)
-	p.ihm = p.Server.GetFeature(inbound.ManagerType()).(inbound.Manager)
-	p.ohm = p.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
-	p.dispatcher = p.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)
+	c.shm = c.Server.GetFeature(statsFeature.ManagerType()).(statsFeature.Manager)
+	c.ihm = c.Server.GetFeature(inbound.ManagerType()).(inbound.Manager)
+	c.ohm = c.Server.GetFeature(outbound.ManagerType()).(outbound.Manager)
+	c.dispatcher = c.Server.GetFeature(routing.DispatcherType()).(*dispatcher.DefaultDispatcher)
 	return nil
 }
 
 // Close  the core
-func (p *Core) Close() {
-	p.access.Lock()
-	defer p.access.Unlock()
-	p.ihm = nil
-	p.ohm = nil
-	p.shm = nil
-	p.dispatcher = nil
-	err := p.Server.Close()
+func (c *Core) Close() {
+	c.access.Lock()
+	defer c.access.Unlock()
+	c.ihm = nil
+	c.ohm = nil
+	c.shm = nil
+	c.dispatcher = nil
+	err := c.Server.Close()
 	if err != nil {
 		log.Panicf("failed to close xray core: %s", err)
 	}
 	return
 }
 
-func (p *Core) Restart(v2bXConfig *conf.Conf) error {
-	p.Close()
-	p.Server = getCore(v2bXConfig)
-	err := p.Start()
+func (c *Core) Restart(v2bXConfig *conf.Conf) error {
+	c.Close()
+	c.Server = getCore(v2bXConfig)
+	err := c.Start()
 	if err != nil {
 		return err
 	}

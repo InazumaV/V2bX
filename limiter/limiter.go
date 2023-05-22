@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/common/builder"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/juju/ratelimit"
 	"github.com/xtls/xray-core/common/task"
@@ -25,7 +26,7 @@ func Init() {
 	go func() {
 		log.Println("Limiter: ClearOnlineIP started")
 		time.Sleep(time.Minute * 2)
-		c.Start()
+		_ = c.Start()
 	}()
 }
 
@@ -59,7 +60,7 @@ func AddLimiter(tag string, l *conf.LimitConfig, users []panel.UserInfo) *Limite
 				SpeedLimit: users[i].SpeedLimit,
 				ExpireTime: 0,
 			}
-			info.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d", tag, users[i].Uuid, users[i].Id), userLimit)
+			info.UserLimitInfo.Store(builder.BuildUserTag(tag, &users[i]), userLimit)
 		}
 	}
 	limitLock.Lock()

@@ -1,4 +1,4 @@
-package node
+package builder
 
 import (
 	"encoding/base64"
@@ -11,94 +11,69 @@ import (
 	"github.com/xtls/xray-core/proxy/shadowsocks_2022"
 	"github.com/xtls/xray-core/proxy/trojan"
 	"github.com/xtls/xray-core/proxy/vless"
-	"log"
 	"strings"
 )
 
 const xtlsFLow = "xtls-rprx-vision"
 
-func (c *Controller) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (err error) {
-	users := make([]*protocol.User, 0, len(userInfo))
-	switch nodeInfo.NodeType {
-	case "v2ray":
-		if c.EnableVless {
-			users = c.buildVlessUsers(userInfo)
-		} else {
-			users = c.buildVmessUsers(userInfo)
-		}
-	case "trojan":
-		users = c.buildTrojanUsers(userInfo)
-	case "shadowsocks":
-		users = c.buildSSUsers(userInfo, getCipherFromString(nodeInfo.Cipher))
-	default:
-		return fmt.Errorf("unsupported node type: %s", nodeInfo.NodeType)
-	}
-	err = c.server.AddUsers(users, c.Tag)
-	if err != nil {
-		return fmt.Errorf("add users error: %s", err)
-	}
-	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, len(userInfo))
-	return nil
-}
-
-func (c *Controller) buildVmessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
+func BuildVmessUsers(tag string, userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i, user := range userInfo {
-		users[i] = c.buildVmessUser(&user, 0)
+		users[i] = BuildVmessUser(tag, &user)
 	}
 	return users
 }
 
-func (c *Controller) buildVmessUser(userInfo *panel.UserInfo, serverAlterID uint16) (user *protocol.User) {
+func BuildVmessUser(tag string, userInfo *panel.UserInfo) (user *protocol.User) {
 	vmessAccount := &conf.VMessAccount{
 		ID:       userInfo.Uuid,
-		AlterIds: serverAlterID,
+		AlterIds: 0,
 		Security: "auto",
 	}
 	return &protocol.User{
 		Level:   0,
-		Email:   c.buildUserTag(userInfo), // Uid: InboundTag|email|uid
+		Email:   BuildUserTag(tag, userInfo), // Uid: InboundTag|email|uid
 		Account: serial.ToTypedMessage(vmessAccount.Build()),
 	}
 }
 
-func (c *Controller) buildVlessUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
+func BuildVlessUsers(tag string, userInfo []panel.UserInfo, xtls bool) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
-		users[i] = c.buildVlessUser(&(userInfo)[i])
+		users[i] = BuildVlessUser(tag, &(userInfo)[i], xtls)
 	}
 	return users
 }
 
-func (c *Controller) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
+func BuildVlessUser(tag string, userInfo *panel.UserInfo, xtls bool) (user *protocol.User) {
 	vlessAccount := &vless.Account{
 		Id: userInfo.Uuid,
 	}
-	if c.EnableXtls {
+	if xtls {
 		vlessAccount.Flow = xtlsFLow
 	}
 	return &protocol.User{
 		Level:   0,
-		Email:   c.buildUserTag(userInfo),
+		Email:   BuildUserTag(tag, userInfo),
 		Account: serial.ToTypedMessage(vlessAccount),
 	}
 }
 
-func (c *Controller) buildTrojanUsers(userInfo []panel.UserInfo) (users []*protocol.User) {
+func BuildTrojanUsers(tag string, userInfo []panel.UserInfo) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
-		users[i] = c.buildTrojanUser(&(userInfo)[i])
+		users[i] = BuildTrojanUser(tag, &(userInfo)[i])
 	}
 	return users
 }
 
-func (c *Controller) buildTrojanUser(userInfo *panel.UserInfo) (user *protocol.User) {
+func BuildTrojanUser(tag string, userInfo *panel.UserInfo) (user *protocol.User) {
 	trojanAccount := &trojan.Account{
 		Password: userInfo.Uuid,
 	}
 	return &protocol.User{
 		Level:   0,
-		Email:   c.buildUserTag(userInfo),
+		Email:   BuildUserTag(tag, userInfo),
 		Account: serial.ToTypedMessage(trojanAccount),
 	}
 }
@@ -118,23 +93,23 @@ func getCipherFromString(c string) shadowsocks.CipherType {
 	}
 }
 
-func (c *Controller) buildSSUsers(userInfo []panel.UserInfo, cypher shadowsocks.CipherType) (users []*protocol.User) {
+func BuildSSUsers(tag string, userInfo []panel.UserInfo, cypher shadowsocks.CipherType, serverKey string) (users []*protocol.User) {
 	users = make([]*protocol.User, len(userInfo))
 	for i := range userInfo {
-		users[i] = c.buildSSUser(&(userInfo)[i], cypher)
+		users[i] = BuildSSUser(tag, &userInfo[i], cypher, serverKey)
 	}
 	return users
 }
 
-func (c *Controller) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.CipherType) (user *protocol.User) {
-	if c.nodeInfo.ServerKey == "" {
+func BuildSSUser(tag string, userInfo *panel.UserInfo, cypher shadowsocks.CipherType, serverKey string) (user *protocol.User) {
+	if serverKey == "" {
 		ssAccount := &shadowsocks.Account{
 			Password:   userInfo.Uuid,
 			CipherType: cypher,
 		}
 		return &protocol.User{
 			Level:   0,
-			Email:   c.buildUserTag(userInfo),
+			Email:   tag,
 			Account: serial.ToTypedMessage(ssAccount),
 		}
 	} else {
@@ -143,12 +118,12 @@ func (c *Controller) buildSSUser(userInfo *panel.UserInfo, cypher shadowsocks.Ci
 		}
 		return &protocol.User{
 			Level:   0,
-			Email:   c.buildUserTag(userInfo),
+			Email:   tag,
 			Account: serial.ToTypedMessage(ssAccount),
 		}
 	}
 }
 
-func (c *Controller) buildUserTag(user *panel.UserInfo) string {
-	return fmt.Sprintf("%s|%s|%d", c.Tag, user.Uuid, user.Id)
+func BuildUserTag(tag string, user *panel.UserInfo) string {
+	return fmt.Sprintf("%s|%s|%d", tag, user.Uuid, user.Id)
 }
