@@ -83,20 +83,19 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 				},
 				RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
 			}
-		}
-
-	} else if config.EnableReality {
-		// Reality
-		inbound.StreamSetting.Security = "reality"
-		inbound.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
-			Dest:         config.RealityConfig.Dest,
-			Xver:         config.RealityConfig.Xver,
-			ServerNames:  config.RealityConfig.ServerNames,
-			PrivateKey:   config.RealityConfig.PrivateKey,
-			MinClientVer: config.RealityConfig.MinClientVer,
-			MaxClientVer: config.RealityConfig.MaxClientVer,
-			MaxTimeDiff:  config.RealityConfig.MaxTimeDiff,
-			ShortIds:     config.RealityConfig.ShortIds,
+		} else if config.EnableReality {
+			// Reality
+			inbound.StreamSetting.Security = "reality"
+			inbound.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
+				Dest:         config.RealityConfig.Dest,
+				Xver:         config.RealityConfig.Xver,
+				ServerNames:  config.RealityConfig.ServerNames,
+				PrivateKey:   config.RealityConfig.PrivateKey,
+				MinClientVer: config.RealityConfig.MinClientVer,
+				MaxClientVer: config.RealityConfig.MaxClientVer,
+				MaxTimeDiff:  config.RealityConfig.MaxTimeDiff,
+				ShortIds:     config.RealityConfig.ShortIds,
+			}
 		}
 	}
 	// Support ProxyProtocol for any transport protocol

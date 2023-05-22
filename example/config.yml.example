@@ -39,9 +39,9 @@ Nodes:
         MinClientVer: "" # Min client version
         MaxClientVer: "" # Max client version
         MaxTimeDiff: 0 # Max time difference, ms
-        ShortIds:
+        ShortIds: # Short ids
           - ""
-          - "0123456789abcdef" # Short id
+          - "0123456789abcdef"
       EnableFallback: false # Only support for Trojan and Vless
       FallBackConfigs: # Support multiple fallbacks
         - SNI: # TLS SNI(Server Name Indication), Empty for any
