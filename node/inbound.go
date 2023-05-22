@@ -86,8 +86,12 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 		} else if config.EnableReality {
 			// Reality
 			inbound.StreamSetting.Security = "reality"
+			d, err := json.Marshal(config.RealityConfig.Dest)
+			if err != nil {
+				return nil, fmt.Errorf("marshal reality dest error: %s", err)
+			}
 			inbound.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
-				Dest:         config.RealityConfig.Dest,
+				Dest:         d,
 				Xver:         config.RealityConfig.Xver,
 				ServerNames:  config.RealityConfig.ServerNames,
 				PrivateKey:   config.RealityConfig.PrivateKey,

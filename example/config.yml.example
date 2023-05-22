@@ -31,7 +31,7 @@ Nodes:
       EnableReality: false # Enable reality
       RealityConfig: # This config like RealityObject for xray-core, please check https://xtls.github.io/config/transport.html#realityobject
         Dest: 80 # Same fallback dest
-        Xver: "example.com:443" # Same fallback xver
+        Xver: 0 # Same fallback xver
         ServerNames:
           - "example.com"
           - "www.example.com"

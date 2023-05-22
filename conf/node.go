@@ -1,7 +1,5 @@
 package conf
 
-import "github.com/goccy/go-json"
-
 type NodeConfig struct {
 	ApiConfig        *ApiConfig        `yaml:"ApiConfig"`
 	ControllerConfig *ControllerConfig `yaml:"ControllerConfig"`
@@ -95,12 +93,12 @@ type CertConfig struct {
 }
 
 type RealityConfig struct {
-	Dest         json.RawMessage `yaml:"Dest"`
-	Xver         uint64          `yaml:"Xver"`
-	ServerNames  []string        `yaml:"ServerNames"`
-	PrivateKey   string          `yaml:"PrivateKey"`
-	MinClientVer string          `yaml:"MinClientVer"`
-	MaxClientVer string          `yaml:"MaxClientVer"`
-	MaxTimeDiff  uint64          `yaml:"MaxTimeDiff"`
-	ShortIds     []string        `yaml:"ShortIds"`
+	Dest         interface{} `yaml:"Dest"`
+	Xver         uint64      `yaml:"Xver"`
+	ServerNames  []string    `yaml:"ServerNames"`
+	PrivateKey   string      `yaml:"PrivateKey"`
+	MinClientVer string      `yaml:"MinClientVer"`
+	MaxClientVer string      `yaml:"MaxClientVer"`
+	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff"`
+	ShortIds     []string    `yaml:"ShortIds"`
 }
