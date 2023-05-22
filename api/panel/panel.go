@@ -15,20 +15,13 @@ import (
 
 // Panel is the interface for different panel's api.
 
-type ClientInfo struct {
-	APIHost  string
-	NodeID   int
-	Key      string
-	NodeType string
-}
-
 type Client struct {
 	client        *resty.Client
 	APIHost       string
 	Key           string
 	NodeType      string
 	NodeId        int
-	LocalRuleList []DestinationRule
+	LocalRuleList []*regexp.Regexp
 	etag          string
 }
 
@@ -74,8 +67,8 @@ func New(c *conf.ApiConfig) (*Client, error) {
 }
 
 // readLocalRuleList reads the local rule list file
-func readLocalRuleList(path string) (LocalRuleList []DestinationRule) {
-	LocalRuleList = make([]DestinationRule, 0)
+func readLocalRuleList(path string) (LocalRuleList []*regexp.Regexp) {
+	LocalRuleList = make([]*regexp.Regexp, 0)
 	if path != "" {
 		// open the file
 		file, err := os.Open(path)
@@ -87,10 +80,7 @@ func readLocalRuleList(path string) (LocalRuleList []DestinationRule) {
 		fileScanner := bufio.NewScanner(file)
 		// read line by line
 		for fileScanner.Scan() {
-			LocalRuleList = append(LocalRuleList, DestinationRule{
-				ID:      -1,
-				Pattern: regexp.MustCompile(fileScanner.Text()),
-			})
+			LocalRuleList = append(LocalRuleList, regexp.MustCompile(fileScanner.Text()))
 		}
 		// handle first encountered error while reading
 		if err := fileScanner.Err(); err != nil {

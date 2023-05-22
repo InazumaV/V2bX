@@ -8,6 +8,7 @@ import (
 	"github.com/juju/ratelimit"
 	"github.com/xtls/xray-core/common/task"
 	"log"
+	"regexp"
 	"sync"
 	"time"
 )
@@ -29,7 +30,7 @@ func Init() {
 }
 
 type Limiter struct {
-	Rules         []panel.DestinationRule
+	Rules         []*regexp.Regexp
 	ProtocolRules []string
 	SpeedLimit    int
 	UserLimitInfo *sync.Map    // Key: Uid value: UserLimitInfo

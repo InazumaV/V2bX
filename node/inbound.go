@@ -15,8 +15,8 @@ import (
 	coreConf "github.com/xtls/xray-core/infra/conf"
 )
 
-// buildInbound build Inbound config for different protocol
-func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
+// BuildInbound build Inbound config for different protocol
+func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
 	inbound := &coreConf.InboundDetourConfig{}
 	// Set network protocol
 	t := coreConf.TransportProtocol(nodeInfo.Network)
@@ -65,17 +65,39 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
 	}
 	// Set TLS and XTLS settings
-	if nodeInfo.Tls != 0 && config.CertConfig.CertMode != "none" {
-		inbound.StreamSetting.Security = "tls"
-		certFile, keyFile, err := getCertFile(config.CertConfig)
-		if err != nil {
-			return nil, err
+	if nodeInfo.Tls != 0 {
+		if config.CertConfig.CertMode != "none" {
+			// Normal tls
+			inbound.StreamSetting.Security = "tls"
+			certFile, keyFile, err := getCertFile(config.CertConfig)
+			if err != nil {
+				return nil, err
+			}
+			inbound.StreamSetting.TLSSettings = &coreConf.TLSConfig{
+				Certs: []*coreConf.TLSCertConfig{
+					{
+						CertFile:     certFile,
+						KeyFile:      keyFile,
+						OcspStapling: 3600,
+					},
+				},
+				RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
+			}
 		}
-		tlsSettings := &coreConf.TLSConfig{
-			RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
+
+	} else if config.EnableReality {
+		// Reality
+		inbound.StreamSetting.Security = "reality"
+		inbound.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
+			Dest:         config.RealityConfig.Dest,
+			Xver:         config.RealityConfig.Xver,
+			ServerNames:  config.RealityConfig.ServerNames,
+			PrivateKey:   config.RealityConfig.PrivateKey,
+			MinClientVer: config.RealityConfig.MinClientVer,
+			MaxClientVer: config.RealityConfig.MaxClientVer,
+			MaxTimeDiff:  config.RealityConfig.MaxTimeDiff,
+			ShortIds:     config.RealityConfig.ShortIds,
 		}
-		tlsSettings.Certs = append(tlsSettings.Certs, &coreConf.TLSCertConfig{CertFile: certFile, KeyFile: keyFile, OcspStapling: 3600})
-		inbound.StreamSetting.TLSSettings = tlsSettings
 	}
 	// Support ProxyProtocol for any transport protocol
 	if *inbound.StreamSetting.Network != "tcp" &&
@@ -127,6 +149,9 @@ func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound
 			return fmt.Errorf("marshal vmess settings error: %s", err)
 		}
 		inbound.Settings = (*json.RawMessage)(&s)
+	}
+	if len(nodeInfo.NetworkSettings) == 0 {
+		return nil
 	}
 	switch nodeInfo.Network {
 	case "tcp":

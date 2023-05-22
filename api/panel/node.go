@@ -10,18 +10,19 @@ import (
 )
 
 type NodeInfo struct {
-	Host            string            `json:"host"`
-	ServerPort      int               `json:"server_port"`
-	ServerName      string            `json:"server_name"`
-	Network         string            `json:"network"`
-	NetworkSettings json.RawMessage   `json:"networkSettings"`
-	Cipher          string            `json:"cipher"`
-	ServerKey       string            `json:"server_key"`
-	Tls             int               `json:"tls"`
-	Routes          []Route           `json:"routes"`
-	BaseConfig      *BaseConfig       `json:"base_config"`
-	Rules           []DestinationRule `json:"-"`
-	localNodeConfig `json:"-"`
+	NodeId          int              `json:"-"`
+	NodeType        string           `json:"-"`
+	Rules           []*regexp.Regexp `json:"-"`
+	Host            string           `json:"host"`
+	ServerPort      int              `json:"server_port"`
+	ServerName      string           `json:"server_name"`
+	Network         string           `json:"network"`
+	NetworkSettings json.RawMessage  `json:"networkSettings"`
+	Cipher          string           `json:"cipher"`
+	ServerKey       string           `json:"server_key"`
+	Tls             int              `json:"tls"`
+	Routes          []Route          `json:"routes"`
+	BaseConfig      *BaseConfig      `json:"base_config"`
 }
 type Route struct {
 	Id     int         `json:"id"`
@@ -32,14 +33,6 @@ type Route struct {
 type BaseConfig struct {
 	PushInterval any `json:"push_interval"`
 	PullInterval any `json:"pull_interval"`
-}
-type DestinationRule struct {
-	ID      int
-	Pattern *regexp.Regexp
-}
-type localNodeConfig struct {
-	NodeId   int
-	NodeType string
 }
 
 func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
@@ -66,10 +59,7 @@ func (c *Client) GetNodeInfo() (nodeInfo *NodeInfo, err error) {
 				matchs = nodeInfo.Routes[i].Match.([]string)
 			}
 			for _, v := range matchs {
-				nodeInfo.Rules = append(nodeInfo.Rules, DestinationRule{
-					ID:      nodeInfo.Routes[i].Id,
-					Pattern: regexp.MustCompile(v),
-				})
+				nodeInfo.Rules = append(nodeInfo.Rules, regexp.MustCompile(v))
 			}
 		}
 	}

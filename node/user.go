@@ -15,6 +15,8 @@ import (
 	"strings"
 )
 
+const xtlsFLow = "xtls-rprx-vision"
+
 func (c *Controller) addNewUser(userInfo []panel.UserInfo, nodeInfo *panel.NodeInfo) (err error) {
 	users := make([]*protocol.User, 0, len(userInfo))
 	switch nodeInfo.NodeType {
@@ -70,8 +72,10 @@ func (c *Controller) buildVlessUsers(userInfo []panel.UserInfo) (users []*protoc
 
 func (c *Controller) buildVlessUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	vlessAccount := &vless.Account{
-		Id:   userInfo.Uuid,
-		Flow: "xtls-rprx-direct",
+		Id: userInfo.Uuid,
+	}
+	if c.EnableXtls {
+		vlessAccount.Flow = xtlsFLow
 	}
 	return &protocol.User{
 		Level:   0,
@@ -91,7 +95,6 @@ func (c *Controller) buildTrojanUsers(userInfo []panel.UserInfo) (users []*proto
 func (c *Controller) buildTrojanUser(userInfo *panel.UserInfo) (user *protocol.User) {
 	trojanAccount := &trojan.Account{
 		Password: userInfo.Uuid,
-		Flow:     "xtls-rprx-direct",
 	}
 	return &protocol.User{
 		Level:   0,

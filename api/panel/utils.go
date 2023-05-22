@@ -6,11 +6,6 @@ import (
 	path2 "path"
 )
 
-// Describe return a description of the client
-func (c *Client) Describe() ClientInfo {
-	return ClientInfo{APIHost: c.APIHost, NodeID: c.NodeId, Key: c.Key, NodeType: c.NodeType}
-}
-
 // Debug set the client debug for client
 func (c *Client) Debug() {
 	c.client.SetDebug(true)

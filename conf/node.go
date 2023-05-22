@@ -1,5 +1,7 @@
 package conf
 
+import "github.com/goccy/go-json"
+
 type NodeConfig struct {
 	ApiConfig        *ApiConfig        `yaml:"ApiConfig"`
 	ControllerConfig *ControllerConfig `yaml:"ControllerConfig"`
@@ -20,13 +22,16 @@ type ControllerConfig struct {
 	EnableDNS            bool             `yaml:"EnableDNS"`
 	DNSType              string           `yaml:"DNSType"`
 	EnableVless          bool             `yaml:"EnableVless"`
+	EnableXtls           bool             `json:"EnableXtls"`
 	LimitConfig          LimitConfig      `yaml:"LimitConfig"`
 	DisableUploadTraffic bool             `yaml:"DisableUploadTraffic"`
 	DisableGetRule       bool             `yaml:"DisableGetRule"`
 	EnableProxyProtocol  bool             `yaml:"EnableProxyProtocol"`
-	EnableFallback       bool             `yaml:"EnableFallback"`
 	DisableIVCheck       bool             `yaml:"DisableIVCheck"`
 	DisableSniffing      bool             `yaml:"DisableSniffing"`
+	EnableReality        bool             `yaml:"EnableReality"`
+	RealityConfig        RealityConfig    `yaml:"RealityConfig"`
+	EnableFallback       bool             `yaml:"EnableFallback"`
 	FallBackConfigs      []FallBackConfig `yaml:"FallBackConfigs"`
 	CertConfig           *CertConfig      `yaml:"CertConfig"`
 }
@@ -87,4 +92,15 @@ type CertConfig struct {
 	Provider         string            `yaml:"Provider"` // alidns, cloudflare, gandi, godaddy....
 	Email            string            `yaml:"Email"`
 	DNSEnv           map[string]string `yaml:"DNSEnv"`
+}
+
+type RealityConfig struct {
+	Dest         json.RawMessage `yaml:"Dest"`
+	Xver         uint64          `yaml:"Xver"`
+	ServerNames  []string        `yaml:"ServerNames"`
+	PrivateKey   string          `yaml:"PrivateKey"`
+	MinClientVer string          `yaml:"MinClientVer"`
+	MaxClientVer string          `yaml:"MaxClientVer"`
+	MaxTimeDiff  uint64          `yaml:"MaxTimeDiff"`
+	ShortIds     []string        `yaml:"ShortIds"`
 }

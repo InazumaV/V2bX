@@ -14,7 +14,6 @@ import (
 
 type Controller struct {
 	server                    *core.Core
-	clientInfo                panel.ClientInfo
 	apiClient                 *panel.Client
 	nodeInfo                  *panel.NodeInfo
 	Tag                       string
@@ -40,7 +39,6 @@ func NewController(server *core.Core, api *panel.Client, config *conf.Controller
 
 // Start implement the Start() function of the service interface
 func (c *Controller) Start() error {
-	c.clientInfo = c.apiClient.Describe()
 	// First fetch Node Info
 	var err error
 	c.nodeInfo, err = c.apiClient.GetNodeInfo()

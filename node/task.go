@@ -164,7 +164,7 @@ func (c *Controller) removeOldNode(oldTag string) (err error) {
 }
 
 func (c *Controller) addNewNode(newNodeInfo *panel.NodeInfo) (err error) {
-	inboundConfig, err := buildInbound(c.ControllerConfig, newNodeInfo, c.Tag)
+	inboundConfig, err := BuildInbound(c.ControllerConfig, newNodeInfo, c.Tag)
 	if err != nil {
 		return fmt.Errorf("build inbound error: %s", err)
 	}
