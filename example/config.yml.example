@@ -29,7 +29,7 @@ Nodes:
       EnableProxyProtocol: false # Only works for WebSocket and TCP
       EnableXtls: false  # Enable xtls-rprx-vision, only vless
       EnableReality: false # Enable reality
-      RealityConfig:
+      RealityConfig: # This config like RealityObject for xray-core, please check https://xtls.github.io/config/transport.html#realityobject
         Dest: 80 # Same fallback dest
         Xver: "example.com:443" # Same fallback xver
         ServerNames:
@@ -38,10 +38,10 @@ Nodes:
         PrivateKey: "" # Private key for server
         MinClientVer: "" # Min client version
         MaxClientVer: "" # Max client version
-        MaxTimeDiff: 0
+        MaxTimeDiff: 0 # Max time difference, ms
         ShortIds:
           - ""
-          - "0123456789abcdef"
+          - "0123456789abcdef" # Short id
       EnableFallback: false # Only support for Trojan and Vless
       FallBackConfigs: # Support multiple fallbacks
         - SNI: # TLS SNI(Server Name Indication), Empty for any
