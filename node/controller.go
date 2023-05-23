@@ -68,7 +68,12 @@ func (c *Controller) Start() error {
 	if err != nil {
 		return fmt.Errorf("add new tag failed: %s", err)
 	}
-	added, err := c.server.AddUsers(&core.AddUsersParams{})
+	added, err := c.server.AddUsers(&core.AddUsersParams{
+		Tag:      c.Tag,
+		Config:   c.ControllerConfig,
+		UserInfo: c.userList,
+		NodeInfo: c.nodeInfo,
+	})
 	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, added)
 	if err != nil {
 		return err

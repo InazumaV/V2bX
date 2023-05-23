@@ -30,8 +30,8 @@ var (
 func showVersion() {
 	fmt.Printf("%s %s (%s) \n", codename, version, intro)
 	// Warning
-	fmt.Printf("%sThis version need V2board version >= 1.7.0.", warnColor)
-	fmt.Printf("%sThis version changed config file. Please check config file before running.", warnColor)
+	fmt.Printf("%sThis version need V2board version >= 1.7.0.\n", warnColor)
+	fmt.Printf("%sThis version changed config file. Please check config file before running.\n", warnColor)
 }
 
 func main() {
