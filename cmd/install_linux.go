@@ -49,6 +49,7 @@ func uninstallHandle(_ *cobra.Command, _ []string) {
 	_ = os.RemoveAll("/etc/systemd/system/V2bX.service")
 	_ = os.RemoveAll("/etc/V2bX/")
 	_ = os.RemoveAll("/usr/local/V2bX/")
+	_ = os.RemoveAll("/bin/V2bX")
 	_, err = execCommand("systemctl daemon-reload&&systemctl reset-failed")
 	if err != nil {
 		fmt.Println(Err("exec cmd error: ", err))

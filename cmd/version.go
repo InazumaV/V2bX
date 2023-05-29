@@ -1,0 +1,31 @@
+package cmd
+
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+)
+
+var (
+	version  = "TempVersion" //use ldflags replace
+	codename = "V2bX"
+	intro    = "A V2board backend based on Xray-core"
+)
+
+var versionCommand = cobra.Command{
+	Use:   "version",
+	Short: "Print version info",
+	Run: func(cmd *cobra.Command, args []string) {
+		showVersion()
+	},
+}
+
+func init() {
+	command.AddCommand(&versionCommand)
+}
+
+func showVersion() {
+	fmt.Printf("%s %s (%s) \n", codename, version, intro)
+	// Warning
+	fmt.Println(Warn("This version need V2board version >= 1.7.0."))
+	fmt.Println(Warn("This version changed config file. Please check config file before running."))
+}
