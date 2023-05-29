@@ -5,12 +5,11 @@ go 1.20
 require (
 	github.com/beevik/ntp v1.0.0
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/go-acme/lego/v4 v4.11.0
+	github.com/go-acme/lego/v4 v4.12.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.10.2
 	github.com/juju/ratelimit v1.0.2
-	github.com/sagernet/sing v0.2.4
 	github.com/sagernet/sing-box v1.2.7
 	github.com/spf13/cobra v1.7.0
 	github.com/xtls/xray-core v1.8.1
@@ -128,6 +127,7 @@ require (
 	github.com/sacloud/packages-go v0.0.5 // indirect
 	github.com/sagernet/go-tun2socks v1.16.12-0.20220818015926-16cb67876a61 // indirect
 	github.com/sagernet/netlink v0.0.0-20220905062125-8043b4a9aa97 // indirect
+	github.com/sagernet/sing v0.2.4 // indirect
 	github.com/sagernet/sing-dns v0.1.5-0.20230415085626-111ecf799dfc // indirect
 	github.com/sagernet/sing-shadowsocks v0.2.2-0.20230417102954-f77257340507 // indirect
 	github.com/sagernet/sing-tun v0.1.4 // indirect
