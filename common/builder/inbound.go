@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/common/file"
@@ -64,9 +65,31 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 		in.StreamSetting.WSSettings = &coreConf.WebSocketConfig{
 			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
 	}
-	// Set TLS and XTLS settings
+	// Set TLS or Reality settings
 	if nodeInfo.Tls != 0 {
-		if config.CertConfig.CertMode != "none" {
+		if config.CertConfig == nil {
+			return nil, errors.New("the CertConfig is not vail")
+		}
+		switch config.CertConfig.CertMode {
+		case "none", "": // disable
+		case "reality":
+			// Reality
+			in.StreamSetting.Security = "reality"
+			d, err := json.Marshal(config.CertConfig.RealityConfig.Dest)
+			if err != nil {
+				return nil, fmt.Errorf("marshal reality dest error: %s", err)
+			}
+			in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
+				Dest:         d,
+				Xver:         config.CertConfig.RealityConfig.Xver,
+				ServerNames:  config.CertConfig.RealityConfig.ServerNames,
+				PrivateKey:   config.CertConfig.RealityConfig.PrivateKey,
+				MinClientVer: config.CertConfig.RealityConfig.MinClientVer,
+				MaxClientVer: config.CertConfig.RealityConfig.MaxClientVer,
+				MaxTimeDiff:  config.CertConfig.RealityConfig.MaxTimeDiff,
+				ShortIds:     config.CertConfig.RealityConfig.ShortIds,
+			}
+		default:
 			// Normal tls
 			in.StreamSetting.Security = "tls"
 			certFile, keyFile, err := getCertFile(config.CertConfig)
@@ -82,23 +105,6 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 					},
 				},
 				RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
-			}
-		} else if config.EnableReality {
-			// Reality
-			in.StreamSetting.Security = "reality"
-			d, err := json.Marshal(config.RealityConfig.Dest)
-			if err != nil {
-				return nil, fmt.Errorf("marshal reality dest error: %s", err)
-			}
-			in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
-				Dest:         d,
-				Xver:         config.RealityConfig.Xver,
-				ServerNames:  config.RealityConfig.ServerNames,
-				PrivateKey:   config.RealityConfig.PrivateKey,
-				MinClientVer: config.RealityConfig.MinClientVer,
-				MaxClientVer: config.RealityConfig.MaxClientVer,
-				MaxTimeDiff:  config.RealityConfig.MaxTimeDiff,
-				ShortIds:     config.RealityConfig.ShortIds,
 			}
 		}
 	}

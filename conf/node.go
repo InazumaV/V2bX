@@ -27,8 +27,6 @@ type ControllerConfig struct {
 	EnableProxyProtocol  bool             `yaml:"EnableProxyProtocol"`
 	DisableIVCheck       bool             `yaml:"DisableIVCheck"`
 	DisableSniffing      bool             `yaml:"DisableSniffing"`
-	EnableReality        bool             `yaml:"EnableReality"`
-	RealityConfig        RealityConfig    `yaml:"RealityConfig"`
 	EnableFallback       bool             `yaml:"EnableFallback"`
 	FallBackConfigs      []FallBackConfig `yaml:"FallBackConfigs"`
 	CertConfig           *CertConfig      `yaml:"CertConfig"`
@@ -90,6 +88,7 @@ type CertConfig struct {
 	Provider         string            `yaml:"Provider"` // alidns, cloudflare, gandi, godaddy....
 	Email            string            `yaml:"Email"`
 	DNSEnv           map[string]string `yaml:"DNSEnv"`
+	RealityConfig    *RealityConfig    `yaml:"RealityConfig"`
 }
 
 type RealityConfig struct {

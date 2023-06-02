@@ -28,20 +28,6 @@ Nodes:
       EnableVless: false # Enable Vless for V2ray Type
       EnableProxyProtocol: false # Only works for WebSocket and TCP
       EnableXtls: false  # Enable xtls-rprx-vision, only vless
-      EnableReality: false # Enable reality
-      RealityConfig: # This config like RealityObject for xray-core, please check https://xtls.github.io/config/transport.html#realityobject
-        Dest: 80 # Same fallback dest
-        Xver: 0 # Same fallback xver
-        ServerNames:
-          - "example.com"
-          - "www.example.com"
-        PrivateKey: "" # Private key for server
-        MinClientVer: "" # Min client version
-        MaxClientVer: "" # Max client version
-        MaxTimeDiff: 0 # Max time difference, ms
-        ShortIds: # Short ids
-          - ""
-          - "0123456789abcdef"
       EnableFallback: false # Only support for Trojan and Vless
       FallBackConfigs: # Support multiple fallbacks
         - SNI: # TLS SNI(Server Name Indication), Empty for any
@@ -76,7 +62,7 @@ Nodes:
           SpeedLimit: 0 # Speed limit, Mbps
           ExpireTime: 0 # Time limit, sec.
       CertConfig:
-        CertMode: dns # Option about how to get certificate: none, file, http, dns. Choose "none" will forcedly disable the tls config.
+        CertMode: dns # Option about how to get certificate: none, file, http, dns, reality. Choose "none" will forcedly disable the tls config.
         CertDomain: "node1.test.com" # Domain to cert
         CertFile: /etc/XrayR/cert/node1.test.com.cert # Provided if the CertMode is file
         KeyFile: /etc/XrayR/cert/node1.test.com.key
@@ -85,6 +71,19 @@ Nodes:
         DNSEnv: # DNS ENV option used by DNS provider
           ALICLOUD_ACCESS_KEY: aaa
           ALICLOUD_SECRET_KEY: bbb
+        RealityConfig: # This config like RealityObject for xray-core, please check https://xtls.github.io/config/transport.html#realityobject
+          Dest: 80 # Same fallback dest
+          Xver: 0 # Same fallback xver
+          ServerNames:
+            - "example.com"
+            - "www.example.com"
+          PrivateKey: "" # Private key for server
+          MinClientVer: "" # Min client version
+          MaxClientVer: "" # Max client version
+          MaxTimeDiff: 0 # Max time difference, ms
+          ShortIds: # Short ids
+            - ""
+            - "0123456789abcdef"
   # -
   #   ApiConfig:
   #     ApiHost: "http://127.0.0.1:668"
