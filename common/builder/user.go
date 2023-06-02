@@ -77,6 +77,47 @@ func BuildTrojanUser(tag string, userInfo *panel.UserInfo) (user *protocol.User)
 		Account: serial.ToTypedMessage(trojanAccount),
 	}
 }
+func BuildSSUsers(tag string, userInfo []panel.UserInfo, cypher string, serverKey string) (users []*protocol.User) {
+	users = make([]*protocol.User, len(userInfo))
+	for i := range userInfo {
+		users[i] = BuildSSUser(tag, &userInfo[i], cypher, serverKey)
+	}
+	return users
+}
+
+func BuildSSUser(tag string, userInfo *panel.UserInfo, cypher string, serverKey string) (user *protocol.User) {
+	if serverKey == "" {
+		ssAccount := &shadowsocks.Account{
+			Password:   userInfo.Uuid,
+			CipherType: getCipherFromString(cypher),
+		}
+		return &protocol.User{
+			Level:   0,
+			Email:   tag,
+			Account: serial.ToTypedMessage(ssAccount),
+		}
+	} else {
+		var keyLength int
+		switch cypher {
+		case "2022-blake3-aes-128-gcm":
+			keyLength = 16
+		case "2022-blake3-aes-256-gcm":
+			keyLength = 32
+		}
+		ssAccount := &shadowsocks_2022.User{
+			Key: base64.StdEncoding.EncodeToString([]byte(userInfo.Uuid[:keyLength])),
+		}
+		return &protocol.User{
+			Level:   0,
+			Email:   tag,
+			Account: serial.ToTypedMessage(ssAccount),
+		}
+	}
+}
+
+func BuildUserTag(tag string, user *panel.UserInfo) string {
+	return fmt.Sprintf("%s|%s|%d", tag, user.Uuid, user.Id)
+}
 
 func getCipherFromString(c string) shadowsocks.CipherType {
 	switch strings.ToLower(c) {
@@ -91,39 +132,4 @@ func getCipherFromString(c string) shadowsocks.CipherType {
 	default:
 		return shadowsocks.CipherType_UNKNOWN
 	}
-}
-
-func BuildSSUsers(tag string, userInfo []panel.UserInfo, cypher shadowsocks.CipherType, serverKey string) (users []*protocol.User) {
-	users = make([]*protocol.User, len(userInfo))
-	for i := range userInfo {
-		users[i] = BuildSSUser(tag, &userInfo[i], cypher, serverKey)
-	}
-	return users
-}
-
-func BuildSSUser(tag string, userInfo *panel.UserInfo, cypher shadowsocks.CipherType, serverKey string) (user *protocol.User) {
-	if serverKey == "" {
-		ssAccount := &shadowsocks.Account{
-			Password:   userInfo.Uuid,
-			CipherType: cypher,
-		}
-		return &protocol.User{
-			Level:   0,
-			Email:   tag,
-			Account: serial.ToTypedMessage(ssAccount),
-		}
-	} else {
-		ssAccount := &shadowsocks_2022.User{
-			Key: base64.StdEncoding.EncodeToString([]byte(userInfo.Uuid[:32])),
-		}
-		return &protocol.User{
-			Level:   0,
-			Email:   tag,
-			Account: serial.ToTypedMessage(ssAccount),
-		}
-	}
-}
-
-func BuildUserTag(tag string, user *panel.UserInfo) string {
-	return fmt.Sprintf("%s|%s|%d", tag, user.Uuid, user.Id)
 }

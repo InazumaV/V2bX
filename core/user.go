@@ -8,8 +8,6 @@ import (
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/proxy"
-	"github.com/xtls/xray-core/proxy/shadowsocks"
-	"strings"
 )
 
 func (c *Core) GetUserManager(tag string) (proxy.UserManager, error) {
@@ -86,7 +84,7 @@ func (c *Core) AddUsers(p *AddUsersParams) (added int, err error) {
 	case "shadowsocks":
 		users = builder.BuildSSUsers(p.Tag,
 			p.UserInfo,
-			getCipherFromString(p.NodeInfo.Cipher),
+			p.NodeInfo.Cipher,
 			p.NodeInfo.ServerKey)
 	default:
 		return 0, fmt.Errorf("unsupported node type: %s", p.NodeInfo.NodeType)
@@ -106,19 +104,4 @@ func (c *Core) AddUsers(p *AddUsersParams) (added int, err error) {
 		}
 	}
 	return len(users), nil
-}
-
-func getCipherFromString(c string) shadowsocks.CipherType {
-	switch strings.ToLower(c) {
-	case "aes-128-gcm", "aead_aes_128_gcm":
-		return shadowsocks.CipherType_AES_128_GCM
-	case "aes-256-gcm", "aead_aes_256_gcm":
-		return shadowsocks.CipherType_AES_256_GCM
-	case "chacha20-poly1305", "aead_chacha20_poly1305", "chacha20-ietf-poly1305":
-		return shadowsocks.CipherType_CHACHA20_POLY1305
-	case "none", "plain":
-		return shadowsocks.CipherType_NONE
-	default:
-		return shadowsocks.CipherType_UNKNOWN
-	}
 }
