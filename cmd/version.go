@@ -27,5 +27,4 @@ func showVersion() {
 	fmt.Printf("%s %s (%s) \n", codename, version, intro)
 	// Warning
 	fmt.Println(Warn("This version need V2board version >= 1.7.0."))
-	fmt.Println(Warn("This version changed config file. Please check config file before running."))
 }

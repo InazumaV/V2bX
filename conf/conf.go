@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"gopkg.in/yaml.v3"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -39,9 +40,19 @@ func (p *Conf) LoadFromPath(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("open config file error: %s", err)
 	}
-	err = yaml.NewDecoder(f).Decode(p)
+	defer f.Close()
+	content, err := io.ReadAll(f)
+	if err != nil {
+		return fmt.Errorf("read file error: %s", err)
+	}
+	err = yaml.Unmarshal(content, p)
 	if err != nil {
 		return fmt.Errorf("decode config error: %s", err)
+	}
+	old := &OldConfig{}
+	err = yaml.Unmarshal(content, old)
+	if err == nil {
+		migrateOldConfig(p, old)
 	}
 	return nil
 }
