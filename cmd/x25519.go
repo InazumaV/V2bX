@@ -23,13 +23,15 @@ func init() {
 func executeX25519() {
 	var output string
 	var err error
+	defer func() {
+		fmt.Println(output)
+	}()
 	var privateKey []byte
 	var publicKey []byte
-
 	privateKey = make([]byte, curve25519.ScalarSize)
 	if _, err = rand.Read(privateKey); err != nil {
-		output = err.Error()
-		goto out
+		output = fmt.Sprintf("read rand error: %s", err)
+		return
 	}
 
 	// Modify random bytes using algorithm described at:
@@ -39,14 +41,11 @@ func executeX25519() {
 	privateKey[31] |= 64
 
 	if publicKey, err = curve25519.X25519(privateKey, curve25519.Basepoint); err != nil {
-		output = err.Error()
-		goto out
+		output = fmt.Sprintf("gen X25519 error: %s", err)
+		return
 	}
 
 	output = fmt.Sprintf("Private key: %v\nPublic key: %v",
 		base64.RawURLEncoding.EncodeToString(privateKey),
 		base64.RawURLEncoding.EncodeToString(publicKey))
-
-out:
-	fmt.Println(output)
 }
