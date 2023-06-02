@@ -48,7 +48,7 @@ func migrateOldConfig(c *Conf, old *OldConfig) {
 			break
 		}
 		// node option
-		if !old.NodesConfig[i].ApiConfig.EnableVless {
+		if old.NodesConfig[i].ApiConfig.EnableVless {
 			n.ControllerConfig.EnableVless = true
 			changed = true
 		}
@@ -61,7 +61,7 @@ func migrateOldConfig(c *Conf, old *OldConfig) {
 			n.ControllerConfig.LimitConfig.IPLimit = old.NodesConfig[i].ApiConfig.DeviceLimit
 			changed = true
 		}
-		if !old.NodesConfig[i].ControllerConfig.EnableDynamicSpeedLimit {
+		if old.NodesConfig[i].ControllerConfig.EnableDynamicSpeedLimit {
 			n.ControllerConfig.LimitConfig.EnableDynamicSpeedLimit = true
 			changed = true
 		}
@@ -70,7 +70,7 @@ func migrateOldConfig(c *Conf, old *OldConfig) {
 				old.NodesConfig[i].ControllerConfig.DynamicSpeedLimitConfig
 			changed = true
 		}
-		if !old.NodesConfig[i].ControllerConfig.EnableIpRecorder {
+		if old.NodesConfig[i].ControllerConfig.EnableIpRecorder {
 			n.ControllerConfig.LimitConfig.EnableIpRecorder = true
 			changed = true
 		}

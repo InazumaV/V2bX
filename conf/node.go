@@ -20,7 +20,7 @@ type ControllerConfig struct {
 	EnableDNS            bool             `yaml:"EnableDNS"`
 	DNSType              string           `yaml:"DNSType"`
 	EnableVless          bool             `yaml:"EnableVless"`
-	EnableXtls           bool             `json:"EnableXtls"`
+	EnableXtls           bool             `yaml:"EnableXtls"`
 	LimitConfig          LimitConfig      `yaml:"LimitConfig"`
 	DisableUploadTraffic bool             `yaml:"DisableUploadTraffic"`
 	DisableGetRule       bool             `yaml:"DisableGetRule"`
