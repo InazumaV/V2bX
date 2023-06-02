@@ -39,7 +39,7 @@ A V2board node server based on Xray-core, modified from XrayR.
 
 - [ ] 重新实现动态限速
 - [ ] 重新实现在线IP同步（跨节点在线IP限制）
-- [ ] 集成基本操作Command(Start, Stop, Restart, Status, Uninstall)
+- [x] 集成基本操作Command(Start, Stop, Restart, Status, Uninstall)
 - [ ] 完善使用文档
 
 ## 软件安装
