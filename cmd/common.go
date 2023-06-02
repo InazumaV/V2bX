@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/common/exec"
 	"strings"
 )
 
@@ -13,7 +14,7 @@ const (
 )
 
 func checkRunning() (bool, error) {
-	o, err := execCommand("systemctl status V2bX | grep Active")
+	o, err := exec.RunCommandByShell("systemctl status V2bX | grep Active")
 	if err != nil {
 		return false, err
 	}

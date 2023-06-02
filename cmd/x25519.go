@@ -30,7 +30,7 @@ func executeX25519() {
 	var publicKey []byte
 	privateKey = make([]byte, curve25519.ScalarSize)
 	if _, err = rand.Read(privateKey); err != nil {
-		output = fmt.Sprintf("read rand error: %s", err)
+		output = Err("read rand error: ", err)
 		return
 	}
 
@@ -41,11 +41,12 @@ func executeX25519() {
 	privateKey[31] |= 64
 
 	if publicKey, err = curve25519.X25519(privateKey, curve25519.Basepoint); err != nil {
-		output = fmt.Sprintf("gen X25519 error: %s", err)
+		output = Err("gen X25519 error: ", err)
 		return
 	}
 
-	output = fmt.Sprintf("Private key: %v\nPublic key: %v",
+	output = Err("Private key: ",
 		base64.RawURLEncoding.EncodeToString(privateKey),
+		"\nPublic key: ",
 		base64.RawURLEncoding.EncodeToString(publicKey))
 }

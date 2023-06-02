@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/common/exec"
 	"github.com/spf13/cobra"
 	"time"
 )
@@ -26,7 +27,7 @@ var (
 		Use:   "log",
 		Short: "Output V2bX log",
 		Run: func(_ *cobra.Command, _ []string) {
-			execCommandStd("journalctl", "-u", "V2bX.service", "-e", "--no-pager", "-f")
+			exec.RunCommandStd("journalctl", "-u", "V2bX.service", "-e", "--no-pager", "-f")
 		},
 	}
 )
@@ -48,7 +49,7 @@ func startHandle(_ *cobra.Command, _ []string) {
 	if r {
 		fmt.Println(Ok("V2bX已运行，无需再次启动，如需重启请选择重启"))
 	}
-	_, err = execCommand("systemctl start V2bX.service")
+	_, err = exec.RunCommandByShell("systemctl start V2bX.service")
 	if err != nil {
 		fmt.Println(Err("exec start cmd error: ", err))
 		fmt.Println(Err("V2bX启动失败"))
@@ -68,7 +69,7 @@ func startHandle(_ *cobra.Command, _ []string) {
 }
 
 func stopHandle(_ *cobra.Command, _ []string) {
-	_, err := execCommand("systemctl stop V2bX.service")
+	_, err := exec.RunCommandByShell("systemctl stop V2bX.service")
 	if err != nil {
 		fmt.Println(Err("exec stop cmd error: ", err))
 		fmt.Println(Err("V2bX停止失败"))
@@ -89,7 +90,7 @@ func stopHandle(_ *cobra.Command, _ []string) {
 }
 
 func restartHandle(_ *cobra.Command, _ []string) {
-	_, err := execCommand("systemctl restart V2bX.service")
+	_, err := exec.RunCommandByShell("systemctl restart V2bX.service")
 	if err != nil {
 		fmt.Println(Err("exec restart cmd error: ", err))
 		fmt.Println(Err("V2bX重启失败"))

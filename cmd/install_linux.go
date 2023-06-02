@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/common/exec"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
@@ -14,7 +15,7 @@ var (
 		Use:   "update",
 		Short: "Update V2bX version",
 		Run: func(_ *cobra.Command, _ []string) {
-			execCommandStd("bash",
+			exec.RunCommandStd("bash",
 				"<(curl -Ls https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh)",
 				targetVersion)
 		},
@@ -40,7 +41,7 @@ func uninstallHandle(_ *cobra.Command, _ []string) {
 	if strings.ToLower(yes) != "y" {
 		fmt.Println("已取消卸载")
 	}
-	_, err := execCommand("systemctl stop V2bX&&systemctl disable V2bX")
+	_, err := exec.RunCommandByShell("systemctl stop V2bX&&systemctl disable V2bX")
 	if err != nil {
 		fmt.Println(Err("exec cmd error: ", err))
 		fmt.Println(Err("卸载失败"))
@@ -50,7 +51,7 @@ func uninstallHandle(_ *cobra.Command, _ []string) {
 	_ = os.RemoveAll("/etc/V2bX/")
 	_ = os.RemoveAll("/usr/local/V2bX/")
 	_ = os.RemoveAll("/bin/V2bX")
-	_, err = execCommand("systemctl daemon-reload&&systemctl reset-failed")
+	_, err = exec.RunCommandByShell("systemctl daemon-reload&&systemctl reset-failed")
 	if err != nil {
 		fmt.Println(Err("exec cmd error: ", err))
 		fmt.Println(Err("卸载失败"))

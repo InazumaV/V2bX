@@ -1,4 +1,4 @@
-package cmd
+package exec
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-func execCommand(cmd string) (string, error) {
+func RunCommandByShell(cmd string) (string, error) {
 	e := exec.Command("bash", "-c", cmd)
 	out, err := e.CombinedOutput()
 	if errors.Unwrap(err) == exec.ErrNotFound {
@@ -16,7 +16,7 @@ func execCommand(cmd string) (string, error) {
 	return string(out), err
 }
 
-func execCommandStd(name string, args ...string) {
+func RunCommandStd(name string, args ...string) {
 	e := exec.Command(name, args...)
 	e.Stdout = os.Stdout
 	e.Stdin = os.Stdin
