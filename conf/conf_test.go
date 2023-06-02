@@ -1,8 +1,19 @@
 package conf
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 func TestConf_LoadFromPath(t *testing.T) {
 	c := New()
 	t.Log(c.LoadFromPath("../example/config.yml.example"), c.NodesConfig[0].ControllerConfig.LimitConfig.IPLimit)
+}
+
+func TestConf_Watch(t *testing.T) {
+	c := New()
+	c.Watch("../example/config.yml.example", func() {
+		log.Println(1)
+	})
+	select {}
 }

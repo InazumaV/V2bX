@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"time"
 )
 
 type Conf struct {
@@ -63,10 +64,19 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 		return fmt.Errorf("new watcher error: %s", err)
 	}
 	go func() {
+		var pre time.Time
 		defer watcher.Close()
 		for {
 			select {
-			case <-watcher.Events:
+			case e := <-watcher.Events:
+				if e.Has(fsnotify.Chmod) {
+					continue
+				}
+				if pre.Add(1 * time.Second).After(time.Now()) {
+					continue
+				}
+				time.Sleep(2 * time.Second)
+				pre = time.Now()
 				log.Println("config dir changed, reloading...")
 				*p = *New()
 				err := p.LoadFromPath(filePath)
