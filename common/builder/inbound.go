@@ -114,6 +114,7 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 		config.EnableProxyProtocol {
 		sockoptConfig := &coreConf.SocketConfig{
 			AcceptProxyProtocol: config.EnableProxyProtocol,
+			TFO:                 config.EnableTFO,
 		} //Enable proxy protocol
 		in.StreamSetting.SocketSettings = sockoptConfig
 	}
