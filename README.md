@@ -2,8 +2,8 @@
 
 [![](https://img.shields.io/badge/TgChat-%E4%BA%A4%E6%B5%81%E7%BE%A4-blue)](https://t.me/YuzukiProjects)
 
-A V2board node server based on Xray-core, modified from XrayR.  
-一个基于Xray-core的V2board节点服务端，修改自XrayR，支持V2ay,Trojan,Shadowsocks协议。
+A V2board node server based on multi core, modified from XrayR.  
+一个基于多种内核的V2board节点服务端，修改自XrayR，支持V2ay,Trojan,Shadowsocks协议。
 
 **注意：1.1.0将更换为V2board1.7.0之后新增的Api，原Api将被移除，请1.7.0之前的用户使用1.1.0之前的版本。**
 
@@ -12,13 +12,14 @@ A V2board node server based on Xray-core, modified from XrayR.
 * 永久开源且免费。
 * 支持V2ray，Trojan， Shadowsocks多种协议。
 * 支持Vless和XTLS等新特性。
-* 支持单实例对接多面板、多节点，无需重复启动。
+* 支持单实例对接多节点，无需重复启动。
 * 支持限制在线IP。
 * 支持限制Tcp连接数。
 * 支持节点端口级别、用户级别限速。
 * 配置简单明了。
 * 修改配置自动重启实例。
-* 方便编译和升级，可以快速更新核心版本， 支持Xray-core新特性。
+* 支持多种内核，易扩展。
+* 支持条件编译，可仅编译需要的内核。
 
 ## 功能介绍
 
@@ -40,6 +41,7 @@ A V2board node server based on Xray-core, modified from XrayR.
 - [ ] 重新实现动态限速
 - [ ] 重新实现在线IP同步（跨节点在线IP限制）
 - [x] 集成基本操作Command(Start, Stop, Restart, Status, Uninstall)
+- [ ] 完善Hysteria内核支持
 - [ ] 完善使用文档
 
 ## 软件安装
