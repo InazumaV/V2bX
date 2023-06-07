@@ -132,7 +132,7 @@ jobs:
         if: matrix.goarch == 'mips' || matrix.goarch == 'mipsle'
         run: |
           echo "version: $version"
-          GOMIPS=softfloat go build -v -o build_assets/V2bX_softfloat "xray hy" -trimpath -ldflags "-X 'github.com/Yuzuki616/V2bX/cmd.version=$version' -s -w -buildid="
+          GOMIPS=softfloat go build -v -o build_assets/V2bX_softfloat -tags "xray hy" -trimpath -ldflags "-X 'github.com/Yuzuki616/V2bX/cmd.version=$version' -s -w -buildid="
       - name: Rename Windows V2bX
         if: matrix.goos == 'windows'
         run: |
