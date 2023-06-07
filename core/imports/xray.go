@@ -1,5 +1,5 @@
 //go:build xray
 
-package core
+package imports
 
 import _ "github.com/Yuzuki616/V2bX/core/xray"

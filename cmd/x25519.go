@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/curve25519"
 )
@@ -45,7 +46,7 @@ func executeX25519() {
 		return
 	}
 
-	output = Err("Private key: ",
+	output = fmt.Sprint("Private key: ",
 		base64.RawURLEncoding.EncodeToString(privateKey),
 		"\nPublic key: ",
 		base64.RawURLEncoding.EncodeToString(publicKey))

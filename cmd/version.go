@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +28,7 @@ func init() {
 
 func showVersion() {
 	fmt.Printf("%s %s (%s) \n", codename, version, intro)
+	fmt.Printf("Supported cores: %s\n", strings.Join(vCore.RegisteredCore(), ", "))
 	// Warning
 	fmt.Println(Warn("This version need V2board version >= 1.7.0."))
 }
