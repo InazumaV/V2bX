@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package v2bx.core.app.dispatcher;
 option csharp_namespace = "V2bX.core.app.dispatcher";
-option go_package = "github.com/Yuzuki616/V2bX/core/app/dispatcher";
+option go_package = "github.com/Yuzuki616/V2bX/core/xray/app/dispatcher";
 option java_package = "com.v2bx.core.app.dispatcher";
 option java_multiple_files = true;
 

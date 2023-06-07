@@ -2,34 +2,35 @@ package conf
 
 import (
 	"fmt"
-	"github.com/fsnotify/fsnotify"
-	"gopkg.in/yaml.v3"
 	"io"
 	"log"
 	"os"
 	"path"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
+	"gopkg.in/yaml.v3"
 )
 
 type Conf struct {
-	LogConfig          *LogConfig        `yaml:"Log"`
-	DnsConfigPath      string            `yaml:"DnsConfigPath"`
-	InboundConfigPath  string            `yaml:"InboundConfigPath"`
-	OutboundConfigPath string            `yaml:"OutboundConfigPath"`
-	RouteConfigPath    string            `yaml:"RouteConfigPath"`
-	ConnectionConfig   *ConnectionConfig `yaml:"ConnectionConfig"`
-	NodesConfig        []*NodeConfig     `yaml:"Nodes"`
+	CoreConfig  CoreConfig    `yaml:"CoreConfig"`
+	NodesConfig []*NodeConfig `yaml:"Nodes"`
 }
 
 func New() *Conf {
 	return &Conf{
-		LogConfig:          NewLogConfig(),
-		DnsConfigPath:      "",
-		InboundConfigPath:  "",
-		OutboundConfigPath: "",
-		RouteConfigPath:    "",
-		ConnectionConfig:   NewConnectionConfig(),
-		NodesConfig:        []*NodeConfig{},
+		CoreConfig: CoreConfig{
+			Type: "xray",
+			XrayConfig: &XrayConfig{
+				LogConfig:          NewLogConfig(),
+				DnsConfigPath:      "",
+				InboundConfigPath:  "",
+				OutboundConfigPath: "",
+				RouteConfigPath:    "",
+				ConnectionConfig:   NewConnectionConfig(),
+			},
+		},
+		NodesConfig: []*NodeConfig{},
 	}
 }
 

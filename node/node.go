@@ -3,7 +3,7 @@ package node
 import (
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/core"
+	vCore "github.com/Yuzuki616/V2bX/core"
 )
 
 type Node struct {
@@ -14,7 +14,7 @@ func New() *Node {
 	return &Node{}
 }
 
-func (n *Node) Start(nodes []*conf.NodeConfig, core *core.Core) error {
+func (n *Node) Start(nodes []*conf.NodeConfig, core vCore.Core) error {
 	n.controllers = make([]*Controller, len(nodes))
 	for i, c := range nodes {
 		p, err := panel.New(c.ApiConfig)

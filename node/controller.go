@@ -3,17 +3,18 @@ package node
 import (
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/Yuzuki616/V2bX/api/iprecoder"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/core"
+	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/xtls/xray-core/common/task"
-	"log"
 )
 
 type Controller struct {
-	server                    *core.Core
+	server                    vCore.Core
 	apiClient                 *panel.Client
 	nodeInfo                  *panel.NodeInfo
 	Tag                       string
@@ -28,7 +29,7 @@ type Controller struct {
 }
 
 // NewController return a Node controller with default parameters.
-func NewController(server *core.Core, api *panel.Client, config *conf.ControllerConfig) *Controller {
+func NewController(server vCore.Core, api *panel.Client, config *conf.ControllerConfig) *Controller {
 	controller := &Controller{
 		server:           server,
 		ControllerConfig: config,
@@ -68,7 +69,7 @@ func (c *Controller) Start() error {
 	if err != nil {
 		return fmt.Errorf("add new tag failed: %s", err)
 	}
-	added, err := c.server.AddUsers(&core.AddUsersParams{
+	added, err := c.server.AddUsers(&vCore.AddUsersParams{
 		Tag:      c.Tag,
 		Config:   c.ControllerConfig,
 		UserInfo: c.userList,

@@ -1,11 +1,11 @@
-package core
+package xray
 
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/panel"
+
 	"github.com/Yuzuki616/V2bX/common/builder"
-	"github.com/Yuzuki616/V2bX/conf"
+	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/proxy"
 )
@@ -26,7 +26,7 @@ func (c *Core) GetUserManager(tag string) (proxy.UserManager, error) {
 	return userManager, nil
 }
 
-func (c *Core) RemoveUsers(users []string, tag string) error {
+func (c *Core) DelUsers(users []string, tag string) error {
 	userManager, err := c.GetUserManager(tag)
 	if err != nil {
 		return fmt.Errorf("get user manager error: %s", err)
@@ -63,14 +63,7 @@ func (c *Core) GetUserTraffic(email string, reset bool) (up int64, down int64) {
 	return up, down
 }
 
-type AddUsersParams struct {
-	Tag      string
-	Config   *conf.ControllerConfig
-	UserInfo []panel.UserInfo
-	NodeInfo *panel.NodeInfo
-}
-
-func (c *Core) AddUsers(p *AddUsersParams) (added int, err error) {
+func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 	users := make([]*protocol.User, 0, len(p.UserInfo))
 	switch p.NodeInfo.NodeType {
 	case "v2ray":

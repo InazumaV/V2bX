@@ -2,19 +2,20 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
 var (
 	version  = "TempVersion" //use ldflags replace
 	codename = "V2bX"
-	intro    = "A V2board backend based on Xray-core"
+	intro    = "A V2board backend based on multi core"
 )
 
 var versionCommand = cobra.Command{
 	Use:   "version",
 	Short: "Print version info",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		showVersion()
 	},
 }

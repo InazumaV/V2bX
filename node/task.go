@@ -2,16 +2,18 @@ package node
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/builder"
-	"github.com/Yuzuki616/V2bX/core"
-	"github.com/Yuzuki616/V2bX/limiter"
-	"github.com/Yuzuki616/V2bX/node/lego"
-	"github.com/xtls/xray-core/common/task"
 	"log"
 	"runtime"
 	"strconv"
 	"time"
+
+	vCore "github.com/Yuzuki616/V2bX/core"
+
+	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/common/builder"
+	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/Yuzuki616/V2bX/node/lego"
+	"github.com/xtls/xray-core/common/task"
 )
 
 func (c *Controller) initTask() {
@@ -90,7 +92,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		c.userList = newUserInfo
 		// Add new Limiter
 		l := limiter.AddLimiter(c.Tag, &c.LimitConfig, newUserInfo)
-		_, err = c.server.AddUsers(&core.AddUsersParams{
+		_, err = c.server.AddUsers(&vCore.AddUsersParams{
 			Tag:    c.Tag,
 			Config: c.ControllerConfig,
 		})
@@ -131,13 +133,13 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 					(deleted)[i].Uuid,
 					(deleted)[i].Id)
 			}
-			err := c.server.RemoveUsers(deletedEmail, c.Tag)
+			err := c.server.DelUsers(deletedEmail, c.Tag)
 			if err != nil {
 				log.Print(err)
 			}
 		}
 		if len(added) > 0 {
-			_, err := c.server.AddUsers(&core.AddUsersParams{
+			_, err := c.server.AddUsers(&vCore.AddUsersParams{
 				Tag:      c.Tag,
 				Config:   c.ControllerConfig,
 				UserInfo: added,
