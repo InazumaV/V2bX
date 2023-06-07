@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/beevik/ntp v1.0.0
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/go-acme/lego/v4 v4.12.0
+	github.com/go-acme/lego/v4 v4.12.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.10.2
@@ -13,6 +13,7 @@ require (
 	github.com/sagernet/sing-box v1.2.7
 	github.com/spf13/cobra v1.7.0
 	github.com/xtls/xray-core v1.8.1
+	golang.org/x/crypto v0.9.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -158,7 +159,6 @@ require (
 	go.starlark.net v0.0.0-20230302034142-4b1e35fe2254 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
