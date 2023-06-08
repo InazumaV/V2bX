@@ -49,7 +49,7 @@ func migrateOldConfig(c *Conf, old *OldConfig) {
 		}
 		// node option
 		if old.NodesConfig[i].ApiConfig.EnableVless {
-			n.ControllerConfig.EnableVless = true
+			n.ControllerConfig.XrayOptions.EnableVless = true
 			changed = true
 		}
 		// limit config

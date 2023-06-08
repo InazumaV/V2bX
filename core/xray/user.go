@@ -40,9 +40,9 @@ func (c *Core) DelUsers(users []string, tag string) error {
 	return nil
 }
 
-func (c *Core) GetUserTraffic(email string, reset bool) (up int64, down int64) {
-	upName := "user>>>" + email + ">>>traffic>>>uplink"
-	downName := "user>>>" + email + ">>>traffic>>>downlink"
+func (c *Core) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
+	upName := "user>>>" + builder.BuildUserTag(tag, uuid) + ">>>traffic>>>uplink"
+	downName := "user>>>" + builder.BuildUserTag(tag, uuid) + ">>>traffic>>>downlink"
 	upCounter := c.shm.GetCounter(upName)
 	downCounter := c.shm.GetCounter(downName)
 	if reset {
@@ -65,10 +65,10 @@ func (c *Core) GetUserTraffic(email string, reset bool) (up int64, down int64) {
 
 func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 	users := make([]*protocol.User, 0, len(p.UserInfo))
-	switch p.NodeInfo.NodeType {
+	switch p.NodeInfo.Type {
 	case "v2ray":
-		if p.Config.EnableVless {
-			users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.Config.EnableXtls)
+		if p.Config.XrayOptions.EnableXtls {
+			users = builder.BuildVlessUsers(p.Tag, p.UserInfo, true)
 		} else {
 			users = builder.BuildVmessUsers(p.Tag, p.UserInfo)
 		}
@@ -80,7 +80,7 @@ func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 			p.NodeInfo.Cipher,
 			p.NodeInfo.ServerKey)
 	default:
-		return 0, fmt.Errorf("unsupported node type: %s", p.NodeInfo.NodeType)
+		return 0, fmt.Errorf("unsupported node type: %s", p.NodeInfo.Type)
 	}
 	man, err := c.GetUserManager(p.Tag)
 	if err != nil {

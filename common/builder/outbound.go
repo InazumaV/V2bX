@@ -2,7 +2,6 @@ package builder
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/panel"
 	conf2 "github.com/Yuzuki616/V2bX/conf"
 	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/net"
@@ -11,7 +10,7 @@ import (
 )
 
 // BuildOutbound build freedom outbund config for addoutbound
-func BuildOutbound(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.OutboundHandlerConfig, error) {
+func BuildOutbound(config *conf2.ControllerConfig, tag string) (*core.OutboundHandlerConfig, error) {
 	outboundDetourConfig := &conf.OutboundDetourConfig{}
 	outboundDetourConfig.Protocol = "freedom"
 	outboundDetourConfig.Tag = tag
@@ -24,9 +23,9 @@ func BuildOutbound(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 
 	// Freedom Protocol setting
 	var domainStrategy = "Asis"
-	if config.EnableDNS {
-		if config.DNSType != "" {
-			domainStrategy = config.DNSType
+	if config.XrayOptions.EnableDNS {
+		if config.XrayOptions.DNSType != "" {
+			domainStrategy = config.XrayOptions.DNSType
 		} else {
 			domainStrategy = "UseIP"
 		}
@@ -37,7 +36,7 @@ func BuildOutbound(config *conf2.ControllerConfig, nodeInfo *panel.NodeInfo, tag
 	var setting json.RawMessage
 	setting, err := json.Marshal(proxySetting)
 	if err != nil {
-		return nil, fmt.Errorf("marshal proxy %s config fialed: %s", nodeInfo.NodeType, err)
+		return nil, fmt.Errorf("marshal proxy config error: %s", err)
 	}
 	outboundDetourConfig.Settings = &setting
 	return outboundDetourConfig.Build()

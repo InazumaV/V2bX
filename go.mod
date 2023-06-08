@@ -3,27 +3,23 @@ module github.com/Yuzuki616/V2bX
 go 1.20
 
 require (
-	github.com/apernet/hysteria/app v1.3.4
 	github.com/apernet/hysteria/core v1.3.4
 	github.com/beevik/ntp v1.0.0
-	github.com/caddyserver/certmagic v0.17.2
 	github.com/folbricht/routedns v0.1.21-0.20230220022436-4ae86ce30d53
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-acme/lego/v4 v4.12.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.10.2
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/juju/ratelimit v1.0.2
 	github.com/oschwald/geoip2-golang v1.8.0
-	github.com/prometheus/client_golang v1.14.0
 	github.com/quic-go/quic-go v0.33.0
 	github.com/sagernet/sing-box v1.2.7
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	github.com/xtls/xray-core v1.8.1
-	github.com/yosuke-furukawa/json5 v0.1.1
-	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.9.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -50,7 +46,6 @@ require (
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/aws-sdk-go v1.39.0 // indirect
-	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -89,7 +84,6 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -105,7 +99,6 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20200310150728-e0350524596b // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2 // indirect
 	github.com/labbsr0x/goh v1.0.1 // indirect
-	github.com/libdns/libdns v0.2.1 // indirect
 	github.com/linode/linodego v1.9.1 // indirect
 	github.com/liquidweb/go-lwApi v0.0.5 // indirect
 	github.com/liquidweb/liquidweb-cli v0.6.9 // indirect
@@ -114,8 +107,6 @@ require (
 	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/mholt/acmez v1.1.1 // indirect
 	github.com/miekg/dns v1.1.54 // indirect
 	github.com/mimuret/golang-iij-dpf v0.7.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
@@ -145,14 +136,12 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/otp v1.3.0 // indirect
-	github.com/prometheus/client_model v0.3.0 // indirect
-	github.com/prometheus/common v0.37.0 // indirect
-	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-19 v0.3.2 // indirect
 	github.com/quic-go/qtls-go1-20 v0.2.2 // indirect
 	github.com/refraction-networking/utls v1.3.2 // indirect
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/sacloud/api-client-go v0.2.1 // indirect
 	github.com/sacloud/go-http v0.1.2 // indirect
 	github.com/sacloud/iaas-api-go v1.3.2 // indirect
@@ -194,7 +183,6 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.starlark.net v0.0.0-20230302034142-4b1e35fe2254 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
 	golang.org/x/mod v0.10.0 // indirect
