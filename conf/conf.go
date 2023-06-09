@@ -23,6 +23,7 @@ func New() *Conf {
 			Type: "xray",
 			XrayConfig: &XrayConfig{
 				LogConfig:          NewLogConfig(),
+				AssetPath:          "/etc/V2bX/",
 				DnsConfigPath:      "",
 				InboundConfigPath:  "",
 				OutboundConfigPath: "",
@@ -35,9 +36,6 @@ func New() *Conf {
 }
 
 func (p *Conf) LoadFromPath(filePath string) error {
-	confPath := path.Dir(filePath)
-	os.Setenv("XRAY_LOCATION_ASSET", confPath)
-	os.Setenv("XRAY_LOCATION_CONFIG", confPath)
 	f, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("open config file error: %s", err)

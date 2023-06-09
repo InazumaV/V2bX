@@ -15,22 +15,34 @@ type ApiConfig struct {
 }
 
 type ControllerConfig struct {
-	ListenIP             string           `yaml:"ListenIP"`
-	SendIP               string           `yaml:"SendIP"`
-	EnableDNS            bool             `yaml:"EnableDNS"`
-	DNSType              string           `yaml:"DNSType"`
-	EnableVless          bool             `yaml:"EnableVless"`
-	EnableXtls           bool             `yaml:"EnableXtls"`
-	LimitConfig          LimitConfig      `yaml:"LimitConfig"`
-	DisableUploadTraffic bool             `yaml:"DisableUploadTraffic"`
-	DisableGetRule       bool             `yaml:"DisableGetRule"`
-	EnableProxyProtocol  bool             `yaml:"EnableProxyProtocol"`
-	EnableTFO            bool             `yaml:"EnableTFO"`
-	DisableIVCheck       bool             `yaml:"DisableIVCheck"`
-	DisableSniffing      bool             `yaml:"DisableSniffing"`
-	EnableFallback       bool             `yaml:"EnableFallback"`
-	FallBackConfigs      []FallBackConfig `yaml:"FallBackConfigs"`
-	CertConfig           *CertConfig      `yaml:"CertConfig"`
+	DisableUploadTraffic bool        `yaml:"DisableUploadTraffic"`
+	DisableGetRule       bool        `yaml:"DisableGetRule"`
+	ListenIP             string      `yaml:"ListenIP"`
+	SendIP               string      `yaml:"SendIP"`
+	EnableProxyProtocol  bool        `yaml:"EnableProxyProtocol"`
+	XrayOptions          XrayOptions `yaml:"XrayOptions"`
+	HyOptions            HyOptions   `yaml:"HyOptions"`
+	LimitConfig          LimitConfig `yaml:"LimitConfig"`
+	CertConfig           *CertConfig `yaml:"CertConfig"`
+}
+
+type XrayOptions struct {
+	EnableDNS       bool             `yaml:"EnableDNS"`
+	DNSType         string           `yaml:"DNSType"`
+	EnableVless     bool             `yaml:"EnableVless"`
+	EnableXtls      bool             `yaml:"EnableXtls"`
+	EnableUot       bool             `yaml:"EnableUot"`
+	EnableTFO       bool             `yaml:"EnableTFO"`
+	DisableIVCheck  bool             `yaml:"DisableIVCheck"`
+	DisableSniffing bool             `yaml:"DisableSniffing"`
+	EnableFallback  bool             `yaml:"EnableFallback"`
+	FallBackConfigs []FallBackConfig `yaml:"FallBackConfigs"`
+}
+
+type HyOptions struct {
+	Resolver          string `yaml:"Resolver"`
+	ResolvePreference string `yaml:"ResolvePreference"`
+	SendDevice        string `yaml:"SendDevice"`
 }
 
 type LimitConfig struct {

@@ -44,15 +44,15 @@ func (c *Controller) Start() error {
 	var err error
 	c.nodeInfo, err = c.apiClient.GetNodeInfo()
 	if err != nil {
-		return fmt.Errorf("get node info failed: %s", err)
+		return fmt.Errorf("get node info error: %s", err)
 	}
 	// Update user
 	c.userList, err = c.apiClient.GetUserList()
 	if err != nil {
-		return fmt.Errorf("get user list failed: %s", err)
+		return fmt.Errorf("get user list error: %s", err)
 	}
 	if len(c.userList) == 0 {
-		return errors.New("add users failed: not have any user")
+		return errors.New("add users error: not have any user")
 	}
 	c.Tag = c.buildNodeTag()
 
@@ -61,13 +61,19 @@ func (c *Controller) Start() error {
 	// add rule limiter
 	if !c.DisableGetRule {
 		if err = l.UpdateRule(c.nodeInfo.Rules); err != nil {
-			log.Printf("Update rule filed: %s", err)
+			return fmt.Errorf("update rule error: %s", err)
+		}
+	}
+	if c.nodeInfo.Tls {
+		err = c.requestCert()
+		if err != nil {
+			return fmt.Errorf("request cert error: %s", err)
 		}
 	}
 	// Add new tag
 	err = c.server.AddNode(c.Tag, c.nodeInfo, c.ControllerConfig)
 	if err != nil {
-		return fmt.Errorf("add new tag failed: %s", err)
+		return fmt.Errorf("add new node error: %s", err)
 	}
 	added, err := c.server.AddUsers(&vCore.AddUsersParams{
 		Tag:      c.Tag,
@@ -75,10 +81,10 @@ func (c *Controller) Start() error {
 		UserInfo: c.userList,
 		NodeInfo: c.nodeInfo,
 	})
-	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.NodeType, c.nodeInfo.NodeId, added)
 	if err != nil {
-		return err
+		return fmt.Errorf("add users error: %s", err)
 	}
+	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.Type, c.nodeInfo.Id, added)
 	c.initTask()
 	return nil
 }
@@ -89,36 +95,36 @@ func (c *Controller) Close() error {
 	if c.nodeInfoMonitorPeriodic != nil {
 		err := c.nodeInfoMonitorPeriodic.Close()
 		if err != nil {
-			log.Panicf("node info periodic close failed: %s", err)
+			return fmt.Errorf("node info periodic close error: %s", err)
 		}
 	}
 	if c.nodeInfoMonitorPeriodic != nil {
 		err := c.userReportPeriodic.Close()
 		if err != nil {
-			log.Panicf("user report periodic close failed: %s", err)
+			return fmt.Errorf("user report periodic close error: %s", err)
 		}
 	}
 	if c.renewCertPeriodic != nil {
 		err := c.renewCertPeriodic.Close()
 		if err != nil {
-			log.Panicf("renew cert periodic close failed: %s", err)
+			return fmt.Errorf("renew cert periodic close error: %s", err)
 		}
 	}
 	if c.dynamicSpeedLimitPeriodic != nil {
 		err := c.dynamicSpeedLimitPeriodic.Close()
 		if err != nil {
-			log.Panicf("dynamic speed limit periodic close failed: %s", err)
+			return fmt.Errorf("dynamic speed limit periodic close error: %s", err)
 		}
 	}
 	if c.onlineIpReportPeriodic != nil {
 		err := c.onlineIpReportPeriodic.Close()
 		if err != nil {
-			log.Panicf("online ip report periodic close failed: %s", err)
+			return fmt.Errorf("online ip report periodic close error: %s", err)
 		}
 	}
 	return nil
 }
 
 func (c *Controller) buildNodeTag() string {
-	return fmt.Sprintf("%s_%s_%d", c.nodeInfo.NodeType, c.ListenIP, c.nodeInfo.NodeId)
+	return fmt.Sprintf("%s_%s_%d", c.nodeInfo.Type, c.ListenIP, c.nodeInfo.Id)
 }

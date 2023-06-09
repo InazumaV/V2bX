@@ -32,7 +32,7 @@ func BuildVmessUser(tag string, userInfo *panel.UserInfo) (user *protocol.User) 
 	}
 	return &protocol.User{
 		Level:   0,
-		Email:   BuildUserTag(tag, userInfo), // Uid: InboundTag|email|uid
+		Email:   BuildUserTag(tag, userInfo.Uuid), // Uid: InboundTag|email
 		Account: serial.ToTypedMessage(vmessAccount.Build()),
 	}
 }
@@ -54,7 +54,7 @@ func BuildVlessUser(tag string, userInfo *panel.UserInfo, xtls bool) (user *prot
 	}
 	return &protocol.User{
 		Level:   0,
-		Email:   BuildUserTag(tag, userInfo),
+		Email:   BuildUserTag(tag, userInfo.Uuid),
 		Account: serial.ToTypedMessage(vlessAccount),
 	}
 }
@@ -73,7 +73,7 @@ func BuildTrojanUser(tag string, userInfo *panel.UserInfo) (user *protocol.User)
 	}
 	return &protocol.User{
 		Level:   0,
-		Email:   BuildUserTag(tag, userInfo),
+		Email:   BuildUserTag(tag, userInfo.Uuid),
 		Account: serial.ToTypedMessage(trojanAccount),
 	}
 }
@@ -115,8 +115,8 @@ func BuildSSUser(tag string, userInfo *panel.UserInfo, cypher string, serverKey 
 	}
 }
 
-func BuildUserTag(tag string, user *panel.UserInfo) string {
-	return fmt.Sprintf("%s|%s|%d", tag, user.Uuid, user.Id)
+func BuildUserTag(tag string, uuid string) string {
+	return fmt.Sprintf("%s|%s", tag, uuid)
 }
 
 func getCipherFromString(c string) shadowsocks.CipherType {

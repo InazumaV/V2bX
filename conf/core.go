@@ -7,6 +7,7 @@ type CoreConfig struct {
 
 type XrayConfig struct {
 	LogConfig          *LogConfig        `yaml:"Log"`
+	AssetPath          string            `yaml:"AssetPath"`
 	DnsConfigPath      string            `yaml:"DnsConfigPath"`
 	RouteConfigPath    string            `yaml:"RouteConfigPath"`
 	ConnectionConfig   *ConnectionConfig `yaml:"ConnectionConfig"`

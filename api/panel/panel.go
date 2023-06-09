@@ -43,9 +43,9 @@ func New(c *conf.ApiConfig) (*Client, error) {
 	client.SetBaseURL(c.APIHost)
 	// Check node type
 	c.NodeType = strings.ToLower(c.NodeType)
-	if c.NodeType != "v2ray" &&
-		c.NodeType != "trojan" &&
-		c.NodeType != "shadowsocks" {
+	switch c.NodeType {
+	case "v2ray", "trojan", "shadowsocks", "hysteria":
+	default:
 		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
 	}
 	// Create Key for each requests

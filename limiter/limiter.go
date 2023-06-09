@@ -60,7 +60,7 @@ func AddLimiter(tag string, l *conf.LimitConfig, users []panel.UserInfo) *Limite
 				SpeedLimit: users[i].SpeedLimit,
 				ExpireTime: 0,
 			}
-			info.UserLimitInfo.Store(builder.BuildUserTag(tag, &users[i]), userLimit)
+			info.UserLimitInfo.Store(builder.BuildUserTag(tag, users[i].Uuid), userLimit)
 		}
 	}
 	limitLock.Lock()

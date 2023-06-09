@@ -20,7 +20,7 @@ func (c *Core) AddNode(tag string, info *panel.NodeInfo, config *conf.Controller
 	if err != nil {
 		return fmt.Errorf("add inbound error: %s", err)
 	}
-	outBoundConfig, err := builder.BuildOutbound(config, info, tag)
+	outBoundConfig, err := builder.BuildOutbound(config, tag)
 	if err != nil {
 		return fmt.Errorf("build outbound error: %s", err)
 	}

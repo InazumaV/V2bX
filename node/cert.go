@@ -1,0 +1,31 @@
+package node
+
+import (
+	"fmt"
+	"github.com/Yuzuki616/V2bX/common/file"
+	"github.com/Yuzuki616/V2bX/node/lego"
+)
+
+func (c *Controller) requestCert() error {
+	if c.CertConfig.CertFile == "" || c.CertConfig.KeyFile == "" {
+		return fmt.Errorf("cert file path or key file path not exist")
+	}
+	switch c.CertConfig.CertMode {
+	case "reality", "none", "":
+		return nil
+	case "dns", "http":
+		if file.IsExist(c.CertConfig.CertFile) && file.IsExist(c.CertConfig.KeyFile) {
+			return nil
+		}
+		l, err := lego.New(c.CertConfig)
+		if err != nil {
+			return fmt.Errorf("create lego object error: %s", err)
+		}
+		err = l.CreateCert()
+		if err != nil {
+			return fmt.Errorf("create cert error: %s", err)
+		}
+		return nil
+	}
+	return fmt.Errorf("unsupported certmode: %s", c.CertConfig.CertMode)
+}

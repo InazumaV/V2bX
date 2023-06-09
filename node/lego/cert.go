@@ -78,7 +78,7 @@ func (l *Lego) CheckCert(file []byte) (bool, error) {
 	}
 	return true, nil
 }
-func (l *Lego) parseParmas(path string) string {
+func (l *Lego) parseParams(path string) string {
 	r := strings.NewReplacer("{domain}", l.config.CertDomain,
 		"{email}", l.config.Email)
 	return r.Replace(path)
@@ -88,7 +88,7 @@ func (l *Lego) writeCert(certificates *certificate.Resource) error {
 	if err != nil {
 		return fmt.Errorf("check path error: %s", err)
 	}
-	err = os.WriteFile(l.parseParmas(l.config.CertFile), certificates.Certificate, 0644)
+	err = os.WriteFile(l.parseParams(l.config.CertFile), certificates.Certificate, 0644)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (l *Lego) writeCert(certificates *certificate.Resource) error {
 	if err != nil {
 		return fmt.Errorf("check path error: %s", err)
 	}
-	err = os.WriteFile(l.parseParmas(l.config.KeyFile), certificates.PrivateKey, 0644)
+	err = os.WriteFile(l.parseParams(l.config.KeyFile), certificates.PrivateKey, 0644)
 	if err != nil {
 		return err
 	}
