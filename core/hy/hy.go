@@ -3,15 +3,20 @@ package hy
 import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/conf"
+	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/hashicorp/go-multierror"
 	"sync"
 )
+
+func init() {
+	vCore.RegisterCore("hy", NewHy)
+}
 
 type Hy struct {
 	servers sync.Map
 }
 
-func New(_ *conf.CoreConfig) (*Hy, error) {
+func NewHy(_ *conf.CoreConfig) (vCore.Core, error) {
 	return &Hy{
 		servers: sync.Map{},
 	}, nil

@@ -1,6 +1,7 @@
 package hy
 
 import (
+	"encoding/base64"
 	"errors"
 	"github.com/Yuzuki616/V2bX/core"
 )
@@ -18,12 +19,13 @@ func (h *Hy) AddUsers(p *core.AddUsersParams) (int, error) {
 }
 
 func (h *Hy) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
-	s, _ := h.servers.Load(tag)
-	c := &s.(*Server).counter
-	up = c.getCounters(uuid).UpCounter.Load()
-	down = c.getCounters(uuid).DownCounter.Load()
+	v, _ := h.servers.Load(tag)
+	s := v.(*Server)
+	auth := base64.StdEncoding.EncodeToString([]byte(uuid))
+	up = s.counter.getCounters(auth).UpCounter.Load()
+	down = s.counter.getCounters(uuid).DownCounter.Load()
 	if reset {
-		c.Reset(uuid)
+		s.counter.Reset(uuid)
 	}
 	return
 }

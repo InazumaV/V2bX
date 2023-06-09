@@ -25,7 +25,7 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	case "v2ray":
 		err = buildV2ray(config, nodeInfo, in)
 	case "trojan":
-		err = buildTrojan(config, nodeInfo, in)
+		err = buildTrojan(config, in)
 	case "shadowsocks":
 		err = buildShadowsocks(config, nodeInfo, in)
 	default:
@@ -104,7 +104,6 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	// Support ProxyProtocol for any transport protocol
 	if *in.StreamSetting.Network != "tcp" &&
 		*in.StreamSetting.Network != "ws" &&
-		*in.StreamSetting.Network != "" &&
 		config.EnableProxyProtocol {
 		socketConfig := &coreConf.SocketConfig{
 			AcceptProxyProtocol: config.EnableProxyProtocol,
@@ -177,7 +176,7 @@ func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound
 	return nil
 }
 
-func buildTrojan(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
+func buildTrojan(config *conf.ControllerConfig, inbound *coreConf.InboundDetourConfig) error {
 	inbound.Protocol = "trojan"
 	if config.XrayOptions.EnableFallback {
 		// Set fallback
@@ -196,10 +195,7 @@ func buildTrojan(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inboun
 		s := []byte("{}")
 		inbound.Settings = (*json.RawMessage)(&s)
 	}
-	if nodeInfo.Network == "" {
-		nodeInfo.Network = "tcp"
-	}
-	t := coreConf.TransportProtocol(nodeInfo.Network)
+	t := coreConf.TransportProtocol("tcp")
 	inbound.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	return nil
 }

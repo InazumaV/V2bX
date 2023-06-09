@@ -15,15 +15,15 @@ type ApiConfig struct {
 }
 
 type ControllerConfig struct {
-	DisableUploadTraffic bool         `yaml:"DisableUploadTraffic"`
-	DisableGetRule       bool         `yaml:"DisableGetRule"`
-	ListenIP             string       `yaml:"ListenIP"`
-	SendIP               string       `yaml:"SendIP"`
-	EnableProxyProtocol  bool         `yaml:"EnableProxyProtocol"`
-	XrayOptions          *XrayOptions `yaml:"XrayOptions"`
-	HyOptions            *HyOptions   `yaml:"HyOptions"`
-	LimitConfig          LimitConfig  `yaml:"LimitConfig"`
-	CertConfig           *CertConfig  `yaml:"CertConfig"`
+	DisableUploadTraffic bool        `yaml:"DisableUploadTraffic"`
+	DisableGetRule       bool        `yaml:"DisableGetRule"`
+	ListenIP             string      `yaml:"ListenIP"`
+	SendIP               string      `yaml:"SendIP"`
+	EnableProxyProtocol  bool        `yaml:"EnableProxyProtocol"`
+	XrayOptions          XrayOptions `yaml:"XrayOptions"`
+	HyOptions            HyOptions   `yaml:"HyOptions"`
+	LimitConfig          LimitConfig `yaml:"LimitConfig"`
+	CertConfig           *CertConfig `yaml:"CertConfig"`
 }
 
 type XrayOptions struct {

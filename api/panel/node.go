@@ -11,7 +11,9 @@ import (
 )
 
 type CommonNodeRsp struct {
+	Host       string     `json:"host"`
 	ServerPort int        `json:"server_port"`
+	ServerName string     `json:"server_name"`
 	Routes     []Route    `json:"routes"`
 	BaseConfig BaseConfig `json:"base_config"`
 }
@@ -54,11 +56,11 @@ type NodeInfo struct {
 	Id              int
 	Type            string
 	Rules           []*regexp.Regexp
+	Host            string
 	Port            int
 	Network         string
 	NetworkSettings json.RawMessage
 	Tls             bool
-	Host            string
 	ServerName      string
 	UpMbps          int
 	DownMbps        int
@@ -75,16 +77,14 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	if err = c.checkResponse(r, path, err); err != nil {
 		return
 	}
-	err = json.Unmarshal(r.Body(), &node)
-	if err != nil {
-		return
-	}
 	if c.etag == r.Header().Get("ETag") { // node info not changed
 		return nil, nil
 	}
 	// parse common params
-	node.Id = c.NodeId
-	node.Type = c.NodeType
+	node = &NodeInfo{
+		Id:   c.NodeId,
+		Type: c.NodeType,
+	}
 	common := CommonNodeRsp{}
 	err = json.Unmarshal(r.Body(), &common)
 	if err != nil {
@@ -103,6 +103,9 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			}
 		}
 	}
+	node.ServerName = common.ServerName
+	node.Host = common.Host
+	node.Port = common.ServerPort
 	node.PullInterval = intervalToTime(common.BaseConfig.PullInterval)
 	node.PushInterval = intervalToTime(common.BaseConfig.PushInterval)
 	// parse protocol params

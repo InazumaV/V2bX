@@ -12,6 +12,10 @@ func (h *Hy) AddNode(tag string, info *panel.NodeInfo, c *conf.ControllerConfig)
 	if info.Type != "hysteria" {
 		return errors.New("the core not support " + info.Type)
 	}
+	switch c.CertConfig.CertMode {
+	case "reality", "none", "":
+		return errors.New("hysteria need normal tls cert")
+	}
 	s := NewServer(tag)
 	err := s.runServer(info, c)
 	if err != nil {

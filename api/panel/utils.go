@@ -20,7 +20,7 @@ func (c *Client) checkResponse(res *resty.Response, path string, err error) erro
 	}
 	if res.StatusCode() != 200 {
 		body := res.Body()
-		return fmt.Errorf("request %s failed: %s, %s", c.assembleURL(path), string(body), err)
+		return fmt.Errorf("request %s failed: %s", c.assembleURL(path), string(body))
 	}
 	return nil
 }

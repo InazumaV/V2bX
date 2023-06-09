@@ -1,7 +1,6 @@
 package hy
 
 import (
-	"github.com/apernet/hysteria/core/cs"
 	"sync"
 	"sync/atomic"
 )
@@ -17,8 +16,10 @@ type counters struct {
 	//ConnGauge   atomic.Int64
 }
 
-func NewUserTrafficCounter() cs.TrafficCounter {
-	return new(UserTrafficCounter)
+func NewUserTrafficCounter() *UserTrafficCounter {
+	return &UserTrafficCounter{
+		counters: map[string]*counters{},
+	}
 }
 
 func (c *UserTrafficCounter) getCounters(auth string) *counters {
