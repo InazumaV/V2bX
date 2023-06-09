@@ -2,10 +2,11 @@ package hy
 
 import (
 	"fmt"
+	"sync"
+
 	"github.com/Yuzuki616/V2bX/conf"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/hashicorp/go-multierror"
-	"sync"
 )
 
 func init() {
@@ -39,4 +40,10 @@ func (h *Hy) Close() error {
 		return errs
 	}
 	return nil
+}
+
+func (h *Hy) Protocols() []string {
+	return []string{
+		"hysteria",
+	}
 }

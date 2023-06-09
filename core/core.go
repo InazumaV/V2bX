@@ -12,6 +12,25 @@ var (
 )
 
 func NewCore(c *conf.CoreConfig) (Core, error) {
+	// multi core
+	if types := strings.Split(c.Type, " "); len(types) > 1 {
+		var cs []Core
+		for _, t := range types {
+			f, ok := cores[strings.ToLower(c.Type)]
+			if !ok {
+				return nil, errors.New("unknown core type: " + t)
+			}
+			core1, err := f(c)
+			if err != nil {
+				return nil, err
+			}
+			cs = append(cs, core1)
+		}
+		return &Selecter{
+			cores: cs,
+		}, nil
+	}
+	// one core
 	if f, ok := cores[strings.ToLower(c.Type)]; ok {
 		return f(c)
 	} else {

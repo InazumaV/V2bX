@@ -53,6 +53,7 @@ func parseConnectionConfig(c *conf.ConnectionConfig) (policy *coreConf.Policy) {
 }
 
 func getCore(c *conf.XrayConfig) *core.Instance {
+	os.Setenv("XRAY_LOCATION_ASSET", c.AssetPath)
 	// Log Config
 	coreLogConfig := &coreConf.LogConfig{}
 	coreLogConfig.LogLevel = c.LogConfig.Level
@@ -182,4 +183,12 @@ func (c *Core) Close() error {
 		return err
 	}
 	return nil
+}
+
+func (c *Core) Protocols() []string {
+	return []string{
+		"v2ray",
+		"shadowsocks",
+		"trojan",
+	}
 }
