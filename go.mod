@@ -16,7 +16,7 @@ require (
 	github.com/oschwald/geoip2-golang v1.8.0
 	github.com/quic-go/quic-go v0.33.0
 	github.com/sagernet/sing-box v1.2.7
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	github.com/xtls/xray-core v1.8.1
