@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/apernet/hysteria/core/cs"
 )
 
@@ -16,8 +17,12 @@ func (h *Hy) AddNode(tag string, info *panel.NodeInfo, c *conf.ControllerConfig)
 	case "reality", "none", "":
 		return errors.New("hysteria need normal tls cert")
 	}
-	s := NewServer(tag)
-	err := s.runServer(info, c)
+	l, err := limiter.GetLimiter(tag)
+	if err != nil {
+		return fmt.Errorf("get limiter error: %s", err)
+	}
+	s := NewServer(tag, l)
+	err = s.runServer(info, c)
 	if err != nil {
 		return fmt.Errorf("run hy server error: %s", err)
 	}

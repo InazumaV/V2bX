@@ -3,7 +3,6 @@ package xray
 import (
 	"context"
 	"fmt"
-
 	"github.com/Yuzuki616/V2bX/common/builder"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/xtls/xray-core/common/protocol"
