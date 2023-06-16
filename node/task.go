@@ -2,52 +2,41 @@ package node
 
 import (
 	"fmt"
-	"log"
-	"runtime"
-	"time"
-
+	"github.com/Yuzuki616/V2bX/common/task"
 	vCore "github.com/Yuzuki616/V2bX/core"
-
-	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/limiter"
-	"github.com/Yuzuki616/V2bX/node/lego"
-	"github.com/xtls/xray-core/common/task"
+	"log"
+	"time"
 )
 
 func (c *Controller) initTask() {
 	// fetch node info task
-	c.nodeInfoMonitorPeriodic = &task.Periodic{
+	c.nodeInfoMonitorPeriodic = &task.Task{
 		Interval: c.nodeInfo.PullInterval,
 		Execute:  c.nodeInfoMonitor,
 	}
 	// fetch user list task
-	c.userReportPeriodic = &task.Periodic{
+	c.userReportPeriodic = &task.Task{
 		Interval: c.nodeInfo.PushInterval,
-		Execute:  c.reportUserTraffic,
+		Execute:  c.reportUserTrafficTask,
 	}
-	log.Printf("[%s: %d] Start monitor node status", c.nodeInfo.Type, c.nodeInfo.Id)
+	log.Printf("[%s] Start monitor node status", c.Tag)
 	// delay to start nodeInfoMonitor
-	go func() {
-		time.Sleep(c.nodeInfo.PullInterval)
-		_ = c.nodeInfoMonitorPeriodic.Start()
-	}()
-	log.Printf("[%s: %d] Start report node status", c.nodeInfo.Type, c.nodeInfo.Id)
-	// delay to start userReport
-	go func() {
-		time.Sleep(c.nodeInfo.PullInterval)
-		_ = c.userReportPeriodic.Start()
-	}()
-	if c.nodeInfo.Tls && c.CertConfig.CertMode != "none" &&
-		(c.CertConfig.CertMode == "dns" || c.CertConfig.CertMode == "http") {
-		c.renewCertPeriodic = &task.Periodic{
-			Interval: time.Hour * 24,
-			Execute:  c.reportUserTraffic,
+	_ = c.nodeInfoMonitorPeriodic.Start(false)
+	log.Printf("[%s] Start report node status", c.Tag)
+	_ = c.userReportPeriodic.Start(false)
+	if c.nodeInfo.Tls {
+		switch c.CertConfig.CertMode {
+		case "reality", "none", "":
+		default:
+			c.renewCertPeriodic = &task.Task{
+				Interval: time.Hour * 24,
+				Execute:  c.reportUserTrafficTask,
+			}
+			log.Printf("[%s] Start renew cert", c.Tag)
+			// delay to start renewCert
+			_ = c.renewCertPeriodic.Start(true)
 		}
-		log.Printf("[%s: %d] Start renew cert", c.nodeInfo.Type, c.nodeInfo.Id)
-		// delay to start renewCert
-		go func() {
-			_ = c.renewCertPeriodic.Start()
-		}()
 	}
 }
 
@@ -114,20 +103,14 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		if c.nodeInfoMonitorPeriodic.Interval != newNodeInfo.PullInterval &&
 			newNodeInfo.PullInterval != 0 {
 			c.nodeInfoMonitorPeriodic.Interval = newNodeInfo.PullInterval
-			_ = c.nodeInfoMonitorPeriodic.Close()
-			go func() {
-				time.Sleep(c.nodeInfoMonitorPeriodic.Interval)
-				_ = c.nodeInfoMonitorPeriodic.Start()
-			}()
+			c.nodeInfoMonitorPeriodic.Close()
+			_ = c.nodeInfoMonitorPeriodic.Start(false)
 		}
 		if c.userReportPeriodic.Interval != newNodeInfo.PushInterval &&
 			newNodeInfo.PushInterval != 0 {
 			c.userReportPeriodic.Interval = newNodeInfo.PullInterval
-			_ = c.userReportPeriodic.Close()
-			go func() {
-				time.Sleep(c.userReportPeriodic.Interval)
-				_ = c.userReportPeriodic.Start()
-			}()
+			c.userReportPeriodic.Close()
+			_ = c.userReportPeriodic.Start(false)
 		}
 	} else {
 		deleted, added := compareUserList(c.userList, newUserInfo)
@@ -167,45 +150,4 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		c.userList = newUserInfo
 	}
 	return nil
-}
-
-func (c *Controller) reportUserTraffic() (err error) {
-	// Get User traffic
-	userTraffic := make([]panel.UserTraffic, 0)
-	for i := range c.userList {
-		up, down := c.server.GetUserTraffic(c.Tag, c.userList[i].Uuid, true)
-		if up > 0 || down > 0 {
-			if c.LimitConfig.EnableDynamicSpeedLimit {
-				c.userList[i].Traffic += up + down
-			}
-			userTraffic = append(userTraffic, panel.UserTraffic{
-				UID:      (c.userList)[i].Id,
-				Upload:   up,
-				Download: down})
-		}
-	}
-	if len(userTraffic) > 0 && !c.DisableUploadTraffic {
-		err = c.apiClient.ReportUserTraffic(userTraffic)
-		if err != nil {
-			log.Printf("Report user traffic faild: %s", err)
-		} else {
-			log.Printf("[%s: %d] Report %d online users", c.nodeInfo.Type, c.nodeInfo.Id, len(userTraffic))
-		}
-	}
-	userTraffic = nil
-	runtime.GC()
-	return nil
-}
-
-func (c *Controller) RenewCert() {
-	l, err := lego.New(c.CertConfig)
-	if err != nil {
-		log.Print("new lego error: ", err)
-		return
-	}
-	err = l.RenewCert()
-	if err != nil {
-		log.Print("renew cert error: ", err)
-		return
-	}
 }
