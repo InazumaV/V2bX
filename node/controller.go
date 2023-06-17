@@ -63,7 +63,7 @@ func (c *Controller) Start() error {
 			return fmt.Errorf("update rule error: %s", err)
 		}
 	}
-	if c.nodeInfo.Tls {
+	if c.nodeInfo.Tls || c.nodeInfo.Type == "hysteria" {
 		err = c.requestCert()
 		if err != nil {
 			return fmt.Errorf("request cert error: %s", err)

@@ -159,7 +159,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
-	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490 // indirect
 	github.com/transip/gotransip/v6 v6.17.0 // indirect
