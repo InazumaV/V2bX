@@ -67,7 +67,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			log.Print(err)
 			return nil
 		}
-		if newNodeInfo.Tls {
+		if c.nodeInfo.Tls || c.nodeInfo.Type == "hysteria" {
 			err = c.requestCert()
 			if err != nil {
 				return fmt.Errorf("request cert error: %s", err)
