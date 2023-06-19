@@ -22,7 +22,7 @@ func (c *Controller) reportUserTrafficTask() (err error) {
 				Download: down})
 		}
 	}
-	if len(userTraffic) > 0 && !c.DisableUploadTraffic {
+	if len(userTraffic) > 0 {
 		err = c.apiClient.ReportUserTraffic(userTraffic)
 		if err != nil {
 			log.Printf("Report user traffic faild: %s", err)

@@ -58,10 +58,8 @@ func (c *Controller) Start() error {
 	// add limiter
 	l := limiter.AddLimiter(c.Tag, &c.LimitConfig, c.userList)
 	// add rule limiter
-	if !c.DisableGetRule {
-		if err = l.UpdateRule(c.nodeInfo.Rules); err != nil {
-			return fmt.Errorf("update rule error: %s", err)
-		}
+	if err = l.UpdateRule(c.nodeInfo.Rules); err != nil {
+		return fmt.Errorf("update rule error: %s", err)
 	}
 	if c.nodeInfo.Tls || c.nodeInfo.Type == "hysteria" {
 		err = c.requestCert()
