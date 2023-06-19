@@ -23,9 +23,9 @@ func (h *Hy) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64)
 	s := v.(*Server)
 	auth := base64.StdEncoding.EncodeToString([]byte(uuid))
 	up = s.counter.getCounters(auth).UpCounter.Load()
-	down = s.counter.getCounters(uuid).DownCounter.Load()
+	down = s.counter.getCounters(auth).DownCounter.Load()
 	if reset {
-		s.counter.Reset(uuid)
+		s.counter.Reset(auth)
 	}
 	return
 }
