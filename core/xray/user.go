@@ -31,11 +31,17 @@ func (c *Core) DelUsers(users []panel.UserInfo, tag string) error {
 	if err != nil {
 		return fmt.Errorf("get user manager error: %s", err)
 	}
+	var up, down, user string
 	for i := range users {
-		err = userManager.RemoveUser(context.Background(), builder.BuildUserTag(tag, users[i].Uuid))
+		user = builder.BuildUserTag(tag, users[i].Uuid)
+		err = userManager.RemoveUser(context.Background(), user)
 		if err != nil {
 			return err
 		}
+		up = "user>>>" + user + ">>>traffic>>>uplink"
+		down = "user>>>" + user + ">>>traffic>>>downlink"
+		c.shm.UnregisterCounter(up)
+		c.shm.UnregisterCounter(down)
 	}
 	return nil
 }
