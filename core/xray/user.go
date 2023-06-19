@@ -3,6 +3,7 @@ package xray
 import (
 	"context"
 	"fmt"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/common/builder"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/xtls/xray-core/common/protocol"
@@ -25,13 +26,13 @@ func (c *Core) GetUserManager(tag string) (proxy.UserManager, error) {
 	return userManager, nil
 }
 
-func (c *Core) DelUsers(users []string, tag string) error {
+func (c *Core) DelUsers(users []panel.UserInfo, tag string) error {
 	userManager, err := c.GetUserManager(tag)
 	if err != nil {
 		return fmt.Errorf("get user manager error: %s", err)
 	}
-	for _, email := range users {
-		err = userManager.RemoveUser(context.Background(), email)
+	for i := range users {
+		err = userManager.RemoveUser(context.Background(), builder.BuildUserTag(tag, users[i].Uuid))
 		if err != nil {
 			return err
 		}

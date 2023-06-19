@@ -81,7 +81,7 @@ func (s *Selector) GetUserTraffic(tag, uuid string, reset bool) (up int64, down 
 	return s.cores[t.(int)].GetUserTraffic(tag, uuid, reset)
 }
 
-func (s *Selector) DelUsers(users []string, tag string) error {
+func (s *Selector) DelUsers(users []panel.UserInfo, tag string) error {
 	t, e := s.nodes.Load(tag)
 	if !e {
 		return errors.New("the node is not have")

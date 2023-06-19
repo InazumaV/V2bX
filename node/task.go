@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"github.com/Yuzuki616/V2bX/common/task"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/limiter"
@@ -116,14 +115,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	deleted, added := compareUserList(c.userList, newUserInfo)
 	if len(deleted) > 0 {
 		// have deleted users
-		deletedEmail := make([]string, len(deleted))
-		for i := range deleted {
-			deletedEmail[i] = fmt.Sprintf("%s|%s|%d",
-				c.Tag,
-				(deleted)[i].Uuid,
-				(deleted)[i].Id)
-		}
-		err = c.server.DelUsers(deletedEmail, c.Tag)
+		err = c.server.DelUsers(deleted, c.Tag)
 		if err != nil {
 			log.Printf("[%s] Del users error: %s", c.Tag, err)
 		}

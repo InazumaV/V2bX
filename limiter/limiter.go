@@ -85,10 +85,7 @@ func UpdateLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo)
 		return fmt.Errorf("get limit error: %s", err)
 	}
 	for i := range deleted {
-		l.UserLimitInfo.Delete(fmt.Sprintf("%s|%s|%d",
-			tag,
-			deleted[i].Uuid,
-			deleted[i].Id))
+		l.UserLimitInfo.Delete(builder.BuildUserTag(tag, deleted[i].Uuid))
 	}
 	for i := range added {
 		if added[i].SpeedLimit != 0 {
@@ -97,10 +94,7 @@ func UpdateLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo)
 				SpeedLimit: added[i].SpeedLimit,
 				ExpireTime: 0,
 			}
-			l.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d",
-				tag,
-				added[i].Uuid,
-				added[i].Id), userLimit)
+			l.UserLimitInfo.Store(builder.BuildUserTag(tag, added[i].Uuid), userLimit)
 		}
 	}
 	return nil
