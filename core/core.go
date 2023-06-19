@@ -26,7 +26,7 @@ func NewCore(c *conf.CoreConfig) (Core, error) {
 			}
 			cs = append(cs, core1)
 		}
-		return &Selecter{
+		return &Selector{
 			cores: cs,
 		}, nil
 	}

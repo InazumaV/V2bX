@@ -6,7 +6,6 @@ import (
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/limiter"
-	"github.com/apernet/hysteria/core/cs"
 )
 
 func (h *Hy) AddNode(tag string, info *panel.NodeInfo, c *conf.ControllerConfig) error {
@@ -32,7 +31,7 @@ func (h *Hy) AddNode(tag string, info *panel.NodeInfo, c *conf.ControllerConfig)
 
 func (h *Hy) DelNode(tag string) error {
 	if s, e := h.servers.Load(tag); e {
-		err := s.(*cs.Server).Close()
+		err := s.(*Server).Close()
 		if err != nil {
 			return err
 		}
