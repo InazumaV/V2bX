@@ -1,5 +1,5 @@
 CoreConfig:
-  Type: "xray" # Core type. if you need many cores, use " " to split
+  Type: "xray" # Core type, default support "xray" and "hy". If you need many cores, use " " to split
   XrayConfig:
     Log:
       Level: warning # Log level: none, error, warning, info, debug
@@ -39,7 +39,7 @@ Nodes:
             Alpn: # Alpn, Empty for any
             Path: # HTTP PATH, Empty for any
             Dest: 80 # Required, Destination of fallback, check https://xtls.github.io/config/features/fallback.html for details.
-            ProxyProtocolVer: 0 # Send PROXY protocol version, 0 for dsable
+            ProxyProtocolVer: 0 # Send PROXY protocol version, 0 for disable
       HyOptions:
         Resolver: "udp://1.1.1.1:53" # DNS resolver address
         ResolvePreference: 64 # DNS IPv4/IPv6 preference. Available options: "64" (IPv6 first, fallback to IPv4), "46" (IPv4 first, fallback to IPv6), "6" (IPv6 only), "4" (IPv4 only)
