@@ -41,50 +41,44 @@ func (c *Controller) initTask() {
 }
 
 func (c *Controller) nodeInfoMonitor() (err error) {
-	// First fetch Node Info
+	// get node info
 	newNodeInfo, err := c.apiClient.GetNodeInfo()
 	if err != nil {
-		log.Print(err)
+		log.Printf("[%s] Get node info error: %s", c.Tag, err)
 		return nil
 	}
-	var nodeInfoChanged = false
-	// If nodeInfo changed
+	// get user info
+	newUserInfo, err := c.apiClient.GetUserList()
+	if err != nil {
+		log.Printf("[%s] Get user list error: %s", c.Tag, err)
+		return nil
+	}
 	if newNodeInfo != nil {
+		// nodeInfo changed
 		// Remove old tag
-		oldTag := c.Tag
-		err := c.server.DelNode(oldTag)
+		err = c.server.DelNode(c.Tag)
 		if err != nil {
-			log.Print(err)
+			log.Printf("[%s] Del node error: %s", c.Tag, err)
 			return nil
 		}
 		// Remove Old limiter
-		limiter.DeleteLimiter(oldTag)
-		// Add new tag
-		c.nodeInfo = newNodeInfo
+		limiter.DeleteLimiter(c.Tag)
+		// Add new Limiter
 		c.Tag = c.buildNodeTag()
-		err = c.server.AddNode(c.Tag, newNodeInfo, c.ControllerConfig)
-		if err != nil {
-			log.Print(err)
-			return nil
-		}
-		if c.nodeInfo.Tls || c.nodeInfo.Type == "hysteria" {
+		l := limiter.AddLimiter(c.Tag, &c.LimitConfig, newUserInfo)
+		// check cert
+		if newNodeInfo.Tls || newNodeInfo.Type == "hysteria" {
 			err = c.requestCert()
 			if err != nil {
-				return fmt.Errorf("request cert error: %s", err)
+				log.Printf("[%s] Request cert error: %s", c.Tag, err)
 			}
 		}
-		nodeInfoChanged = true
-	}
-	// Update User
-	newUserInfo, err := c.apiClient.GetUserList()
-	if err != nil {
-		log.Print(err)
-		return nil
-	}
-	if nodeInfoChanged {
-		c.userList = newUserInfo
-		// Add new Limiter
-		l := limiter.AddLimiter(c.Tag, &c.LimitConfig, newUserInfo)
+		// add new node
+		err = c.server.AddNode(c.Tag, newNodeInfo, c.ControllerConfig)
+		if err != nil {
+			log.Printf("[%s] Add node error: %s", c.Tag, err)
+			return nil
+		}
 		_, err = c.server.AddUsers(&vCore.AddUsersParams{
 			Tag:      c.Tag,
 			Config:   c.ControllerConfig,
@@ -92,12 +86,12 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			NodeInfo: newNodeInfo,
 		})
 		if err != nil {
-			log.Print(err)
+			log.Printf("[%s] Add users error: %s", c.Tag, err)
 			return nil
 		}
 		err = l.UpdateRule(newNodeInfo.Rules)
 		if err != nil {
-			log.Printf("Update Rule error: %s", err)
+			log.Printf("[%s] Update Rule error: %s", c.Tag, err)
 		}
 		// Check interval
 		if c.nodeInfoMonitorPeriodic.Interval != newNodeInfo.PullInterval &&
@@ -112,42 +106,49 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			c.userReportPeriodic.Close()
 			_ = c.userReportPeriodic.Start(false)
 		}
-	} else {
-		deleted, added := compareUserList(c.userList, newUserInfo)
-		if len(deleted) > 0 {
-			deletedEmail := make([]string, len(deleted))
-			for i := range deleted {
-				deletedEmail[i] = fmt.Sprintf("%s|%s|%d",
-					c.Tag,
-					(deleted)[i].Uuid,
-					(deleted)[i].Id)
-			}
-			err := c.server.DelUsers(deletedEmail, c.Tag)
-			if err != nil {
-				log.Print(err)
-			}
-		}
-		if len(added) > 0 {
-			_, err := c.server.AddUsers(&vCore.AddUsersParams{
-				Tag:      c.Tag,
-				Config:   c.ControllerConfig,
-				UserInfo: added,
-				NodeInfo: c.nodeInfo,
-			})
-			if err != nil {
-				log.Print(err)
-			}
-		}
-		if len(added) > 0 || len(deleted) > 0 {
-			// Update Limiter
-			err = limiter.UpdateLimiter(c.Tag, added, deleted)
-			if err != nil {
-				log.Print("update limiter:", err)
-			}
-		}
-		log.Printf("[%s: %d] %d user deleted, %d user added", c.nodeInfo.Type, c.nodeInfo.Id,
-			len(deleted), len(added))
+		c.nodeInfo = newNodeInfo
 		c.userList = newUserInfo
+		// exit
+		return nil
 	}
+
+	// node no changed, check users
+	deleted, added := compareUserList(c.userList, newUserInfo)
+	if len(deleted) > 0 {
+		// have deleted users
+		deletedEmail := make([]string, len(deleted))
+		for i := range deleted {
+			deletedEmail[i] = fmt.Sprintf("%s|%s|%d",
+				c.Tag,
+				(deleted)[i].Uuid,
+				(deleted)[i].Id)
+		}
+		err = c.server.DelUsers(deletedEmail, c.Tag)
+		if err != nil {
+			log.Printf("[%s] Del users error: %s", c.Tag, err)
+		}
+	}
+	if len(added) > 0 {
+		// have added users
+		_, err = c.server.AddUsers(&vCore.AddUsersParams{
+			Tag:      c.Tag,
+			Config:   c.ControllerConfig,
+			UserInfo: added,
+			NodeInfo: c.nodeInfo,
+		})
+		if err != nil {
+			log.Printf("[%s] Add users error: %s", c.Tag, err)
+		}
+	}
+	if len(added) > 0 || len(deleted) > 0 {
+		// update Limiter
+		err = limiter.UpdateLimiter(c.Tag, added, deleted)
+		if err != nil {
+			log.Printf("[%s] Update limiter error: %s", c.Tag, err)
+		}
+	}
+	c.userList = newUserInfo
+	log.Printf("[%s] %d user deleted, %d user added", c.Tag,
+		len(deleted), len(added))
 	return nil
 }

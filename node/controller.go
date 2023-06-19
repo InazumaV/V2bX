@@ -83,7 +83,7 @@ func (c *Controller) Start() error {
 	if err != nil {
 		return fmt.Errorf("add users error: %s", err)
 	}
-	log.Printf("[%s: %d] Added %d new users", c.nodeInfo.Type, c.nodeInfo.Id, added)
+	log.Printf("[%s] Added %d new users", c.Tag, added)
 	c.initTask()
 	return nil
 }
