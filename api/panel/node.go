@@ -136,7 +136,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.UpMbps = rsp.UpMbps
 		node.HyObfs = rsp.Obfs
 	}
-	c.etag = r.Header().Get("Etag")
+	c.etag = r.Header().Get("ETag")
 	return
 }
 

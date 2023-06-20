@@ -89,6 +89,7 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			}
 		default:
 			// Normal tls
+			in.StreamSetting.Security = "tls"
 			in.StreamSetting.TLSSettings = &coreConf.TLSConfig{
 				Certs: []*coreConf.TLSCertConfig{
 					{
