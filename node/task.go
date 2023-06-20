@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"github.com/Yuzuki616/V2bX/common/task"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/limiter"
@@ -56,6 +55,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	if newNodeInfo != nil {
 		// nodeInfo changed
 		// Remove old tag
+		log.Printf("[%s] Node changed, reload...", c.Tag)
 		err = c.server.DelNode(c.Tag)
 		if err != nil {
 			log.Printf("[%s] Del node error: %s", c.Tag, err)
@@ -108,6 +108,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		}
 		c.nodeInfo = newNodeInfo
 		c.userList = newUserInfo
+		log.Printf("[%s] Added %d new users", c.Tag, len(newUserInfo))
 		// exit
 		return nil
 	}
@@ -116,14 +117,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	deleted, added := compareUserList(c.userList, newUserInfo)
 	if len(deleted) > 0 {
 		// have deleted users
-		deletedEmail := make([]string, len(deleted))
-		for i := range deleted {
-			deletedEmail[i] = fmt.Sprintf("%s|%s|%d",
-				c.Tag,
-				(deleted)[i].Uuid,
-				(deleted)[i].Id)
-		}
-		err = c.server.DelUsers(deletedEmail, c.Tag)
+		err = c.server.DelUsers(deleted, c.Tag)
 		if err != nil {
 			log.Printf("[%s] Del users error: %s", c.Tag, err)
 		}

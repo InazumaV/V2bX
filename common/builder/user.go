@@ -93,7 +93,7 @@ func BuildSSUser(tag string, userInfo *panel.UserInfo, cypher string, serverKey 
 		}
 		return &protocol.User{
 			Level:   0,
-			Email:   tag,
+			Email:   BuildUserTag(tag, userInfo.Uuid),
 			Account: serial.ToTypedMessage(ssAccount),
 		}
 	} else {

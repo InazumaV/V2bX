@@ -41,11 +41,6 @@ type ShadowsocksNodeRsp struct {
 	ServerKey string `json:"server_key"`
 }
 
-type TrojanNodeRsp struct {
-	Host       string `json:"host"`
-	ServerName string `json:"server_name"`
-}
-
 type HysteriaNodeRsp struct {
 	UpMbps   int    `json:"up_mbps"`
 	DownMbps int    `json:"down_mbps"`
@@ -131,11 +126,6 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.ServerKey = rsp.ServerKey
 		node.Cipher = rsp.Cipher
 	case "trojan":
-		rsp := TrojanNodeRsp{}
-		err = json.Unmarshal(r.Body(), &rsp)
-		if err != nil {
-			return nil, fmt.Errorf("decode v2ray params error: %s", err)
-		}
 	case "hysteria":
 		rsp := HysteriaNodeRsp{}
 		err = json.Unmarshal(r.Body(), &rsp)
@@ -146,7 +136,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.UpMbps = rsp.UpMbps
 		node.HyObfs = rsp.Obfs
 	}
-	c.etag = r.Header().Get("Etag")
+	c.etag = r.Header().Get("ETag")
 	return
 }
 
