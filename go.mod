@@ -13,7 +13,7 @@ require (
 	github.com/goccy/go-json v0.10.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/juju/ratelimit v1.0.2
-	github.com/oschwald/geoip2-golang v1.8.0
+	github.com/oschwald/geoip2-golang v1.9.0
 	github.com/quic-go/quic-go v0.34.0
 	github.com/sagernet/sing-box v1.2.7
 	github.com/sirupsen/logrus v1.9.3
@@ -121,7 +121,7 @@ require (
 	github.com/nrdcg/porkbun v0.1.1 // indirect
 	github.com/onsi/ginkgo/v2 v2.9.2 // indirect
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible // indirect
-	github.com/oschwald/maxminddb-golang v1.10.0 // indirect
+	github.com/oschwald/maxminddb-golang v1.11.0 // indirect
 	github.com/ovh/go-ovh v1.1.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pion/dtls/v2 v2.2.4 // indirect
