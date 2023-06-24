@@ -68,11 +68,14 @@ type NodeInfo struct {
 
 func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	const path = "/api/v1/server/UniProxy/config"
-	r, err := c.client.R().Get(path)
+	r, err := c.client.
+		R().
+		SetHeader("If-None-Match", c.etag).
+		Get(path)
 	if err = c.checkResponse(r, path, err); err != nil {
 		return
 	}
-	if c.etag == r.Header().Get("ETag") { // node info not changed
+	if r.StatusCode() == 304 {
 		return nil, nil
 	}
 	// parse common params
