@@ -2,6 +2,7 @@ package panel
 
 import (
 	"fmt"
+	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/goccy/go-json"
 	"reflect"
 	"regexp"
@@ -54,6 +55,7 @@ type NodeInfo struct {
 	Host            string
 	Port            int
 	Network         string
+	ExtraConfig     V2rayExtraConfig
 	NetworkSettings json.RawMessage
 	Tls             bool
 	ServerName      string
@@ -66,13 +68,23 @@ type NodeInfo struct {
 	PullInterval    time.Duration
 }
 
+type V2rayExtraConfig struct {
+	EnableVless   bool               `json:"EnableVless"`
+	VlessFlow     string             `json:"VlessFlow"`
+	EnableReality bool               `json:"EnableReality"`
+	RealityConfig conf.RealityConfig `json:"RealityConfig"`
+}
+
 func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	const path = "/api/v1/server/UniProxy/config"
-	r, err := c.client.R().Get(path)
+	r, err := c.client.
+		R().
+		SetHeader("If-None-Match", c.etag).
+		Get(path)
 	if err = c.checkResponse(r, path, err); err != nil {
 		return
 	}
-	if c.etag == r.Header().Get("ETag") { // node info not changed
+	if r.StatusCode() == 304 {
 		return nil, nil
 	}
 	// parse common params
@@ -85,17 +97,30 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("decode common params error: %s", err)
 	}
+	var extra []byte
 	for i := range common.Routes { // parse rules from routes
-		if common.Routes[i].Action == "block" {
-			var matchs []string
-			if _, ok := common.Routes[i].Match.(string); ok {
-				matchs = strings.Split(common.Routes[i].Match.(string), ",")
-			} else {
-				matchs = common.Routes[i].Match.([]string)
+		var matchs []string
+		if _, ok := common.Routes[i].Match.(string); ok {
+			matchs = strings.Split(common.Routes[i].Match.(string), ",")
+		} else if _, ok = common.Routes[i].Match.([]string); ok {
+			matchs = common.Routes[i].Match.([]string)
+		} else {
+			temp := common.Routes[i].Match.([]interface{})
+			matchs = make([]string, len(temp))
+			for i := range temp {
+				matchs[i] = temp[i].(string)
 			}
+		}
+		switch common.Routes[i].Action {
+		case "block":
 			for _, v := range matchs {
 				node.Rules = append(node.Rules, regexp.MustCompile(v))
 			}
+		case "dns":
+			if matchs[0] != "extra" {
+				break
+			}
+			extra = []byte(strings.Join(matchs[1:], ""))
 		}
 	}
 	node.ServerName = common.ServerName
@@ -116,6 +141,12 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.ServerName = rsp.ServerName
 		if rsp.Tls == 1 {
 			node.Tls = true
+		}
+		if len(extra) != 0 {
+			err = json.Unmarshal(extra, &node.ExtraConfig)
+			if err != nil {
+				return nil, fmt.Errorf("decode v2ray extra error: %s", err)
+			}
 		}
 	case "shadowsocks":
 		rsp := ShadowsocksNodeRsp{}

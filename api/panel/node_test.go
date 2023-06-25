@@ -23,6 +23,7 @@ func init() {
 
 func TestClient_GetNodeInfo(t *testing.T) {
 	log.Println(client.GetNodeInfo())
+	log.Println(client.GetNodeInfo())
 }
 
 func TestClient_ReportUserTraffic(t *testing.T) {
