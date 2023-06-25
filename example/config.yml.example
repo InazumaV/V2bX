@@ -31,7 +31,7 @@ Nodes:
         DNSType: AsIs # AsIs, UseIP, UseIPv4, UseIPv6, DNS strategy
         EnableTFO: false # Enable TCP Fast Open
         EnableVless: false # Enable Vless for V2ray Type
-        EnableXtls: false  # Enable xtls-rprx-vision, only vless
+        VlessFlow: "xtls-rprx-vision"  # flow for vless, "xtls-rprx-vision" or "none" or ""
         EnableProxyProtocol: false # Only works for WebSocket and TCP
         EnableFallback: false # Only support for Trojan and Vless
         FallBackConfigs: # Support multiple fallbacks

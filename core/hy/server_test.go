@@ -1,17 +1,23 @@
 package hy
 
 import (
+	"encoding/base64"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/sirupsen/logrus"
+	"log"
 	"testing"
+	"time"
 )
 
 func TestServer(t *testing.T) {
 	logrus.SetLevel(logrus.DebugLevel)
-	s := NewServer("test")
+	limiter.Init()
+	l := limiter.AddLimiter("test", &conf.LimitConfig{}, nil)
+	s := NewServer("test", l)
 	t.Log(s.runServer(&panel.NodeInfo{
-		Port:     11415,
+		Port:     1145,
 		UpMbps:   100,
 		DownMbps: 100,
 		HyObfs:   "atresssdaaaadd",
@@ -24,5 +30,13 @@ func TestServer(t *testing.T) {
 		},
 	}))
 	s.users.Store("test1111", struct{}{})
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			auth := base64.StdEncoding.EncodeToString([]byte("test1111"))
+			log.Println(auth)
+			log.Println(s.counter.getCounters(auth).UpCounter.Load())
+		}
+	}()
 	select {}
 }
