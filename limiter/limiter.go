@@ -7,8 +7,8 @@ import (
 	"github.com/Yuzuki616/V2bX/common/builder"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/juju/ratelimit"
+	log "github.com/sirupsen/logrus"
 	"github.com/xtls/xray-core/common/task"
-	"log"
 	"regexp"
 	"sync"
 	"time"
@@ -24,7 +24,8 @@ func Init() {
 		Execute:  ClearOnlineIP,
 	}
 	go func() {
-		log.Println("Limiter: ClearOnlineIP started")
+		log.WithField("Type", "Limiter").
+			Debug("ClearOnlineIP started")
 		time.Sleep(time.Minute * 2)
 		_ = c.Start()
 	}()

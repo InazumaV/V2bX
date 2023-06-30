@@ -73,10 +73,8 @@ func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 	users := make([]*protocol.User, 0, len(p.UserInfo))
 	switch p.NodeInfo.Type {
 	case "v2ray":
-
 		if p.Config.XrayOptions.EnableVless ||
 			p.NodeInfo.ExtraConfig.EnableVless {
-
 			if p.Config.XrayOptions.VlessFlow != "" {
 				if p.Config.XrayOptions.VlessFlow == p.NodeInfo.ExtraConfig.VlessFlow {
 					users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.Config.XrayOptions.VlessFlow)
