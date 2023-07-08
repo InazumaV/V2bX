@@ -2,8 +2,41 @@ package node
 
 import (
 	"github.com/Yuzuki616/V2bX/api/panel"
+	log "github.com/sirupsen/logrus"
+	"runtime"
 	"strconv"
 )
+
+func (c *Controller) reportUserTrafficTask() (err error) {
+	// Get User traffic
+	userTraffic := make([]panel.UserTraffic, 0)
+	for i := range c.userList {
+		up, down := c.server.GetUserTraffic(c.Tag, c.userList[i].Uuid, true)
+		if up > 0 || down > 0 {
+			if c.LimitConfig.EnableDynamicSpeedLimit {
+				c.userList[i].Traffic += up + down
+			}
+			userTraffic = append(userTraffic, panel.UserTraffic{
+				UID:      (c.userList)[i].Id,
+				Upload:   up,
+				Download: down})
+		}
+	}
+	if len(userTraffic) > 0 {
+		err = c.apiClient.ReportUserTraffic(userTraffic)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"tag": c.Tag,
+				"err": err,
+			}).Error("Report user traffic faild")
+		} else {
+			log.WithField("tag", err).Errorf("Report %d online users", len(userTraffic))
+		}
+	}
+	userTraffic = nil
+	runtime.GC()
+	return nil
+}
 
 func compareUserList(old, new []panel.UserInfo) (deleted, added []panel.UserInfo) {
 	tmp := map[string]struct{}{}

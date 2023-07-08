@@ -1,7 +1,6 @@
 package xray
 
 import (
-	"log"
 	"os"
 	"sync"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/Yuzuki616/V2bX/core/xray/app/dispatcher"
 	_ "github.com/Yuzuki616/V2bX/core/xray/distro/all"
 	"github.com/goccy/go-json"
+	log "github.com/sirupsen/logrus"
 	"github.com/xtls/xray-core/app/proxyman"
 	"github.com/xtls/xray-core/app/stats"
 	"github.com/xtls/xray-core/common/serial"
@@ -63,40 +63,40 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 	coreDnsConfig := &coreConf.DNSConfig{}
 	if c.DnsConfigPath != "" {
 		if f, err := os.Open(c.DnsConfigPath); err != nil {
-			log.Panicf("Failed to read DNS config file at: %s", c.DnsConfigPath)
+			log.WithField("err", err).Panic("Failed to read DNS config file")
 		} else {
 			if err = json.NewDecoder(f).Decode(coreDnsConfig); err != nil {
-				log.Panicf("Failed to unmarshal DNS config: %s", c.DnsConfigPath)
+				log.WithField("err", err).Panic("Failed to unmarshal DNS config")
 			}
 		}
 	}
 	dnsConfig, err := coreDnsConfig.Build()
 	if err != nil {
-		log.Panicf("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help: %s", err)
+		log.WithField("err", err).Panic("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
 	}
 	// Routing config
 	coreRouterConfig := &coreConf.RouterConfig{}
 	if c.RouteConfigPath != "" {
 		if f, err := os.Open(c.RouteConfigPath); err != nil {
-			log.Panicf("Failed to read Routing config file at: %s", c.RouteConfigPath)
+			log.WithField("err", err).Panic("Failed to read Routing config file")
 		} else {
 			if err = json.NewDecoder(f).Decode(coreRouterConfig); err != nil {
-				log.Panicf("Failed to unmarshal Routing config: %s", c.RouteConfigPath)
+				log.WithField("err", err).Panic("Failed to unmarshal Routing config")
 			}
 		}
 	}
 	routeConfig, err := coreRouterConfig.Build()
 	if err != nil {
-		log.Panicf("Failed to understand Routing config  Please check: https://xtls.github.io/config/routing.html for help: %s", err)
+		log.WithField("err", err).Panic("Failed to understand Routing config  Please check: https://xtls.github.io/config/routing.html")
 	}
 	// Custom Inbound config
 	var coreCustomInboundConfig []coreConf.InboundDetourConfig
 	if c.InboundConfigPath != "" {
 		if f, err := os.Open(c.InboundConfigPath); err != nil {
-			log.Panicf("Failed to read Custom Inbound config file at: %s", c.OutboundConfigPath)
+			log.WithField("err", err).Panic("Failed to read Custom Inbound config file")
 		} else {
 			if err = json.NewDecoder(f).Decode(&coreCustomInboundConfig); err != nil {
-				log.Panicf("Failed to unmarshal Custom Inbound config: %s", c.OutboundConfigPath)
+				log.WithField("err", err).Panic("Failed to unmarshal Custom Inbound config")
 			}
 		}
 	}
@@ -104,7 +104,7 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 	for _, config := range coreCustomInboundConfig {
 		oc, err := config.Build()
 		if err != nil {
-			log.Panicf("Failed to understand Inbound config, Please check: https://xtls.github.io/config/inbound.html for help: %s", err)
+			log.WithField("err", err).Panic("Failed to understand Inbound config, Please check: https://xtls.github.io/config/inbound.html for help")
 		}
 		inBoundConfig = append(inBoundConfig, oc)
 	}
@@ -112,10 +112,10 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 	var coreCustomOutboundConfig []coreConf.OutboundDetourConfig
 	if c.OutboundConfigPath != "" {
 		if f, err := os.Open(c.OutboundConfigPath); err != nil {
-			log.Panicf("Failed to read Custom Outbound config file at: %s", c.OutboundConfigPath)
+			log.WithField("err", err).Panic("Failed to read Custom Outbound config file")
 		} else {
 			if err = json.NewDecoder(f).Decode(&coreCustomOutboundConfig); err != nil {
-				log.Panicf("Failed to unmarshal Custom Outbound config: %s", c.OutboundConfigPath)
+				log.WithField("err", err).Panic("Failed to unmarshal Custom Outbound config")
 			}
 		}
 	}
@@ -123,7 +123,7 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 	for _, config := range coreCustomOutboundConfig {
 		oc, err := config.Build()
 		if err != nil {
-			log.Panicf("Failed to understand Outbound config, Please check: https://xtls.github.io/config/outbound.html for help: %s", err)
+			log.WithField("err", err).Panic("Failed to understand Outbound config, Please check: https://xtls.github.io/config/outbound.html for help")
 		}
 		outBoundConfig = append(outBoundConfig, oc)
 	}
@@ -149,10 +149,9 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 	}
 	server, err := core.New(config)
 	if err != nil {
-		log.Panicf("failed to create instance: %s", err)
+		log.WithField("err", err).Panic("failed to create instance")
 	}
-	log.Printf("Core Version: %s", core.Version())
-
+	log.Info("Xray Core Version: ", core.Version())
 	return server
 }
 

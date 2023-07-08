@@ -90,6 +90,7 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			}
 		default:
 			// Normal tls
+			in.StreamSetting.Security = "tls"
 			in.StreamSetting.TLSSettings = &coreConf.TLSConfig{
 				Certs: []*coreConf.TLSCertConfig{
 					{
@@ -100,6 +101,25 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 				},
 				RejectUnknownSNI: config.CertConfig.RejectUnknownSni,
 			}
+		}
+	}
+	// use remote reality replace local config
+	if nodeInfo.ExtraConfig.EnableReality {
+		rc := nodeInfo.ExtraConfig.RealityConfig
+		in.StreamSetting.Security = "reality"
+		d, err := json.Marshal(rc.Dest)
+		if err != nil {
+			return nil, fmt.Errorf("marshal reality dest error: %s", err)
+		}
+		in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
+			Dest:         d,
+			Xver:         rc.Xver,
+			ServerNames:  rc.ServerNames,
+			PrivateKey:   rc.PrivateKey,
+			MinClientVer: rc.MinClientVer,
+			MaxClientVer: rc.MaxClientVer,
+			MaxTimeDiff:  rc.MaxTimeDiff,
+			ShortIds:     rc.ShortIds,
 		}
 	}
 	// Support ProxyProtocol for any transport protocol
@@ -117,7 +137,8 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 }
 
 func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
-	if config.XrayOptions.EnableVless {
+	if config.XrayOptions.EnableVless ||
+		nodeInfo.ExtraConfig.EnableVless {
 		//Set vless
 		inbound.Protocol = "vless"
 		if config.XrayOptions.EnableFallback {

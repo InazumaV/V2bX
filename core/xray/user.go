@@ -3,7 +3,7 @@ package xray
 import (
 	"context"
 	"fmt"
-
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/common/builder"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/xtls/xray-core/common/protocol"
@@ -26,16 +26,22 @@ func (c *Core) GetUserManager(tag string) (proxy.UserManager, error) {
 	return userManager, nil
 }
 
-func (c *Core) DelUsers(users []string, tag string) error {
+func (c *Core) DelUsers(users []panel.UserInfo, tag string) error {
 	userManager, err := c.GetUserManager(tag)
 	if err != nil {
 		return fmt.Errorf("get user manager error: %s", err)
 	}
-	for _, email := range users {
-		err = userManager.RemoveUser(context.Background(), email)
+	var up, down, user string
+	for i := range users {
+		user = builder.BuildUserTag(tag, users[i].Uuid)
+		err = userManager.RemoveUser(context.Background(), user)
 		if err != nil {
 			return err
 		}
+		up = "user>>>" + user + ">>>traffic>>>uplink"
+		down = "user>>>" + user + ">>>traffic>>>downlink"
+		c.shm.UnregisterCounter(up)
+		c.shm.UnregisterCounter(down)
 	}
 	return nil
 }
@@ -67,11 +73,22 @@ func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 	users := make([]*protocol.User, 0, len(p.UserInfo))
 	switch p.NodeInfo.Type {
 	case "v2ray":
-		if p.Config.XrayOptions.EnableXtls {
-			users = builder.BuildVlessUsers(p.Tag, p.UserInfo, true)
+		if p.Config.XrayOptions.EnableVless ||
+			p.NodeInfo.ExtraConfig.EnableVless {
+			if p.Config.XrayOptions.VlessFlow != "" {
+				if p.Config.XrayOptions.VlessFlow == p.NodeInfo.ExtraConfig.VlessFlow {
+					users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.Config.XrayOptions.VlessFlow)
+				} else {
+					users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
+				}
+
+			} else {
+				users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
+			}
 		} else {
 			users = builder.BuildVmessUsers(p.Tag, p.UserInfo)
 		}
+
 	case "trojan":
 		users = builder.BuildTrojanUsers(p.Tag, p.UserInfo)
 	case "shadowsocks":

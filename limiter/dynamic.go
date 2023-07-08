@@ -1,8 +1,8 @@
 package limiter
 
 import (
-	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/common/builder"
 	"time"
 )
 
@@ -11,7 +11,7 @@ func (l *Limiter) AddDynamicSpeedLimit(tag string, userInfo *panel.UserInfo, lim
 		DynamicSpeedLimit: limitNum,
 		ExpireTime:        time.Now().Add(time.Duration(expire) * time.Second).Unix(),
 	}
-	l.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d", tag, userInfo.Uuid, userInfo.Id), userLimit)
+	l.UserLimitInfo.Store(builder.BuildUserTag(tag, userInfo.Uuid), userLimit)
 	return nil
 }
 

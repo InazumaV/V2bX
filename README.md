@@ -30,7 +30,7 @@ A V2board node server based on multi core, modified from XrayR.
 | 在线人数统计    | √     | √      | √           | √        |
 | 审计规则      | √     | √      | √           |          |
 | 自定义DNS    | √     | √      | √           | √        |
-| 在线IP数限制   | √     | √      | √           |          |
+| 在线IP数限制   | √     | √      | √           | √        |
 | 连接数限制     | √     | √      | √           |          |
 | 跨节点IP数限制  | √     | √      | √           |          |
 | 按照用户限速    | √     | √      | √           |          |
@@ -43,6 +43,7 @@ A V2board node server based on multi core, modified from XrayR.
 - [x] 集成基本操作Command(Start, Stop, Restart, Status, Uninstall)
 - [ ] 完善Hysteria内核支持
 - [ ] 完善使用文档
+- [ ] 尽可能统一日志输出格式
 
 ## 软件安装
 

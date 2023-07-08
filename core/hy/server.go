@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/apernet/hysteria/core/sockopt"
 	"io"
 	"net"
@@ -32,15 +33,17 @@ var serverPacketConnFuncFactoryMap = map[string]pktconns.ServerPacketConnFuncFac
 
 type Server struct {
 	tag     string
+	l       *limiter.Limiter
 	counter *UserTrafficCounter
 	users   sync.Map
 	running atomic.Bool
 	*cs.Server
 }
 
-func NewServer(tag string) *Server {
+func NewServer(tag string, l *limiter.Limiter) *Server {
 	return &Server{
 		tag: tag,
+		l:   l,
 	}
 }
 
@@ -173,6 +176,9 @@ func (s *Server) runServer(node *panel.NodeInfo, c *conf.ControllerConfig) error
 }
 
 func (s *Server) authByUser(addr net.Addr, auth []byte, sSend uint64, sRecv uint64) (bool, string) {
+	if _, r := s.l.CheckLimit(string(auth), addr.String(), false); r {
+		return false, "device limited"
+	}
 	if _, ok := s.users.Load(string(auth)); ok {
 		return true, "Done"
 	}
@@ -180,6 +186,7 @@ func (s *Server) authByUser(addr net.Addr, auth []byte, sSend uint64, sRecv uint
 }
 
 func (s *Server) connectFunc(addr net.Addr, auth []byte, sSend uint64, sRecv uint64) (bool, string) {
+	s.l.ConnLimiter.AddConnCount(addr.String(), string(auth), false)
 	ok, msg := s.authByUser(addr, auth, sSend, sRecv)
 	if !ok {
 		logrus.WithFields(logrus.Fields{
@@ -196,6 +203,7 @@ func (s *Server) connectFunc(addr net.Addr, auth []byte, sSend uint64, sRecv uin
 }
 
 func (s *Server) disconnectFunc(addr net.Addr, auth []byte, err error) {
+	s.l.ConnLimiter.DelConnCount(addr.String(), string(auth))
 	logrus.WithFields(logrus.Fields{
 		"src":   defaultIPMasker.Mask(addr.String()),
 		"error": err,

@@ -15,28 +15,26 @@ type ApiConfig struct {
 }
 
 type ControllerConfig struct {
-	DisableUploadTraffic bool        `yaml:"DisableUploadTraffic"`
-	DisableGetRule       bool        `yaml:"DisableGetRule"`
-	ListenIP             string      `yaml:"ListenIP"`
-	SendIP               string      `yaml:"SendIP"`
-	XrayOptions          XrayOptions `yaml:"XrayOptions"`
-	HyOptions            HyOptions   `yaml:"HyOptions"`
-	LimitConfig          LimitConfig `yaml:"LimitConfig"`
-	CertConfig           *CertConfig `yaml:"CertConfig"`
+	ListenIP            string      `yaml:"ListenIP"`
+	SendIP              string      `yaml:"SendIP"`
+	EnableProxyProtocol bool        `yaml:"EnableProxyProtocol"`
+	XrayOptions         XrayOptions `yaml:"XrayOptions"`
+	HyOptions           HyOptions   `yaml:"HyOptions"`
+	LimitConfig         LimitConfig `yaml:"LimitConfig"`
+	CertConfig          *CertConfig `yaml:"CertConfig"`
 }
 
 type XrayOptions struct {
-	EnableProxyProtocol bool             `yaml:"EnableProxyProtocol"`
-	EnableDNS           bool             `yaml:"EnableDNS"`
-	DNSType             string           `yaml:"DNSType"`
-	EnableVless         bool             `yaml:"EnableVless"`
-	EnableXtls          bool             `yaml:"EnableXtls"`
-	EnableUot           bool             `yaml:"EnableUot"`
-	EnableTFO           bool             `yaml:"EnableTFO"`
-	DisableIVCheck      bool             `yaml:"DisableIVCheck"`
-	DisableSniffing     bool             `yaml:"DisableSniffing"`
-	EnableFallback      bool             `yaml:"EnableFallback"`
-	FallBackConfigs     []FallBackConfig `yaml:"FallBackConfigs"`
+	EnableDNS       bool             `yaml:"EnableDNS"`
+	DNSType         string           `yaml:"DNSType"`
+	EnableVless     bool             `yaml:"EnableVless"`
+	VlessFlow       string           `json:"VlessFlow"`
+	EnableUot       bool             `yaml:"EnableUot"`
+	EnableTFO       bool             `yaml:"EnableTFO"`
+	DisableIVCheck  bool             `yaml:"DisableIVCheck"`
+	DisableSniffing bool             `yaml:"DisableSniffing"`
+	EnableFallback  bool             `yaml:"EnableFallback"`
+	FallBackConfigs []FallBackConfig `yaml:"FallBackConfigs"`
 }
 
 type HyOptions struct {
@@ -105,12 +103,12 @@ type CertConfig struct {
 }
 
 type RealityConfig struct {
-	Dest         interface{} `yaml:"Dest"`
-	Xver         uint64      `yaml:"Xver"`
-	ServerNames  []string    `yaml:"ServerNames"`
-	PrivateKey   string      `yaml:"PrivateKey"`
-	MinClientVer string      `yaml:"MinClientVer"`
-	MaxClientVer string      `yaml:"MaxClientVer"`
-	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff"`
-	ShortIds     []string    `yaml:"ShortIds"`
+	Dest         interface{} `yaml:"Dest" json:"Dest"`
+	Xver         uint64      `yaml:"Xver" json:"Xver"`
+	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
+	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
+	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
+	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
+	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
+	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
 }

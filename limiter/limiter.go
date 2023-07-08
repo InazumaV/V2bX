@@ -7,8 +7,8 @@ import (
 	"github.com/Yuzuki616/V2bX/common/builder"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/juju/ratelimit"
+	log "github.com/sirupsen/logrus"
 	"github.com/xtls/xray-core/common/task"
-	"log"
 	"regexp"
 	"sync"
 	"time"
@@ -24,7 +24,8 @@ func Init() {
 		Execute:  ClearOnlineIP,
 	}
 	go func() {
-		log.Println("Limiter: ClearOnlineIP started")
+		log.WithField("Type", "Limiter").
+			Debug("ClearOnlineIP started")
 		time.Sleep(time.Minute * 2)
 		_ = c.Start()
 	}()
@@ -85,10 +86,7 @@ func UpdateLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo)
 		return fmt.Errorf("get limit error: %s", err)
 	}
 	for i := range deleted {
-		l.UserLimitInfo.Delete(fmt.Sprintf("%s|%s|%d",
-			tag,
-			deleted[i].Uuid,
-			deleted[i].Id))
+		l.UserLimitInfo.Delete(builder.BuildUserTag(tag, deleted[i].Uuid))
 	}
 	for i := range added {
 		if added[i].SpeedLimit != 0 {
@@ -97,10 +95,7 @@ func UpdateLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo)
 				SpeedLimit: added[i].SpeedLimit,
 				ExpireTime: 0,
 			}
-			l.UserLimitInfo.Store(fmt.Sprintf("%s|%s|%d",
-				tag,
-				added[i].Uuid,
-				added[i].Id), userLimit)
+			l.UserLimitInfo.Store(builder.BuildUserTag(tag, added[i].Uuid), userLimit)
 		}
 	}
 	return nil

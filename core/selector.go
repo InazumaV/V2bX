@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-type Selecter struct {
+type Selector struct {
 	cores []Core
 	nodes sync.Map
 }
 
-func (s *Selecter) Start() error {
+func (s *Selector) Start() error {
 	for i := range s.cores {
 		err := s.cores[i].Start()
 		return err
@@ -22,7 +22,7 @@ func (s *Selecter) Start() error {
 	return nil
 }
 
-func (s *Selecter) Close() error {
+func (s *Selector) Close() error {
 	var errs error
 	for i := range s.cores {
 		errs = multierror.Append(errs, s.cores[i].Close())
@@ -39,7 +39,7 @@ func isSupported(protocol string, protocols []string) bool {
 	return false
 }
 
-func (s *Selecter) AddNode(tag string, info *panel.NodeInfo, config *conf.ControllerConfig) error {
+func (s *Selector) AddNode(tag string, info *panel.NodeInfo, config *conf.ControllerConfig) error {
 	for i := range s.cores {
 		if !isSupported(info.Type, s.cores[i].Protocols()) {
 			continue
@@ -53,7 +53,7 @@ func (s *Selecter) AddNode(tag string, info *panel.NodeInfo, config *conf.Contro
 	return errors.New("the node type is not support")
 }
 
-func (s *Selecter) DelNode(tag string) error {
+func (s *Selector) DelNode(tag string) error {
 	if t, e := s.nodes.Load(tag); e {
 		err := s.cores[t.(int)].DelNode(tag)
 		if err != nil {
@@ -65,7 +65,7 @@ func (s *Selecter) DelNode(tag string) error {
 	return errors.New("the node is not have")
 }
 
-func (s *Selecter) AddUsers(p *AddUsersParams) (added int, err error) {
+func (s *Selector) AddUsers(p *AddUsersParams) (added int, err error) {
 	t, e := s.nodes.Load(p.Tag)
 	if !e {
 		return 0, errors.New("the node is not have")
@@ -73,7 +73,7 @@ func (s *Selecter) AddUsers(p *AddUsersParams) (added int, err error) {
 	return s.cores[t.(int)].AddUsers(p)
 }
 
-func (s *Selecter) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
+func (s *Selector) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
 	t, e := s.nodes.Load(tag)
 	if !e {
 		return 0, 0
@@ -81,7 +81,7 @@ func (s *Selecter) GetUserTraffic(tag, uuid string, reset bool) (up int64, down 
 	return s.cores[t.(int)].GetUserTraffic(tag, uuid, reset)
 }
 
-func (s *Selecter) DelUsers(users []string, tag string) error {
+func (s *Selector) DelUsers(users []panel.UserInfo, tag string) error {
 	t, e := s.nodes.Load(tag)
 	if !e {
 		return errors.New("the node is not have")
@@ -89,7 +89,7 @@ func (s *Selecter) DelUsers(users []string, tag string) error {
 	return s.cores[t.(int)].DelUsers(users, tag)
 }
 
-func (s *Selecter) Protocols() []string {
+func (s *Selector) Protocols() []string {
 	protocols := make([]string, 0)
 	for i := range s.cores {
 		protocols = append(protocols, s.cores[i].Protocols()...)

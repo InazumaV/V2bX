@@ -3,6 +3,7 @@ package hy
 import (
 	"encoding/base64"
 	"errors"
+	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/core"
 )
 
@@ -23,22 +24,22 @@ func (h *Hy) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64)
 	s := v.(*Server)
 	auth := base64.StdEncoding.EncodeToString([]byte(uuid))
 	up = s.counter.getCounters(auth).UpCounter.Load()
-	down = s.counter.getCounters(uuid).DownCounter.Load()
+	down = s.counter.getCounters(auth).DownCounter.Load()
 	if reset {
-		s.counter.Reset(uuid)
+		s.counter.Reset(auth)
 	}
 	return
 }
 
-func (h *Hy) DelUsers(users []string, tag string) error {
+func (h *Hy) DelUsers(users []panel.UserInfo, tag string) error {
 	v, e := h.servers.Load(tag)
 	if !e {
 		return errors.New("the node is not have")
 	}
 	s := v.(*Server)
 	for i := range users {
-		s.users.Delete(users[i])
-		s.counter.Delete(users[i])
+		s.users.Delete(users[i].Uuid)
+		s.counter.Delete(base64.StdEncoding.EncodeToString([]byte(users[i].Uuid)))
 	}
 	return nil
 }

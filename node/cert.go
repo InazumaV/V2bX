@@ -4,7 +4,21 @@ import (
 	"fmt"
 	"github.com/Yuzuki616/V2bX/common/file"
 	"github.com/Yuzuki616/V2bX/node/lego"
+	"log"
 )
+
+func (c *Controller) renewCertTask() {
+	l, err := lego.New(c.CertConfig)
+	if err != nil {
+		log.Print("new lego error: ", err)
+		return
+	}
+	err = l.RenewCert()
+	if err != nil {
+		log.Print("renew cert error: ", err)
+		return
+	}
+}
 
 func (c *Controller) requestCert() error {
 	if c.CertConfig.CertFile == "" || c.CertConfig.KeyFile == "" {
