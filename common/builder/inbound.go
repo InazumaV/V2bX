@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/goccy/go-json"
@@ -52,16 +53,16 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	in.SniffingConfig = sniffingConfig
 	if *in.StreamSetting.Network == "tcp" {
 		if in.StreamSetting.TCPSettings != nil {
-			in.StreamSetting.TCPSettings.AcceptProxyProtocol = config.EnableProxyProtocol
+			in.StreamSetting.TCPSettings.AcceptProxyProtocol = config.XrayOptions.EnableProxyProtocol
 		} else {
 			tcpSetting := &coreConf.TCPConfig{
-				AcceptProxyProtocol: config.EnableProxyProtocol,
+				AcceptProxyProtocol: config.XrayOptions.EnableProxyProtocol,
 			} //Enable proxy protocol
 			in.StreamSetting.TCPSettings = tcpSetting
 		}
 	} else if *in.StreamSetting.Network == "ws" {
 		in.StreamSetting.WSSettings = &coreConf.WebSocketConfig{
-			AcceptProxyProtocol: config.EnableProxyProtocol} //Enable proxy protocol
+			AcceptProxyProtocol: config.XrayOptions.EnableProxyProtocol} //Enable proxy protocol
 	}
 	// Set TLS or Reality settings
 	if nodeInfo.Tls {
@@ -104,9 +105,9 @@ func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	// Support ProxyProtocol for any transport protocol
 	if *in.StreamSetting.Network != "tcp" &&
 		*in.StreamSetting.Network != "ws" &&
-		config.EnableProxyProtocol {
+		config.XrayOptions.EnableProxyProtocol {
 		socketConfig := &coreConf.SocketConfig{
-			AcceptProxyProtocol: config.EnableProxyProtocol,
+			AcceptProxyProtocol: config.XrayOptions.EnableProxyProtocol,
 			TFO:                 config.XrayOptions.EnableTFO,
 		} //Enable proxy protocol
 		in.StreamSetting.SocketSettings = socketConfig
