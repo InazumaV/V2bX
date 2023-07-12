@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"runtime"
@@ -42,23 +42,26 @@ func serverHandle(_ *cobra.Command, _ []string) {
 	c := conf.New()
 	err := c.LoadFromPath(config)
 	if err != nil {
-		log.Fatalf("can't unmarshal config file: %s \n", err)
+		log.WithField("err", err).Error("Load config file failed")
+		return
 	}
 	limiter.Init()
-	log.Println("Start V2bX...")
+	log.Info("Start V2bX...")
 	vc, err := vCore.NewCore(&c.CoreConfig)
 	if err != nil {
-		log.Fatalf("New core error: %s", err)
+		log.WithField("err", err).Error("new core failed")
+		return
 	}
 	err = vc.Start()
 	if err != nil {
-		log.Fatalf("Start core error: %s", err)
+		log.WithField("err", err).Error("Start core failed")
+		return
 	}
 	defer vc.Close()
 	nodes := node.New()
 	err = nodes.Start(c.NodesConfig, vc)
 	if err != nil {
-		log.Fatalf("Run nodes error: %s", err)
+		log.WithField("err", err).Error("Run nodes failed")
 		return
 	}
 	if watch {
@@ -66,24 +69,29 @@ func serverHandle(_ *cobra.Command, _ []string) {
 			nodes.Close()
 			err = vc.Close()
 			if err != nil {
-				log.Fatalf("Failed to restart xray-core: %s", err)
+				log.WithField("err", err).Error("Restart node failed")
+				return
 			}
 			vc, err = vCore.NewCore(&c.CoreConfig)
 			if err != nil {
-				log.Fatalf("New core error: %s", err)
+				log.WithField("err", err).Error("New core failed")
+				return
 			}
 			err = vc.Start()
 			if err != nil {
-				log.Fatalf("Start core error: %s", err)
+				log.WithField("err", err).Error("Start core failed")
+				return
 			}
 			err = nodes.Start(c.NodesConfig, vc)
 			if err != nil {
-				log.Fatalf("Run nodes error: %s", err)
+				log.WithField("err", err).Error("Run nodes failed")
+				return
 			}
 			runtime.GC()
 		})
 		if err != nil {
-			log.Fatalf("Watch config file error: %s", err)
+			log.WithField("err", err).Error("start watch failed")
+			return
 		}
 	}
 	// clear memory

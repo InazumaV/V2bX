@@ -9,7 +9,7 @@ import (
 	"github.com/Yuzuki616/V2bX/conf"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/limiter"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 type Controller struct {
@@ -81,7 +81,7 @@ func (c *Controller) Start() error {
 	if err != nil {
 		return fmt.Errorf("add users error: %s", err)
 	}
-	log.Printf("[%s] Added %d new users", c.Tag, added)
+	log.WithField("tag", c.Tag).Infof("Added %d new users", added)
 	c.initTask()
 	return nil
 }
