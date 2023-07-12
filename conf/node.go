@@ -15,26 +15,26 @@ type ApiConfig struct {
 }
 
 type ControllerConfig struct {
-	ListenIP            string      `yaml:"ListenIP"`
-	SendIP              string      `yaml:"SendIP"`
-	EnableProxyProtocol bool        `yaml:"EnableProxyProtocol"`
-	XrayOptions         XrayOptions `yaml:"XrayOptions"`
-	HyOptions           HyOptions   `yaml:"HyOptions"`
-	LimitConfig         LimitConfig `yaml:"LimitConfig"`
-	CertConfig          *CertConfig `yaml:"CertConfig"`
+	ListenIP    string      `yaml:"ListenIP"`
+	SendIP      string      `yaml:"SendIP"`
+	XrayOptions XrayOptions `yaml:"XrayOptions"`
+	HyOptions   HyOptions   `yaml:"HyOptions"`
+	LimitConfig LimitConfig `yaml:"LimitConfig"`
+	CertConfig  *CertConfig `yaml:"CertConfig"`
 }
 
 type XrayOptions struct {
-	EnableDNS       bool             `yaml:"EnableDNS"`
-	DNSType         string           `yaml:"DNSType"`
-	EnableVless     bool             `yaml:"EnableVless"`
-	VlessFlow       string           `json:"VlessFlow"`
-	EnableUot       bool             `yaml:"EnableUot"`
-	EnableTFO       bool             `yaml:"EnableTFO"`
-	DisableIVCheck  bool             `yaml:"DisableIVCheck"`
-	DisableSniffing bool             `yaml:"DisableSniffing"`
-	EnableFallback  bool             `yaml:"EnableFallback"`
-	FallBackConfigs []FallBackConfig `yaml:"FallBackConfigs"`
+	EnableProxyProtocol bool             `yaml:"EnableProxyProtocol"`
+	EnableDNS           bool             `yaml:"EnableDNS"`
+	DNSType             string           `yaml:"DNSType"`
+	EnableVless         bool             `yaml:"EnableVless"`
+	VlessFlow           string           `json:"VlessFlow"`
+	EnableUot           bool             `yaml:"EnableUot"`
+	EnableTFO           bool             `yaml:"EnableTFO"`
+	DisableIVCheck      bool             `yaml:"DisableIVCheck"`
+	DisableSniffing     bool             `yaml:"DisableSniffing"`
+	EnableFallback      bool             `yaml:"EnableFallback"`
+	FallBackConfigs     []FallBackConfig `yaml:"FallBackConfigs"`
 }
 
 type HyOptions struct {
