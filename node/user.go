@@ -28,9 +28,9 @@ func (c *Controller) reportUserTrafficTask() (err error) {
 			log.WithFields(log.Fields{
 				"tag": c.Tag,
 				"err": err,
-			}).Error("Report user traffic faild")
+			}).Info("Report user traffic failed")
 		} else {
-			log.WithField("tag", err).Errorf("Report %d online users", len(userTraffic))
+			log.WithField("tag", c.Tag).Infof("Report %d online users", len(userTraffic))
 		}
 	}
 	userTraffic = nil

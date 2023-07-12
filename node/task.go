@@ -177,7 +177,9 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		}
 	}
 	c.userList = newUserInfo
-	log.WithField("tag", c.Tag).
-		Errorf("%d user deleted, %d user added", len(deleted), len(added))
+	if len(added)+len(deleted) != 0 {
+		log.WithField("tag", c.Tag).
+			Infof("%d user deleted, %d user added", len(deleted), len(added))
+	}
 	return nil
 }

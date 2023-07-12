@@ -2,7 +2,7 @@ package conf
 
 type CoreConfig struct {
 	Type       string      `yaml:"Type"`
-	XrayConfig *XrayConfig `yaml:"Xray"`
+	XrayConfig *XrayConfig `yaml:"XrayConfig"`
 }
 
 type XrayConfig struct {
