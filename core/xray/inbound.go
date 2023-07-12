@@ -1,4 +1,4 @@
-package builder
+package xray
 
 import (
 	"crypto/rand"
@@ -16,7 +16,7 @@ import (
 )
 
 // BuildInbound build Inbound config for different protocol
-func BuildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
+func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
 	in := &coreConf.InboundDetourConfig{}
 	// Set network protocol
 	t := coreConf.TransportProtocol(nodeInfo.Network)

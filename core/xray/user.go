@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/builder"
+	"github.com/Yuzuki616/V2bX/common/format"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/proxy"
@@ -33,7 +33,7 @@ func (c *Core) DelUsers(users []panel.UserInfo, tag string) error {
 	}
 	var up, down, user string
 	for i := range users {
-		user = builder.BuildUserTag(tag, users[i].Uuid)
+		user = format.UserTag(tag, users[i].Uuid)
 		err = userManager.RemoveUser(context.Background(), user)
 		if err != nil {
 			return err
@@ -47,8 +47,8 @@ func (c *Core) DelUsers(users []panel.UserInfo, tag string) error {
 }
 
 func (c *Core) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
-	upName := "user>>>" + builder.BuildUserTag(tag, uuid) + ">>>traffic>>>uplink"
-	downName := "user>>>" + builder.BuildUserTag(tag, uuid) + ">>>traffic>>>downlink"
+	upName := "user>>>" + format.UserTag(tag, uuid) + ">>>traffic>>>uplink"
+	downName := "user>>>" + format.UserTag(tag, uuid) + ">>>traffic>>>downlink"
 	upCounter := c.shm.GetCounter(upName)
 	downCounter := c.shm.GetCounter(downName)
 	if reset {
@@ -77,22 +77,22 @@ func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 			p.NodeInfo.ExtraConfig.EnableVless {
 			if p.Config.XrayOptions.VlessFlow != "" {
 				if p.Config.XrayOptions.VlessFlow == p.NodeInfo.ExtraConfig.VlessFlow {
-					users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.Config.XrayOptions.VlessFlow)
+					users = buildVlessUsers(p.Tag, p.UserInfo, p.Config.XrayOptions.VlessFlow)
 				} else {
-					users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
+					users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
 				}
 
 			} else {
-				users = builder.BuildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
+				users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
 			}
 		} else {
-			users = builder.BuildVmessUsers(p.Tag, p.UserInfo)
+			users = buildVmessUsers(p.Tag, p.UserInfo)
 		}
 
 	case "trojan":
-		users = builder.BuildTrojanUsers(p.Tag, p.UserInfo)
+		users = buildTrojanUsers(p.Tag, p.UserInfo)
 	case "shadowsocks":
-		users = builder.BuildSSUsers(p.Tag,
+		users = buildSSUsers(p.Tag,
 			p.UserInfo,
 			p.NodeInfo.Cipher,
 			p.NodeInfo.ServerKey)

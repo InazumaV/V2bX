@@ -1,4 +1,4 @@
-package builder
+package xray
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 // BuildOutbound build freedom outbund config for addoutbound
-func BuildOutbound(config *conf2.ControllerConfig, tag string) (*core.OutboundHandlerConfig, error) {
+func buildOutbound(config *conf2.ControllerConfig, tag string) (*core.OutboundHandlerConfig, error) {
 	outboundDetourConfig := &conf.OutboundDetourConfig{}
 	outboundDetourConfig.Protocol = "freedom"
 	outboundDetourConfig.Tag = tag

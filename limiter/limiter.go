@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/builder"
+	"github.com/Yuzuki616/V2bX/common/format"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/juju/ratelimit"
 	log "github.com/sirupsen/logrus"
@@ -61,7 +61,7 @@ func AddLimiter(tag string, l *conf.LimitConfig, users []panel.UserInfo) *Limite
 				SpeedLimit: users[i].SpeedLimit,
 				ExpireTime: 0,
 			}
-			info.UserLimitInfo.Store(builder.BuildUserTag(tag, users[i].Uuid), userLimit)
+			info.UserLimitInfo.Store(format.UserTag(tag, users[i].Uuid), userLimit)
 		}
 	}
 	limitLock.Lock()
@@ -86,7 +86,7 @@ func UpdateLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo)
 		return fmt.Errorf("get limit error: %s", err)
 	}
 	for i := range deleted {
-		l.UserLimitInfo.Delete(builder.BuildUserTag(tag, deleted[i].Uuid))
+		l.UserLimitInfo.Delete(format.UserTag(tag, deleted[i].Uuid))
 	}
 	for i := range added {
 		if added[i].SpeedLimit != 0 {
@@ -95,7 +95,7 @@ func UpdateLimiter(tag string, added []panel.UserInfo, deleted []panel.UserInfo)
 				SpeedLimit: added[i].SpeedLimit,
 				ExpireTime: 0,
 			}
-			l.UserLimitInfo.Store(builder.BuildUserTag(tag, added[i].Uuid), userLimit)
+			l.UserLimitInfo.Store(format.UserTag(tag, added[i].Uuid), userLimit)
 		}
 	}
 	return nil
