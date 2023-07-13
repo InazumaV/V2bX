@@ -77,12 +77,14 @@ func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 			p.NodeInfo.ExtraConfig.EnableVless {
 			if p.Config.XrayOptions.VlessFlow != "" {
 				if p.Config.XrayOptions.VlessFlow == p.NodeInfo.ExtraConfig.VlessFlow {
+					// local
 					users = buildVlessUsers(p.Tag, p.UserInfo, p.Config.XrayOptions.VlessFlow)
 				} else {
+					// remote
 					users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
 				}
-
 			} else {
+				// remote
 				users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
 			}
 		} else {
