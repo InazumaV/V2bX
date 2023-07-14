@@ -3,14 +3,15 @@ package panel
 import (
 	"bufio"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/go-resty/resty/v2"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/go-resty/resty/v2"
 )
 
 // Panel is the interface for different panel's api.
@@ -18,7 +19,7 @@ import (
 type Client struct {
 	client        *resty.Client
 	APIHost       string
-	Key           string
+	Token         string
 	NodeType      string
 	NodeId        int
 	LocalRuleList []*regexp.Regexp
@@ -48,7 +49,7 @@ func New(c *conf.ApiConfig) (*Client, error) {
 	default:
 		return nil, fmt.Errorf("unsupported Node type: %s", c.NodeType)
 	}
-	// Create Key for each requests
+	// set params
 	client.SetQueryParams(map[string]string{
 		"node_type": c.NodeType,
 		"node_id":   strconv.Itoa(c.NodeID),
@@ -58,7 +59,7 @@ func New(c *conf.ApiConfig) (*Client, error) {
 	localRuleList := readLocalRuleList(c.RuleListPath)
 	return &Client{
 		client:        client,
-		Key:           c.Key,
+		Token:         c.Key,
 		APIHost:       c.APIHost,
 		NodeType:      c.NodeType,
 		NodeId:        c.NodeID,
