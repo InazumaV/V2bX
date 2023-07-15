@@ -145,7 +145,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
 		}
 		if node.ExtraConfig.RealityConfig.PrivateKey != "" {
-			temp := crypt.GenShaHash([]byte(c.APIHost + c.Token))
+			temp := crypt.GenShaHash([]byte(c.APIHost + c.Token))[:32]
 			temp, err = crypt.AesDecrypt(node.ExtraConfig.RealityConfig.PrivateKey, []byte(temp))
 			node.ExtraConfig.RealityConfig.PrivateKey = temp
 		}

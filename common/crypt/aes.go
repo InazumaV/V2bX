@@ -10,7 +10,7 @@ func AesEncrypt(data []byte, key []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	en := make([]byte, 0, len(data))
+	en := make([]byte, len(data))
 	a.Encrypt(en, data)
 	return base64.StdEncoding.EncodeToString(en), nil
 }
@@ -24,7 +24,7 @@ func AesDecrypt(data string, key []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	de := make([]byte, 0, len(data))
+	de := make([]byte, len(data))
 	a.Decrypt(de, d)
 	return string(de), nil
 }
