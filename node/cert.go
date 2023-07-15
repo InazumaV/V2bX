@@ -21,13 +21,17 @@ func (c *Controller) renewCertTask() {
 }
 
 func (c *Controller) requestCert() error {
-	if c.CertConfig.CertFile == "" || c.CertConfig.KeyFile == "" {
-		return fmt.Errorf("cert file path or key file path not exist")
-	}
 	switch c.CertConfig.CertMode {
 	case "reality", "none", "":
 		return nil
+	case "file":
+		if c.CertConfig.CertFile == "" || c.CertConfig.KeyFile == "" {
+			return fmt.Errorf("cert file path or key file path not exist")
+		}
 	case "dns", "http":
+		if c.CertConfig.CertFile == "" || c.CertConfig.KeyFile == "" {
+			return fmt.Errorf("cert file path or key file path not exist")
+		}
 		if file.IsExist(c.CertConfig.CertFile) && file.IsExist(c.CertConfig.KeyFile) {
 			return nil
 		}

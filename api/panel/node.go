@@ -2,13 +2,16 @@ package panel
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/goccy/go-json"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Yuzuki616/V2bX/common/crypt"
+
+	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/goccy/go-json"
 )
 
 type CommonNodeRsp struct {
@@ -97,7 +100,6 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("decode common params error: %s", err)
 	}
-	var extra []byte
 	for i := range common.Routes { // parse rules from routes
 		var matchs []string
 		if _, ok := common.Routes[i].Match.(string); ok {
@@ -117,10 +119,6 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 				node.Rules = append(node.Rules, regexp.MustCompile(v))
 			}
 		case "dns":
-			if matchs[0] != "extra" {
-				break
-			}
-			extra = []byte(strings.Join(matchs[1:], ""))
 		}
 	}
 	node.ServerName = common.ServerName
@@ -142,11 +140,14 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		if rsp.Tls == 1 {
 			node.Tls = true
 		}
-		if len(extra) != 0 {
-			err = json.Unmarshal(extra, &node.ExtraConfig)
-			if err != nil {
-				return nil, fmt.Errorf("decode v2ray extra error: %s", err)
-			}
+		err = json.Unmarshal(rsp.NetworkSettings, &node.ExtraConfig)
+		if err != nil {
+			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
+		}
+		if node.ExtraConfig.RealityConfig.PrivateKey != "" {
+			temp := crypt.GenShaHash([]byte(c.APIHost + c.Token))[:32]
+			temp, err = crypt.AesDecrypt(node.ExtraConfig.RealityConfig.PrivateKey, []byte(temp))
+			node.ExtraConfig.RealityConfig.PrivateKey = temp
 		}
 	case "shadowsocks":
 		rsp := ShadowsocksNodeRsp{}

@@ -2,7 +2,7 @@ package limiter
 
 import (
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/builder"
+	"github.com/Yuzuki616/V2bX/common/format"
 	"time"
 )
 
@@ -11,7 +11,7 @@ func (l *Limiter) AddDynamicSpeedLimit(tag string, userInfo *panel.UserInfo, lim
 		DynamicSpeedLimit: limitNum,
 		ExpireTime:        time.Now().Add(time.Duration(expire) * time.Second).Unix(),
 	}
-	l.UserLimitInfo.Store(builder.BuildUserTag(tag, userInfo.Uuid), userLimit)
+	l.UserLimitInfo.Store(format.UserTag(tag, userInfo.Uuid), userLimit)
 	return nil
 }
 

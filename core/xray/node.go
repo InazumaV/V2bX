@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/builder"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/features/inbound"
@@ -12,7 +11,7 @@ import (
 )
 
 func (c *Core) AddNode(tag string, info *panel.NodeInfo, config *conf.ControllerConfig) error {
-	inboundConfig, err := builder.BuildInbound(config, info, tag)
+	inboundConfig, err := buildInbound(config, info, tag)
 	if err != nil {
 		return fmt.Errorf("build inbound error: %s", err)
 	}
@@ -20,7 +19,7 @@ func (c *Core) AddNode(tag string, info *panel.NodeInfo, config *conf.Controller
 	if err != nil {
 		return fmt.Errorf("add inbound error: %s", err)
 	}
-	outBoundConfig, err := builder.BuildOutbound(config, tag)
+	outBoundConfig, err := buildOutbound(config, tag)
 	if err != nil {
 		return fmt.Errorf("build outbound error: %s", err)
 	}
