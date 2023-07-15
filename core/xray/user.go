@@ -3,6 +3,7 @@ package xray
 import (
 	"context"
 	"fmt"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/common/format"
 	vCore "github.com/Yuzuki616/V2bX/core"
@@ -73,24 +74,11 @@ func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 	users := make([]*protocol.User, 0, len(p.UserInfo))
 	switch p.NodeInfo.Type {
 	case "v2ray":
-		if p.Config.XrayOptions.EnableVless ||
-			p.NodeInfo.ExtraConfig.EnableVless {
-			if p.Config.XrayOptions.VlessFlow != "" {
-				if p.Config.XrayOptions.VlessFlow == p.NodeInfo.ExtraConfig.VlessFlow {
-					// local
-					users = buildVlessUsers(p.Tag, p.UserInfo, p.Config.XrayOptions.VlessFlow)
-				} else {
-					// remote
-					users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
-				}
-			} else {
-				// remote
-				users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
-			}
+		if p.NodeInfo.ExtraConfig.EnableVless {
+			users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
 		} else {
 			users = buildVmessUsers(p.Tag, p.UserInfo)
 		}
-
 	case "trojan":
 		users = buildTrojanUsers(p.Tag, p.UserInfo)
 	case "shadowsocks":
