@@ -47,11 +47,6 @@ func migrateOldConfig(c *Conf, old *OldConfig) {
 		if i >= len(old.NodesConfig) {
 			break
 		}
-		// node option
-		if old.NodesConfig[i].ApiConfig.EnableVless {
-			n.ControllerConfig.XrayOptions.EnableVless = true
-			changed = true
-		}
 		// limit config
 		if old.NodesConfig[i].ApiConfig.SpeedLimit != 0 {
 			n.ControllerConfig.LimitConfig.SpeedLimit = old.NodesConfig[i].ApiConfig.SpeedLimit

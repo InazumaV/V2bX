@@ -1,6 +1,7 @@
 package panel
 
 import (
+	"encoding/base64"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/Yuzuki616/V2bX/common/crypt"
 
-	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/goccy/go-json"
 )
 
@@ -72,10 +72,21 @@ type NodeInfo struct {
 }
 
 type V2rayExtraConfig struct {
-	EnableVless   bool               `json:"EnableVless"`
-	VlessFlow     string             `json:"VlessFlow"`
-	EnableReality bool               `json:"EnableReality"`
-	RealityConfig conf.RealityConfig `json:"RealityConfig"`
+	EnableVless   bool           `json:"EnableVless"`
+	VlessFlow     string         `json:"VlessFlow"`
+	EnableReality bool           `json:"EnableReality"`
+	RealityConfig *RealityConfig `json:"RealityConfig"`
+}
+
+type RealityConfig struct {
+	Dest         interface{} `yaml:"Dest" json:"Dest"`
+	Xver         uint64      `yaml:"Xver" json:"Xver"`
+	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
+	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
+	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
+	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
+	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
+	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
 }
 
 func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
@@ -144,10 +155,14 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		if err != nil {
 			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
 		}
-		if node.ExtraConfig.RealityConfig.PrivateKey != "" {
-			temp := crypt.GenShaHash([]byte(c.APIHost + c.Token))[:32]
-			temp, err = crypt.AesDecrypt(node.ExtraConfig.RealityConfig.PrivateKey, []byte(temp))
-			node.ExtraConfig.RealityConfig.PrivateKey = temp
+		if node.ExtraConfig.EnableReality {
+			if node.ExtraConfig.RealityConfig == nil {
+				node.ExtraConfig.EnableReality = false
+			} else {
+				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token +
+					node.ExtraConfig.RealityConfig.PrivateKey))
+				node.ExtraConfig.RealityConfig.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
+			}
 		}
 	case "shadowsocks":
 		rsp := ShadowsocksNodeRsp{}
