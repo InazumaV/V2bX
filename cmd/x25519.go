@@ -25,19 +25,6 @@ func init() {
 }
 
 func executeX25519() {
-	var yes, key string
-	fmt.Println("要对私钥进行加密吗?(Y/n)")
-	fmt.Scan(&yes)
-	if strings.ToLower(yes) == "y" {
-		var temp string
-		fmt.Println("请输入Api接口地址:")
-		fmt.Scan(&temp)
-		key = temp
-		fmt.Println("请输入Api认证Token:")
-		fmt.Scan(&temp)
-		key += temp
-		key = crypt.GenShaHash([]byte(key))
-	}
 	var output string
 	var err error
 	defer func() {
@@ -45,18 +32,28 @@ func executeX25519() {
 	}()
 	var privateKey []byte
 	var publicKey []byte
-	privateKey = make([]byte, curve25519.ScalarSize)
-	if _, err = rand.Read(privateKey); err != nil {
-		output = Err("read rand error: ", err)
-		return
+	var yes, key string
+	fmt.Println("要基于节点信息生成密钥吗?(Y/n)")
+	fmt.Scan(&yes)
+	if strings.ToLower(yes) == "y" {
+		var temp string
+		fmt.Println("请输入节点id:")
+		fmt.Scan(&temp)
+		key = temp
+		fmt.Println("请输入节点类型:")
+		fmt.Scan(&temp)
+		key += strings.ToLower(temp)
+		fmt.Println("请输入Token:")
+		fmt.Scan(&temp)
+		key += temp
+		privateKey = crypt.GenX25519Private([]byte(key))
+	} else {
+		privateKey = make([]byte, curve25519.ScalarSize)
+		if _, err = rand.Read(privateKey); err != nil {
+			output = Err("read rand error: ", err)
+			return
+		}
 	}
-
-	// Modify random bytes using algorithm described at:
-	// https://cr.yp.to/ecdh.html.
-	privateKey[0] &= 248
-	privateKey[31] &= 127
-	privateKey[31] |= 64
-
 	if publicKey, err = curve25519.X25519(privateKey, curve25519.Basepoint); err != nil {
 		output = Err("gen X25519 error: ", err)
 		return
@@ -66,11 +63,4 @@ func executeX25519() {
 		p,
 		"\nPublic key: ",
 		base64.RawURLEncoding.EncodeToString(publicKey))
-	if strings.ToLower(yes) == "y" {
-		key, err = crypt.AesEncrypt([]byte(p), []byte(key[:32]))
-		if err != nil {
-			output = Err("encrypt private key error: ", err)
-		}
-		output += "\n加密后的Private key：" + key
-	}
 }
