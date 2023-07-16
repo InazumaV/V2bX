@@ -71,6 +71,24 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 		}
 		switch config.CertConfig.CertMode {
 		case "none", "": // disable
+		case "reality":
+			// Reality
+			in.StreamSetting.Security = "reality"
+			d, err := json.Marshal(config.CertConfig.RealityConfig.Dest)
+			if err != nil {
+				return nil, fmt.Errorf("marshal reality dest error: %s", err)
+			}
+			in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
+				Dest:         d,
+				Xver:         config.CertConfig.RealityConfig.Xver,
+				ServerNames:  config.CertConfig.RealityConfig.ServerNames,
+				PrivateKey:   config.CertConfig.RealityConfig.PrivateKey,
+				MinClientVer: config.CertConfig.RealityConfig.MinClientVer,
+				MaxClientVer: config.CertConfig.RealityConfig.MaxClientVer,
+				MaxTimeDiff:  config.CertConfig.RealityConfig.MaxTimeDiff,
+				ShortIds:     config.CertConfig.RealityConfig.ShortIds,
+			}
+		case "remote":
 		default:
 			if nodeInfo.ExtraConfig.EnableReality {
 				rc := nodeInfo.ExtraConfig.RealityConfig
@@ -120,7 +138,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 }
 
 func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
-	if nodeInfo.ExtraConfig.EnableVless {
+	if config.XrayOptions.EnableVless || nodeInfo.ExtraConfig.EnableVless {
 		//Set vless
 		inbound.Protocol = "vless"
 		if config.XrayOptions.EnableFallback {

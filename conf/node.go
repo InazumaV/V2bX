@@ -23,12 +23,24 @@ type ControllerConfig struct {
 	CertConfig  *CertConfig `yaml:"CertConfig"`
 }
 
+type RealityConfig struct {
+	Dest         interface{} `yaml:"Dest" json:"Dest"`
+	Xver         uint64      `yaml:"Xver" json:"Xver"`
+	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
+	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
+	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
+	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
+	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
+	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
+}
+
 type XrayOptions struct {
 	EnableProxyProtocol bool             `yaml:"EnableProxyProtocol"`
 	EnableDNS           bool             `yaml:"EnableDNS"`
 	DNSType             string           `yaml:"DNSType"`
 	EnableUot           bool             `yaml:"EnableUot"`
 	EnableTFO           bool             `yaml:"EnableTFO"`
+	EnableVless         bool             `yaml:"EnableVless"`
 	DisableIVCheck      bool             `yaml:"DisableIVCheck"`
 	DisableSniffing     bool             `yaml:"DisableSniffing"`
 	EnableFallback      bool             `yaml:"EnableFallback"`
@@ -97,4 +109,5 @@ type CertConfig struct {
 	Provider         string            `yaml:"Provider"` // alidns, cloudflare, gandi, godaddy....
 	Email            string            `yaml:"Email"`
 	DNSEnv           map[string]string `yaml:"DNSEnv"`
+	RealityConfig    *RealityConfig    `yaml:"RealityConfig"`
 }
