@@ -72,20 +72,20 @@ type NodeInfo struct {
 }
 
 type V2rayExtraConfig struct {
-	EnableVless   bool           `json:"EnableVless"`
+	EnableVless   string         `json:"EnableVless"`
 	VlessFlow     string         `json:"VlessFlow"`
-	EnableReality bool           `json:"EnableReality"`
+	EnableReality string         `json:"EnableReality"`
 	RealityConfig *RealityConfig `json:"RealityConfig"`
 }
 
 type RealityConfig struct {
 	Dest         interface{} `yaml:"Dest" json:"Dest"`
-	Xver         uint64      `yaml:"Xver" json:"Xver"`
+	Xver         string      `yaml:"Xver" json:"Xver"`
 	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
 	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
 	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
 	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
-	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
+	MaxTimeDiff  string      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
 	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
 }
 
@@ -155,9 +155,9 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		if err != nil {
 			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
 		}
-		if node.ExtraConfig.EnableReality {
+		if node.ExtraConfig.EnableReality == "true" {
 			if node.ExtraConfig.RealityConfig == nil {
-				node.ExtraConfig.EnableReality = false
+				node.ExtraConfig.EnableReality = "false"
 			} else {
 				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token +
 					node.ExtraConfig.RealityConfig.PrivateKey))
