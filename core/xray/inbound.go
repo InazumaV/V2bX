@@ -138,7 +138,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 }
 
 func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
-	if config.XrayOptions.EnableVless || nodeInfo.ExtraConfig.EnableVless {
+	if nodeInfo.ExtraConfig.EnableVless {
 		//Set vless
 		inbound.Protocol = "vless"
 		if config.XrayOptions.EnableFallback {

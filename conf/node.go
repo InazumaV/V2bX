@@ -40,7 +40,6 @@ type XrayOptions struct {
 	DNSType             string           `yaml:"DNSType"`
 	EnableUot           bool             `yaml:"EnableUot"`
 	EnableTFO           bool             `yaml:"EnableTFO"`
-	EnableVless         bool             `yaml:"EnableVless"`
 	DisableIVCheck      bool             `yaml:"DisableIVCheck"`
 	DisableSniffing     bool             `yaml:"DisableSniffing"`
 	EnableFallback      bool             `yaml:"EnableFallback"`
