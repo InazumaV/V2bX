@@ -30,8 +30,6 @@ Nodes:
         EnableDNS: false # Use custom DNS config, Please ensure that you set the dns.json well
         DNSType: AsIs # AsIs, UseIP, UseIPv4, UseIPv6, DNS strategy
         EnableTFO: false # Enable TCP Fast Open
-        EnableVless: false # Enable Vless for V2ray Type
-        VlessFlow: "xtls-rprx-vision"  # flow for vless, "xtls-rprx-vision" or "none" or ""
         EnableProxyProtocol: false # Only works for WebSocket and TCP
         EnableFallback: false # Only support for Trojan and Vless
         FallBackConfigs: # Support multiple fallbacks
@@ -70,7 +68,7 @@ Nodes:
           SpeedLimit: 0 # Speed limit, Mbps
           ExpireTime: 0 # Time limit, sec.
       CertConfig:
-        CertMode: dns # Option about how to get certificate: none, file, http, dns, reality. Choose "none" will forcedly disable the tls config.
+        CertMode: dns # Option about how to get certificate: none, file, http, dns, reality, remote. Choose "none" will forcedly disable the tls config.
         CertDomain: "node1.test.com" # Domain to cert
         CertFile: /etc/XrayR/cert/node1.test.com.cert # Provided if the CertMode is file
         KeyFile: /etc/XrayR/cert/node1.test.com.key
