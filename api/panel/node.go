@@ -1,8 +1,12 @@
 package panel
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	coreConf "github.com/xtls/xray-core/infra/conf"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -72,20 +76,20 @@ type NodeInfo struct {
 }
 
 type V2rayExtraConfig struct {
-	EnableVless   bool           `json:"EnableVless"`
+	EnableVless   string         `json:"EnableVless"`
 	VlessFlow     string         `json:"VlessFlow"`
-	EnableReality bool           `json:"EnableReality"`
+	EnableReality string         `json:"EnableReality"`
 	RealityConfig *RealityConfig `json:"RealityConfig"`
 }
 
 type RealityConfig struct {
 	Dest         interface{} `yaml:"Dest" json:"Dest"`
-	Xver         uint64      `yaml:"Xver" json:"Xver"`
+	Xver         string      `yaml:"Xver" json:"Xver"`
 	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
 	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
 	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
 	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
-	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
+	MaxTimeDiff  string      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
 	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
 }
 
@@ -130,6 +134,36 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 				node.Rules = append(node.Rules, regexp.MustCompile(v))
 			}
 		case "dns":
+			if matchs[0] != "main" {
+				break
+			}
+			dnsPath := os.Getenv("XRAY_DNS_PATH")
+			if dnsPath == "" {
+				break
+			}
+			dns := []byte(strings.Join(matchs[1:], ""))
+			currentData, err := os.ReadFile(dnsPath)
+			if err != nil {
+				log.WithField("err", err).Panic("Failed to read XRAY_DNS_PATH")
+				break
+			}
+			if !bytes.Equal(currentData, dns) {
+				coreDnsConfig := &coreConf.DNSConfig{}
+				if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
+					log.WithField("err", err).Panic("Failed to unmarshal DNS config")
+				}
+				_, err := coreDnsConfig.Build()
+				if err != nil {
+					log.WithField("err", err).Panic("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
+					break
+				}
+				if err = os.Truncate(dnsPath, 0); err != nil {
+					log.WithField("err", err).Panic("Failed to clear XRAY DNS PATH file")
+				}
+				if err = os.WriteFile(dnsPath, dns, 0644); err != nil {
+					log.WithField("err", err).Panic("Failed to write DNS to XRAY DNS PATH file")
+				}
+			}
 		}
 	}
 	node.ServerName = common.ServerName
@@ -155,9 +189,9 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		if err != nil {
 			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
 		}
-		if node.ExtraConfig.EnableReality {
+		if node.ExtraConfig.EnableReality == "true" {
 			if node.ExtraConfig.RealityConfig == nil {
-				node.ExtraConfig.EnableReality = false
+				node.ExtraConfig.EnableReality = "false"
 			} else {
 				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token +
 					node.ExtraConfig.RealityConfig.PrivateKey))
@@ -173,6 +207,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.ServerKey = rsp.ServerKey
 		node.Cipher = rsp.Cipher
 	case "trojan":
+		node.Tls = true
 	case "hysteria":
 		rsp := HysteriaNodeRsp{}
 		err = json.Unmarshal(r.Body(), &rsp)

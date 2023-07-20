@@ -74,7 +74,7 @@ func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 	users := make([]*protocol.User, 0, len(p.UserInfo))
 	switch p.NodeInfo.Type {
 	case "v2ray":
-		if p.NodeInfo.ExtraConfig.EnableVless {
+		if p.NodeInfo.ExtraConfig.EnableVless == "true" {
 			users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
 		} else {
 			users = buildVmessUsers(p.Tag, p.UserInfo)

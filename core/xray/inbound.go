@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
@@ -70,26 +71,50 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			return nil, errors.New("the CertConfig is not vail")
 		}
 		switch config.CertConfig.CertMode {
-		case "none", "": // disable
-		default:
-			if nodeInfo.ExtraConfig.EnableReality {
+		case "none", "":
+			break // disable
+		case "reality":
+			// Reality
+			in.StreamSetting.Security = "reality"
+			d, err := json.Marshal(config.CertConfig.RealityConfig.Dest)
+			if err != nil {
+				return nil, fmt.Errorf("marshal reality dest error: %s", err)
+			}
+			in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
+				Dest:         d,
+				Xver:         config.CertConfig.RealityConfig.Xver,
+				ServerNames:  config.CertConfig.RealityConfig.ServerNames,
+				PrivateKey:   config.CertConfig.RealityConfig.PrivateKey,
+				MinClientVer: config.CertConfig.RealityConfig.MinClientVer,
+				MaxClientVer: config.CertConfig.RealityConfig.MaxClientVer,
+				MaxTimeDiff:  config.CertConfig.RealityConfig.MaxTimeDiff,
+				ShortIds:     config.CertConfig.RealityConfig.ShortIds,
+			}
+			break
+		case "remote":
+			if nodeInfo.ExtraConfig.EnableReality == "true" {
 				rc := nodeInfo.ExtraConfig.RealityConfig
 				in.StreamSetting.Security = "reality"
 				d, err := json.Marshal(rc.Dest)
 				if err != nil {
 					return nil, fmt.Errorf("marshal reality dest error: %s", err)
 				}
+				Xver, _ := strconv.ParseUint(rc.Xver, 10, 64)
+				MaxTimeDiff, _ := strconv.ParseUint(rc.Xver, 10, 64)
 				in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
 					Dest:         d,
-					Xver:         rc.Xver,
+					Xver:         Xver,
 					ServerNames:  rc.ServerNames,
 					PrivateKey:   rc.PrivateKey,
 					MinClientVer: rc.MinClientVer,
 					MaxClientVer: rc.MaxClientVer,
-					MaxTimeDiff:  rc.MaxTimeDiff,
+					MaxTimeDiff:  MaxTimeDiff,
 					ShortIds:     rc.ShortIds,
 				}
-			} else {
+				break
+			}
+		default:
+			{
 				// Normal tls
 				in.StreamSetting.Security = "tls"
 				in.StreamSetting.TLSSettings = &coreConf.TLSConfig{
@@ -120,7 +145,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 }
 
 func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
-	if nodeInfo.ExtraConfig.EnableVless {
+	if nodeInfo.ExtraConfig.EnableVless == "true" {
 		//Set vless
 		inbound.Protocol = "vless"
 		if config.XrayOptions.EnableFallback {

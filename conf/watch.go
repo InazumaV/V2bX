@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (p *Conf) Watch(filePath string, reload func()) error {
+func (p *Conf) Watch(filePath, dnsPath string, reload func()) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("new watcher error: %s", err)
@@ -28,7 +28,11 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 				pre = time.Now()
 				go func() {
 					time.Sleep(10 * time.Second)
-					log.Println("config dir changed, reloading...")
+					if e.Name == dnsPath {
+						log.Println("DNS file changed, reloading...")
+					} else {
+						log.Println("config dir changed, reloading...")
+					}
 					*p = *New()
 					err := p.LoadFromPath(filePath)
 					if err != nil {
@@ -47,6 +51,12 @@ func (p *Conf) Watch(filePath string, reload func()) error {
 	err = watcher.Add(path.Dir(filePath))
 	if err != nil {
 		return fmt.Errorf("watch file error: %s", err)
+	}
+	if dnsPath != "" {
+		err = watcher.Add(path.Dir(dnsPath))
+		if err != nil {
+			return fmt.Errorf("watch dns file error: %s", err)
+		}
 	}
 	return nil
 }
