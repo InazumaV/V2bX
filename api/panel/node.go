@@ -207,6 +207,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.ServerKey = rsp.ServerKey
 		node.Cipher = rsp.Cipher
 	case "trojan":
+		node.Tls = true
 	case "hysteria":
 		rsp := HysteriaNodeRsp{}
 		err = json.Unmarshal(r.Body(), &rsp)
