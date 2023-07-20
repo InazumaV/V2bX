@@ -1,9 +1,6 @@
 package xray
 
 import (
-	"os"
-	"sync"
-
 	"github.com/Yuzuki616/V2bX/conf"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/core/xray/app/dispatcher"
@@ -19,6 +16,8 @@ import (
 	"github.com/xtls/xray-core/features/routing"
 	statsFeature "github.com/xtls/xray-core/features/stats"
 	coreConf "github.com/xtls/xray-core/infra/conf"
+	"os"
+	"sync"
 )
 
 func init() {
@@ -61,6 +60,7 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 	coreLogConfig.ErrorLog = c.LogConfig.ErrorPath
 	// DNS config
 	coreDnsConfig := &coreConf.DNSConfig{}
+	os.Setenv("XRAY_DNS_PATH", "")
 	if c.DnsConfigPath != "" {
 		if f, err := os.Open(c.DnsConfigPath); err != nil {
 			log.WithField("err", err).Panic("Failed to read DNS config file")
@@ -69,6 +69,7 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 				log.WithField("err", err).Panic("Failed to unmarshal DNS config")
 			}
 		}
+		os.Setenv("XRAY_DNS_PATH", c.DnsConfigPath)
 	}
 	dnsConfig, err := coreDnsConfig.Build()
 	if err != nil {

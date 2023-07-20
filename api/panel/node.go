@@ -1,8 +1,12 @@
 package panel
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	coreConf "github.com/xtls/xray-core/infra/conf"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -130,6 +134,36 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 				node.Rules = append(node.Rules, regexp.MustCompile(v))
 			}
 		case "dns":
+			if matchs[0] != "main" {
+				break
+			}
+			dnsPath := os.Getenv("XRAY_DNS_PATH")
+			if dnsPath == "" {
+				break
+			}
+			dns := []byte(strings.Join(matchs[1:], ""))
+			currentData, err := os.ReadFile(dnsPath)
+			if err != nil {
+				log.WithField("err", err).Panic("Failed to read XRAY_DNS_PATH")
+				break
+			}
+			if !bytes.Equal(currentData, dns) {
+				coreDnsConfig := &coreConf.DNSConfig{}
+				if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
+					log.WithField("err", err).Panic("Failed to unmarshal DNS config")
+				}
+				_, err := coreDnsConfig.Build()
+				if err != nil {
+					log.WithField("err", err).Panic("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
+					break
+				}
+				if err = os.Truncate(dnsPath, 0); err != nil {
+					log.WithField("err", err).Panic("Failed to clear XRAY DNS PATH file")
+				}
+				if err = os.WriteFile(dnsPath, dns, 0644); err != nil {
+					log.WithField("err", err).Panic("Failed to write DNS to XRAY DNS PATH file")
+				}
+			}
 		}
 	}
 	node.ServerName = common.ServerName

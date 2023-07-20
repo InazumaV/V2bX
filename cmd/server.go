@@ -64,8 +64,9 @@ func serverHandle(_ *cobra.Command, _ []string) {
 		log.WithField("err", err).Error("Run nodes failed")
 		return
 	}
+	dns := os.Getenv("XRAY_DNS_PATH")
 	if watch {
-		err = c.Watch(config, func() {
+		err = c.Watch(config, dns, func() {
 			nodes.Close()
 			err = vc.Close()
 			if err != nil {
