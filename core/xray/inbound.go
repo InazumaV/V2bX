@@ -71,7 +71,8 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			return nil, errors.New("the CertConfig is not vail")
 		}
 		switch config.CertConfig.CertMode {
-		case "none", "": // disable
+		case "none", "":
+			break // disable
 		case "reality":
 			// Reality
 			in.StreamSetting.Security = "reality"
@@ -89,8 +90,8 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 				MaxTimeDiff:  config.CertConfig.RealityConfig.MaxTimeDiff,
 				ShortIds:     config.CertConfig.RealityConfig.ShortIds,
 			}
+			break
 		case "remote":
-		default:
 			if nodeInfo.ExtraConfig.EnableReality == "true" {
 				rc := nodeInfo.ExtraConfig.RealityConfig
 				in.StreamSetting.Security = "reality"
@@ -110,7 +111,10 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 					MaxTimeDiff:  MaxTimeDiff,
 					ShortIds:     rc.ShortIds,
 				}
-			} else {
+				break
+			}
+		default:
+			{
 				// Normal tls
 				in.StreamSetting.Security = "tls"
 				in.StreamSetting.TLSSettings = &coreConf.TLSConfig{
