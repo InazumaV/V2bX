@@ -5,12 +5,13 @@ package dispatcher
 import (
 	"context"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/common/rate"
-	"github.com/Yuzuki616/V2bX/limiter"
-	routingSession "github.com/xtls/xray-core/features/routing/session"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Yuzuki616/V2bX/common/rate"
+	"github.com/Yuzuki616/V2bX/limiter"
+	routingSession "github.com/xtls/xray-core/features/routing/session"
 
 	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/common/buf"
@@ -480,7 +481,7 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 				l.ConnLimiter.DelConnCount(sessionInbound.User.Email, sessionInbound.Source.Address.IP().String())
 			}()
 		}
-		if l.CheckDomainRule(destination.String()) {
+		if l.CheckDomainRule(destination.Address.String()) {
 			newError(fmt.Sprintf("User %s access %s reject by rule", sessionInbound.User.Email, destination.String())).AtError().WriteToLog()
 			common.Close(link.Writer)
 			common.Interrupt(link.Reader)
