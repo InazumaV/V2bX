@@ -1,11 +1,12 @@
 package node
 
 import (
+	"time"
+
 	"github.com/Yuzuki616/V2bX/common/task"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/limiter"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 func (c *Controller) initTask() {
@@ -108,7 +109,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			}).Error("Add users failed")
 			return nil
 		}
-		err = l.UpdateRule(newNodeInfo.Rules)
+		err = l.UpdateRule(&newNodeInfo.Rules)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"tag": c.Tag,

@@ -3,6 +3,7 @@ package node
 import (
 	"errors"
 	"fmt"
+
 	"github.com/Yuzuki616/V2bX/api/iprecoder"
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/common/task"
@@ -58,7 +59,7 @@ func (c *Controller) Start() error {
 	// add limiter
 	l := limiter.AddLimiter(c.Tag, &c.LimitConfig, c.userList)
 	// add rule limiter
-	if err = l.UpdateRule(c.nodeInfo.Rules); err != nil {
+	if err = l.UpdateRule(&c.nodeInfo.Rules); err != nil {
 		return fmt.Errorf("update rule error: %s", err)
 	}
 	if c.nodeInfo.Tls || c.nodeInfo.Type == "hysteria" {

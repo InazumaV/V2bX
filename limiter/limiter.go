@@ -3,15 +3,16 @@ package limiter
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"sync"
+	"time"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/common/format"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/juju/ratelimit"
 	log "github.com/sirupsen/logrus"
 	"github.com/xtls/xray-core/common/task"
-	"regexp"
-	"sync"
-	"time"
 )
 
 var limitLock sync.RWMutex
@@ -32,7 +33,7 @@ func Init() {
 }
 
 type Limiter struct {
-	Rules         []*regexp.Regexp
+	DomainRules   []*regexp.Regexp
 	ProtocolRules []string
 	SpeedLimit    int
 	UserLimitInfo *sync.Map    // Key: Uid value: UserLimitInfo

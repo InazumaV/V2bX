@@ -4,18 +4,16 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	coreConf "github.com/xtls/xray-core/infra/conf"
 	"os"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Yuzuki616/V2bX/common/crypt"
-
 	"github.com/goccy/go-json"
+	log "github.com/sirupsen/logrus"
+	coreConf "github.com/xtls/xray-core/infra/conf"
 )
 
 type CommonNodeRsp struct {
@@ -58,7 +56,7 @@ type HysteriaNodeRsp struct {
 type NodeInfo struct {
 	Id              int
 	Type            string
-	Rules           []*regexp.Regexp
+	Rules           Rules
 	Host            string
 	Port            int
 	Network         string
@@ -73,6 +71,11 @@ type NodeInfo struct {
 	HyObfs          string
 	PushInterval    time.Duration
 	PullInterval    time.Duration
+}
+
+type Rules struct {
+	Regexp   []string
+	Protocol []string
 }
 
 type V2rayExtraConfig struct {
@@ -131,7 +134,13 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		switch common.Routes[i].Action {
 		case "block":
 			for _, v := range matchs {
-				node.Rules = append(node.Rules, regexp.MustCompile(v))
+				if strings.HasPrefix(v, "protocol:") {
+					// protocol
+					node.Rules.Protocol = append(node.Rules.Protocol, strings.TrimPrefix(v, "protocol:"))
+				} else {
+					// domain
+					node.Rules.Regexp = append(node.Rules.Regexp, strings.TrimPrefix(v, "regexp:"))
+				}
 			}
 		case "dns":
 			if matchs[0] != "main" {

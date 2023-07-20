@@ -1,14 +1,15 @@
 package limiter
 
 import (
-	"reflect"
 	"regexp"
+
+	"github.com/Yuzuki616/V2bX/api/panel"
 )
 
 func (l *Limiter) CheckDomainRule(destination string) (reject bool) {
 	// have rule
-	for i := range l.Rules {
-		if l.Rules[i].MatchString(destination) {
+	for i := range l.DomainRules {
+		if l.DomainRules[i].MatchString(destination) {
 			reject = true
 			break
 		}
@@ -26,9 +27,11 @@ func (l *Limiter) CheckProtocolRule(protocol string) (reject bool) {
 	return
 }
 
-func (l *Limiter) UpdateRule(newRuleList []*regexp.Regexp) error {
-	if !reflect.DeepEqual(l.Rules, newRuleList) {
-		l.Rules = newRuleList
+func (l *Limiter) UpdateRule(rule *panel.Rules) error {
+	l.DomainRules = make([]*regexp.Regexp, len(rule.Regexp))
+	for i := range rule.Regexp {
+		l.DomainRules[i] = regexp.MustCompile(rule.Regexp[i])
 	}
+	l.ProtocolRules = rule.Protocol
 	return nil
 }
