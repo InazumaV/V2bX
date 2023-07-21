@@ -69,6 +69,9 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	}
 	if newNodeInfo != nil {
 		// nodeInfo changed
+		if newUserInfo != nil {
+			c.userList = newUserInfo
+		}
 		c.traffic = make(map[string]int64)
 		// Remove old tag
 		log.WithField("tag", c.tag).Info("Node changed, reload")
@@ -84,7 +87,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		limiter.DeleteLimiter(c.tag)
 		// Add new Limiter
 		c.tag = c.buildNodeTag(newNodeInfo)
-		l := limiter.AddLimiter(c.tag, &c.LimitConfig, newUserInfo)
+		l := limiter.AddLimiter(c.tag, &c.LimitConfig, c.userList)
 		// check cert
 		if newNodeInfo.Tls || newNodeInfo.Type == "hysteria" {
 			err = c.requestCert()
@@ -108,7 +111,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		_, err = c.server.AddUsers(&vCore.AddUsersParams{
 			Tag:      c.tag,
 			Config:   c.ControllerConfig,
-			UserInfo: newUserInfo,
+			UserInfo: c.userList,
 			NodeInfo: newNodeInfo,
 		})
 		if err != nil {
@@ -140,13 +143,15 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			c.userReportPeriodic.Close()
 			_ = c.userReportPeriodic.Start(false)
 		}
-		c.userList = newUserInfo
-		log.WithField("tag", c.tag).Infof("Added %d new users", len(newUserInfo))
+		log.WithField("tag", c.tag).Infof("Added %d new users", len(c.userList))
 		// exit
 		return nil
 	}
 
 	// node no changed, check users
+	if len(newUserInfo) == 0 {
+		return nil
+	}
 	deleted, added := compareUserList(c.userList, newUserInfo)
 	if len(deleted) > 0 {
 		// have deleted users
