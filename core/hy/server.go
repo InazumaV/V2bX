@@ -3,16 +3,16 @@ package hy
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/limiter"
-	"github.com/apernet/hysteria/core/sockopt"
 	"io"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/apernet/hysteria/core/sockopt"
 	"github.com/quic-go/quic-go"
 
 	"github.com/apernet/hysteria/core/acl"
@@ -121,22 +121,6 @@ func (s *Server) runServer(node *panel.NodeInfo, c *conf.ControllerConfig) error
 	}
 	// ACL
 	var aclEngine *acl.Engine
-	/*if len(config.ACL) > 0 {
-		aclEngine, err = acl.LoadFromFile(config.ACL, func(addr string) (*net.IPAddr, error) {
-			ipAddr, _, err := transport.DefaultServerTransport.ResolveIPAddr(addr)
-			return ipAddr, err
-		},
-			func() (*geoip2.Reader, error) {
-				return loadMMDBReader(config.MMDB)
-			})
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": err,
-				"file":  config.ACL,
-			}).Fatal("Failed to parse ACL")
-		}
-		aclEngine.DefaultAction = acl.ActionDirect
-	}*/
 	// Prometheus
 	s.counter = NewUserTrafficCounter()
 	// Packet conn

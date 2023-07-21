@@ -2,6 +2,7 @@ package panel
 
 import (
 	"fmt"
+
 	"github.com/goccy/go-json"
 )
 
@@ -14,7 +15,6 @@ type UserInfo struct {
 	Id         int    `json:"id"`
 	Uuid       string `json:"uuid"`
 	SpeedLimit int    `json:"speed_limit"`
-	Traffic    int64  `json:"-"`
 }
 
 type UserListBody struct {
@@ -25,17 +25,23 @@ type UserListBody struct {
 // GetUserList will pull user form sspanel
 func (c *Client) GetUserList() (UserList []UserInfo, err error) {
 	const path = "/api/v1/server/UniProxy/user"
-	res, err := c.client.R().
+	r, err := c.client.R().
+		SetHeader("If-None-Match", c.userEtag).
 		Get(path)
-	err = c.checkResponse(res, path, err)
+	err = c.checkResponse(r, path, err)
 	if err != nil {
 		return nil, err
 	}
+	err = c.checkResponse(r, path, err)
+	if r.StatusCode() == 304 {
+		return nil, nil
+	}
 	var userList *UserListBody
-	err = json.Unmarshal(res.Body(), &userList)
+	err = json.Unmarshal(r.Body(), &userList)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal userlist error: %s", err)
 	}
+	c.userEtag = r.Header().Get("ETag")
 	return userList.Users, nil
 }
 
@@ -52,11 +58,11 @@ func (c *Client) ReportUserTraffic(userTraffic []UserTraffic) error {
 		data[userTraffic[i].UID] = []int64{userTraffic[i].Upload, userTraffic[i].Download}
 	}
 	const path = "/api/v1/server/UniProxy/push"
-	res, err := c.client.R().
+	r, err := c.client.R().
 		SetBody(data).
 		ForceContentType("application/json").
 		Post(path)
-	err = c.checkResponse(res, path, err)
+	err = c.checkResponse(r, path, err)
 	if err != nil {
 		return err
 	}

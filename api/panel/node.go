@@ -100,7 +100,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	const path = "/api/v1/server/UniProxy/config"
 	r, err := c.client.
 		R().
-		SetHeader("If-None-Match", c.etag).
+		SetHeader("If-None-Match", c.nodeEtag).
 		Get(path)
 	if err = c.checkResponse(r, path, err); err != nil {
 		return
@@ -227,7 +227,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.UpMbps = rsp.UpMbps
 		node.HyObfs = rsp.Obfs
 	}
-	c.etag = r.Header().Get("ETag")
+	c.nodeEtag = r.Header().Get("ETag")
 	return
 }
 

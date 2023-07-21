@@ -16,8 +16,9 @@ import (
 type Controller struct {
 	server                    vCore.Core
 	apiClient                 *panel.Client
-	nodeInfo                  *panel.NodeInfo
-	Tag                       string
+	tag                       string
+	limiter                   *limiter.Limiter
+	traffic                   map[string]int64
 	userList                  []panel.UserInfo
 	ipRecorder                iprecoder.IpRecorder
 	nodeInfoMonitorPeriodic   *task.Task
@@ -42,7 +43,7 @@ func NewController(server vCore.Core, api *panel.Client, config *conf.Controller
 func (c *Controller) Start() error {
 	// First fetch Node Info
 	var err error
-	c.nodeInfo, err = c.apiClient.GetNodeInfo()
+	node, err := c.apiClient.GetNodeInfo()
 	if err != nil {
 		return fmt.Errorf("get node info error: %s", err)
 	}
@@ -54,42 +55,43 @@ func (c *Controller) Start() error {
 	if len(c.userList) == 0 {
 		return errors.New("add users error: not have any user")
 	}
-	c.Tag = c.buildNodeTag()
+	c.tag = c.buildNodeTag(node)
 
 	// add limiter
-	l := limiter.AddLimiter(c.Tag, &c.LimitConfig, c.userList)
+	l := limiter.AddLimiter(c.tag, &c.LimitConfig, c.userList)
 	// add rule limiter
-	if err = l.UpdateRule(&c.nodeInfo.Rules); err != nil {
+	if err = l.UpdateRule(&node.Rules); err != nil {
 		return fmt.Errorf("update rule error: %s", err)
 	}
-	if c.nodeInfo.Tls || c.nodeInfo.Type == "hysteria" {
+	c.limiter = l
+	if node.Tls || node.Type == "hysteria" {
 		err = c.requestCert()
 		if err != nil {
 			return fmt.Errorf("request cert error: %s", err)
 		}
 	}
 	// Add new tag
-	err = c.server.AddNode(c.Tag, c.nodeInfo, c.ControllerConfig)
+	err = c.server.AddNode(c.tag, node, c.ControllerConfig)
 	if err != nil {
 		return fmt.Errorf("add new node error: %s", err)
 	}
 	added, err := c.server.AddUsers(&vCore.AddUsersParams{
-		Tag:      c.Tag,
+		Tag:      c.tag,
 		Config:   c.ControllerConfig,
 		UserInfo: c.userList,
-		NodeInfo: c.nodeInfo,
+		NodeInfo: node,
 	})
 	if err != nil {
 		return fmt.Errorf("add users error: %s", err)
 	}
-	log.WithField("tag", c.Tag).Infof("Added %d new users", added)
-	c.initTask()
+	log.WithField("tag", c.tag).Infof("Added %d new users", added)
+	c.startTasks(node)
 	return nil
 }
 
 // Close implement the Close() function of the service interface
 func (c *Controller) Close() error {
-	limiter.DeleteLimiter(c.Tag)
+	limiter.DeleteLimiter(c.tag)
 	if c.nodeInfoMonitorPeriodic != nil {
 		c.nodeInfoMonitorPeriodic.Close()
 	}
@@ -108,6 +110,6 @@ func (c *Controller) Close() error {
 	return nil
 }
 
-func (c *Controller) buildNodeTag() string {
-	return fmt.Sprintf("%s-%s-%d", c.apiClient.APIHost, c.nodeInfo.Type, c.nodeInfo.Id)
+func (c *Controller) buildNodeTag(node *panel.NodeInfo) string {
+	return fmt.Sprintf("%s-%s-%d", c.apiClient.APIHost, node.Type, node.Id)
 }

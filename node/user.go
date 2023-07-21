@@ -1,20 +1,25 @@
 package node
 
 import (
-	"github.com/Yuzuki616/V2bX/api/panel"
-	log "github.com/sirupsen/logrus"
 	"runtime"
 	"strconv"
+
+	"github.com/Yuzuki616/V2bX/api/panel"
+	log "github.com/sirupsen/logrus"
 )
 
 func (c *Controller) reportUserTrafficTask() (err error) {
 	// Get User traffic
 	userTraffic := make([]panel.UserTraffic, 0)
 	for i := range c.userList {
-		up, down := c.server.GetUserTraffic(c.Tag, c.userList[i].Uuid, true)
+		up, down := c.server.GetUserTraffic(c.tag, c.userList[i].Uuid, true)
 		if up > 0 || down > 0 {
 			if c.LimitConfig.EnableDynamicSpeedLimit {
-				c.userList[i].Traffic += up + down
+				if _, ok := c.traffic[c.userList[i].Uuid]; ok {
+					c.traffic[c.userList[i].Uuid] += up + down
+				} else {
+					c.traffic[c.userList[i].Uuid] = up + down
+				}
 			}
 			userTraffic = append(userTraffic, panel.UserTraffic{
 				UID:      (c.userList)[i].Id,
@@ -26,11 +31,11 @@ func (c *Controller) reportUserTrafficTask() (err error) {
 		err = c.apiClient.ReportUserTraffic(userTraffic)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"tag": c.Tag,
+				"tag": c.tag,
 				"err": err,
 			}).Info("Report user traffic failed")
 		} else {
-			log.WithField("tag", c.Tag).Infof("Report %d online users", len(userTraffic))
+			log.WithField("tag", c.tag).Infof("Report %d online users", len(userTraffic))
 		}
 	}
 	userTraffic = nil
