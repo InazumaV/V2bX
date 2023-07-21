@@ -23,7 +23,8 @@ type Client struct {
 	NodeType      string
 	NodeId        int
 	LocalRuleList []*regexp.Regexp
-	etag          string
+	nodeEtag      string
+	userEtag      string
 }
 
 func New(c *conf.ApiConfig) (*Client, error) {

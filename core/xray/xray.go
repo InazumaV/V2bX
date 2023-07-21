@@ -1,6 +1,9 @@
 package xray
 
 import (
+	"os"
+	"sync"
+
 	"github.com/Yuzuki616/V2bX/conf"
 	vCore "github.com/Yuzuki616/V2bX/core"
 	"github.com/Yuzuki616/V2bX/core/xray/app/dispatcher"
@@ -16,8 +19,6 @@ import (
 	"github.com/xtls/xray-core/features/routing"
 	statsFeature "github.com/xtls/xray-core/features/stats"
 	coreConf "github.com/xtls/xray-core/infra/conf"
-	"os"
-	"sync"
 )
 
 func init() {
