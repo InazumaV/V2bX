@@ -12,14 +12,14 @@ import (
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/limiter"
-	"github.com/apernet/hysteria/core/sockopt"
-	"github.com/quic-go/quic-go"
+	"github.com/Yuzuki616/hysteria/core/sockopt"
+	"github.com/Yuzuki616/quic-go"
 
-	"github.com/apernet/hysteria/core/acl"
-	"github.com/apernet/hysteria/core/cs"
-	"github.com/apernet/hysteria/core/pktconns"
-	"github.com/apernet/hysteria/core/pmtud"
-	"github.com/apernet/hysteria/core/transport"
+	"github.com/Yuzuki616/hysteria/core/acl"
+	"github.com/Yuzuki616/hysteria/core/cs"
+	"github.com/Yuzuki616/hysteria/core/pktconns"
+	"github.com/Yuzuki616/hysteria/core/pmtud"
+	"github.com/Yuzuki616/hysteria/core/transport"
 	"github.com/sirupsen/logrus"
 )
 

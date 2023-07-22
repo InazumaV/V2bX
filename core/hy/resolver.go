@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/apernet/hysteria/core/utils"
+	"github.com/Yuzuki616/hysteria/core/utils"
 	rdns "github.com/folbricht/routedns"
 )
 

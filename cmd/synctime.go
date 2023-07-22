@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
+
+	"github.com/Yuzuki616/V2bX/common/systime"
 	"github.com/beevik/ntp"
-	"github.com/sagernet/sing-box/common/settings"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +29,7 @@ func synctimeHandle(_ *cobra.Command, _ []string) {
 		fmt.Println(Err("同步时间失败"))
 		return
 	}
-	err = settings.SetSystemTime(t)
+	err = systime.SetSystemTime(t)
 	if err != nil {
 		fmt.Println(Err("set system time error: ", err))
 		fmt.Println(Err("同步时间失败"))
