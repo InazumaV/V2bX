@@ -55,7 +55,13 @@ wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.
 
 ### 手动安装
 
-[手动安装教程](https://yuzuki-1.gitbook.io/v2bx-doc//xrayr-xia-zai-he-an-zhuang/install/manual)
+[手动安装教程（过时待更新）](https://yuzuki-1.gitbook.io/v2bx-doc/xrayr-xia-zai-he-an-zhuang/install/manual)
+
+## 构建
+``` bash
+# 通过-tag选项指定要编译的内核， 可选 xray， hy
+go build -o V2bX -ldflags '-s -w' -gcflags="all=-trimpath=${PWD}" -asmflags="all=-trimpath=${PWD} -tags "xray hy"
+```
 
 ## 配置文件及详细使用教程
 
