@@ -20,7 +20,6 @@ func buildVmessUsers(tag string, userInfo []panel.UserInfo) (users []*protocol.U
 func buildVmessUser(tag string, userInfo *panel.UserInfo) (user *protocol.User) {
 	vmessAccount := &conf.VMessAccount{
 		ID:       userInfo.Uuid,
-		AlterIds: 0,
 		Security: "auto",
 	}
 	return &protocol.User{
