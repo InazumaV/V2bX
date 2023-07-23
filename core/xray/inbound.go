@@ -80,7 +80,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			if err != nil {
 				return nil, fmt.Errorf("marshal reality dest error: %s", err)
 			}
-			if len(in.StreamSetting.REALITYSettings.ShortIds) == 0 {
+			if len(config.CertConfig.RealityConfig.ShortIds) == 0 {
 				config.CertConfig.RealityConfig.ShortIds = []string{""}
 			}
 			in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
