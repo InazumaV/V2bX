@@ -1,20 +1,9 @@
 package hy
 
-import (
-	"crypto/tls"
-	"errors"
-	"net"
-	"net/url"
-	"strings"
-
-	"github.com/Yuzuki616/hysteria/core/utils"
-	rdns "github.com/folbricht/routedns"
-)
-
-var errInvalidSyntax = errors.New("invalid syntax")
+//var errInvalidSyntax = errors.New("invalid syntax")
 
 func setResolver(dns string) error {
-	if net.ParseIP(dns) != nil {
+	/*if net.ParseIP(dns) != nil {
 		// Just an IP address, treat as UDP 53
 		dns = "udp://" + net.JoinHostPort(dns, "53")
 	}
@@ -118,6 +107,6 @@ func setResolver(dns string) error {
 		return errInvalidSyntax
 	}
 	cache := rdns.NewCache("cache", r, rdns.CacheOptions{})
-	net.DefaultResolver = rdns.NewNetResolver(cache)
+	net.DefaultResolver = rdns.NewNetResolver(cache)*/
 	return nil
 }

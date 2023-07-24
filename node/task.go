@@ -41,9 +41,9 @@ func (c *Controller) startTasks(node *panel.NodeInfo) {
 	}
 	if c.LimitConfig.EnableDynamicSpeedLimit {
 		c.traffic = make(map[string]int64)
-		c.renewCertPeriodic = &task.Task{
-			Interval: time.Duration(c.LimitConfig.DynamicSpeedLimitConfig.Periodic) * time.Minute,
-			Execute:  c.reportUserTrafficTask,
+		c.dynamicSpeedLimitPeriodic = &task.Task{
+			Interval: time.Duration(c.LimitConfig.DynamicSpeedLimitConfig.Periodic) * time.Second,
+			Execute:  c.SpeedChecker,
 		}
 	}
 }
@@ -204,7 +204,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 	return nil
 }
 
-func (c *Controller) SpeedChecker() {
+func (c *Controller) SpeedChecker() error {
 	for u, t := range c.traffic {
 		if t >= c.LimitConfig.DynamicSpeedLimitConfig.Traffic {
 			err := c.limiter.UpdateDynamicSpeedLimit(c.tag, u,
@@ -214,4 +214,5 @@ func (c *Controller) SpeedChecker() {
 			delete(c.traffic, u)
 		}
 	}
+	return nil
 }
