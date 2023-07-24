@@ -49,6 +49,7 @@ func (s *Selector) AddNode(tag string, info *panel.NodeInfo, config *conf.Contro
 			return err
 		}
 		s.nodes.Store(tag, i)
+		return nil
 	}
 	return errors.New("the node type is not support")
 }
