@@ -3,12 +3,11 @@ package hy
 import (
 	"crypto/tls"
 	"errors"
+	"github.com/Yuzuki616/hysteria/core/utils"
+	rdns "github.com/folbricht/routedns"
 	"net"
 	"net/url"
 	"strings"
-
-	"github.com/Yuzuki616/hysteria/core/utils"
-	rdns "github.com/folbricht/routedns"
 )
 
 var errInvalidSyntax = errors.New("invalid syntax")

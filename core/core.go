@@ -16,7 +16,7 @@ func NewCore(c *conf.CoreConfig) (Core, error) {
 	if types := strings.Split(c.Type, " "); len(types) > 1 {
 		var cs []Core
 		for _, t := range types {
-			f, ok := cores[strings.ToLower(c.Type)]
+			f, ok := cores[strings.ToLower(t)]
 			if !ok {
 				return nil, errors.New("unknown core type: " + t)
 			}

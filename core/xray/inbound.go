@@ -80,6 +80,9 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 			if err != nil {
 				return nil, fmt.Errorf("marshal reality dest error: %s", err)
 			}
+			if len(config.CertConfig.RealityConfig.ShortIds) == 0 {
+				config.CertConfig.RealityConfig.ShortIds = []string{""}
+			}
 			in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
 				Dest:         d,
 				Xver:         config.CertConfig.RealityConfig.Xver,
@@ -98,6 +101,9 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 				d, err := json.Marshal(rc.Dest)
 				if err != nil {
 					return nil, fmt.Errorf("marshal reality dest error: %s", err)
+				}
+				if len(rc.ShortIds) == 0 {
+					rc.ShortIds = []string{""}
 				}
 				Xver, _ := strconv.ParseUint(rc.Xver, 10, 64)
 				MaxTimeDiff, _ := strconv.ParseUint(rc.Xver, 10, 64)
