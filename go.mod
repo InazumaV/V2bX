@@ -8,7 +8,7 @@ require (
 	github.com/beevik/ntp v1.2.0
 	github.com/folbricht/routedns v0.1.20
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/go-acme/lego/v4 v4.13.2
+	github.com/go-acme/lego/v4 v4.13.3
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.10.2
