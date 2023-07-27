@@ -27,7 +27,7 @@ func (p *Conf) Watch(filePath, dnsPath string, reload func()) error {
 				}
 				pre = time.Now()
 				go func() {
-					time.Sleep(10 * time.Second)
+					time.Sleep(5 * time.Second)
 					if e.Name == dnsPath {
 						log.Println("DNS file changed, reloading...")
 					} else {
