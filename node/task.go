@@ -32,7 +32,7 @@ func (c *Controller) startTasks(node *panel.NodeInfo) {
 		default:
 			c.renewCertPeriodic = &task.Task{
 				Interval: time.Hour * 24,
-				Execute:  c.reportUserTrafficTask,
+				Execute:  c.renewCertTask,
 			}
 			log.WithField("tag", c.tag).Info("Start renew cert")
 			// delay to start renewCert
