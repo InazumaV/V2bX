@@ -2,6 +2,7 @@ package xray
 
 import (
 	"fmt"
+
 	conf2 "github.com/Yuzuki616/V2bX/conf"
 	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/net"

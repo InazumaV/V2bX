@@ -2,13 +2,14 @@ package hy
 
 import (
 	"encoding/base64"
+	"log"
+	"testing"
+	"time"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/sirupsen/logrus"
-	"log"
-	"testing"
-	"time"
 )
 
 func TestServer(t *testing.T) {

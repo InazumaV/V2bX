@@ -2,20 +2,22 @@ package node
 
 import (
 	"fmt"
+
 	"github.com/Yuzuki616/V2bX/common/file"
 	"github.com/Yuzuki616/V2bX/node/lego"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 func (c *Controller) renewCertTask() error {
 	l, err := lego.New(c.CertConfig)
 	if err != nil {
-		log.Print("new lego error: ", err)
+		log.WithField("tag", c.tag).Info("new lego error: ", err)
 		return nil
 	}
 	err = l.RenewCert()
 	if err != nil {
-		log.Print("renew cert error: ", err)
+		log.WithField("tag", c.tag).Info("renew cert error: ", err)
+		return nil
 	}
 	return nil
 }
