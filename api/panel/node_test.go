@@ -1,9 +1,10 @@
 package panel
 
 import (
-	"github.com/Yuzuki616/V2bX/conf"
 	"log"
 	"testing"
+
+	"github.com/Yuzuki616/V2bX/conf"
 )
 
 var client *Client

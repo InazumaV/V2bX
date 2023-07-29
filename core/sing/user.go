@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/Yuzuki616/V2bX/common/counter"
 	"github.com/Yuzuki616/V2bX/core"
 	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/option"
@@ -36,7 +37,8 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 }
 
 func (b *Box) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
-	if c, ok := b.hookServer.Hooker().counter[tag]; ok {
+	if v, ok := b.hookServer.Hooker().counter.Load(tag); ok {
+		c := v.(*counter.TrafficCounter)
 		up = c.GetUpCount(uuid)
 		down = c.GetDownCount(uuid)
 		if reset {

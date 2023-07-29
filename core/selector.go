@@ -39,7 +39,7 @@ func isSupported(protocol string, protocols []string) bool {
 	return false
 }
 
-func (s *Selector) AddNode(tag string, info *panel.NodeInfo, config *conf.ControllerConfig) error {
+func (s *Selector) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
 	for i := range s.cores {
 		if !isSupported(info.Type, s.cores[i].Protocols()) {
 			continue

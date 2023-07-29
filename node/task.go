@@ -100,7 +100,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			}
 		}
 		// add new node
-		err = c.server.AddNode(c.tag, newNodeInfo, c.ControllerConfig)
+		err = c.server.AddNode(c.tag, newNodeInfo, c.Options)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"tag": c.tag,
@@ -110,7 +110,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		}
 		_, err = c.server.AddUsers(&vCore.AddUsersParams{
 			Tag:      c.tag,
-			Config:   c.ControllerConfig,
+			Config:   c.Options,
 			UserInfo: c.userList,
 			NodeInfo: newNodeInfo,
 		})
@@ -168,7 +168,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		// have added users
 		_, err = c.server.AddUsers(&vCore.AddUsersParams{
 			Tag:      c.tag,
-			Config:   c.ControllerConfig,
+			Config:   c.Options,
 			UserInfo: added,
 		})
 		if err != nil {

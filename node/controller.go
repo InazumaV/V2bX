@@ -26,15 +26,15 @@ type Controller struct {
 	renewCertPeriodic         *task.Task
 	dynamicSpeedLimitPeriodic *task.Task
 	onlineIpReportPeriodic    *task.Task
-	*conf.ControllerConfig
+	*conf.Options
 }
 
 // NewController return a Node controller with default parameters.
-func NewController(server vCore.Core, api *panel.Client, config *conf.ControllerConfig) *Controller {
+func NewController(server vCore.Core, api *panel.Client, config *conf.Options) *Controller {
 	controller := &Controller{
-		server:           server,
-		ControllerConfig: config,
-		apiClient:        api,
+		server:    server,
+		Options:   config,
+		apiClient: api,
 	}
 	return controller
 }
@@ -71,13 +71,13 @@ func (c *Controller) Start() error {
 		}
 	}
 	// Add new tag
-	err = c.server.AddNode(c.tag, node, c.ControllerConfig)
+	err = c.server.AddNode(c.tag, node, c.Options)
 	if err != nil {
 		return fmt.Errorf("add new node error: %s", err)
 	}
 	added, err := c.server.AddUsers(&vCore.AddUsersParams{
 		Tag:      c.tag,
-		Config:   c.ControllerConfig,
+		Config:   c.Options,
 		UserInfo: c.userList,
 		NodeInfo: node,
 	})

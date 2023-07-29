@@ -15,7 +15,7 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.10.2
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/inazumav/sing-box v0.0.0-20230728005925-1df6eb0f5bf7
+	github.com/inazumav/sing-box v0.0.0-20230728123002-eb2ba58e499a
 	github.com/juju/ratelimit v1.0.2
 	github.com/oschwald/geoip2-golang v1.9.0
 	github.com/sagernet/sing v0.2.9

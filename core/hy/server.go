@@ -49,7 +49,7 @@ func NewServer(tag string, l *limiter.Limiter) *Server {
 	}
 }
 
-func (s *Server) runServer(node *panel.NodeInfo, c *conf.ControllerConfig) error {
+func (s *Server) runServer(node *panel.NodeInfo, c *conf.Options) error {
 	/*if c.HyOptions == nil {
 		return errors.New("hy options is not vail")
 	}*/

@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	vCore "github.com/Yuzuki616/V2bX/core"
@@ -23,7 +24,7 @@ func (n *Node) Start(nodes []*conf.NodeConfig, core vCore.Core) error {
 			return err
 		}
 		// Register controller service
-		n.controllers[i] = NewController(core, p, c.ControllerConfig)
+		n.controllers[i] = NewController(core, p, c.Options)
 		err = n.controllers[i].Start()
 		if err != nil {
 			return fmt.Errorf("start node controller [%s-%s-%d] error: %s",

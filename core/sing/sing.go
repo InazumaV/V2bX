@@ -39,8 +39,14 @@ func init() {
 	vCore.RegisterCore("sing", New)
 }
 
-func New(_ *conf.CoreConfig) (vCore.Core, error) {
+func New(c *conf.CoreConfig) (vCore.Core, error) {
 	options := option.Options{}
+	options.Log = &option.LogOptions{
+		Disabled:  c.SingConfig.LogConfig.Disabled,
+		Level:     c.SingConfig.LogConfig.Level,
+		Timestamp: c.SingConfig.LogConfig.Timestamp,
+		Output:    c.SingConfig.LogConfig.Output,
+	}
 	ctx := context.Background()
 	createdAt := time.Now()
 	experimentalOptions := common.PtrValueOrDefault(options.Experimental)

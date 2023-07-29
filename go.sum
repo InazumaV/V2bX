@@ -379,10 +379,8 @@ github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpO
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df h1:MZf03xP9WdakyXhOWuAD5uPK3wHh96wCsqe3hCMKh8E=
 github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df/go.mod h1:QMZY7/J/KSQEhKWFeDesPjMj+wCHReeknARU3wqlyN4=
-github.com/inazumav/sing-box v0.0.0-20230728005628-9c73947a55ad h1:Ho7F+U1n41dX6c+3TjojaCj1NjBlaaCa1Vjtll9BVW4=
-github.com/inazumav/sing-box v0.0.0-20230728005628-9c73947a55ad/go.mod h1:W91us/coe3lvl5jCtw2n6acyagpRbOO16h1IV3/0nrc=
-github.com/inazumav/sing-box v0.0.0-20230728005925-1df6eb0f5bf7 h1:fHFY6wVkFNFmL+LXVnU+zvrEoULqbZ1eVYCoKsb6/dQ=
-github.com/inazumav/sing-box v0.0.0-20230728005925-1df6eb0f5bf7/go.mod h1:W91us/coe3lvl5jCtw2n6acyagpRbOO16h1IV3/0nrc=
+github.com/inazumav/sing-box v0.0.0-20230728123002-eb2ba58e499a h1:/FGmhOCu6LYt8zd6DpMEvuHlPnUPMr0zziyJkuU1wVI=
+github.com/inazumav/sing-box v0.0.0-20230728123002-eb2ba58e499a/go.mod h1:W91us/coe3lvl5jCtw2n6acyagpRbOO16h1IV3/0nrc=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=

@@ -39,7 +39,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 	return &Core{Server: getCore(c.XrayConfig)}, nil
 }
 
-func parseConnectionConfig(c *conf.ConnectionConfig) (policy *coreConf.Policy) {
+func parseConnectionConfig(c *conf.XrayConnectionConfig) (policy *coreConf.Policy) {
 	policy = &coreConf.Policy{
 		StatsUserUplink:   true,
 		StatsUserDownlink: true,

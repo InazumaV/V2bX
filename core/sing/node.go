@@ -21,12 +21,17 @@ import (
 )
 
 type WsNetworkConfig struct {
-	Path string `json:"path"`
+	Path    string            `json:"path"`
+	Headers map[string]string `json:"headers"`
 }
 
-func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.ControllerConfig) (option.Inbound, error) {
-	addr, _ := netip.ParseAddr("0.0.0.0")
+func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (option.Inbound, error) {
+	addr, err := netip.ParseAddr(c.ListenIP)
+	if err != nil {
+		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
+	}
 	listen := option.ListenOptions{
+		//ProxyProtocol: true,
 		Listen:     (*option.ListenAddress)(&addr),
 		ListenPort: uint16(info.Port),
 	}
@@ -47,6 +52,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.ControllerConfi
 		}
 		switch info.Network {
 		case "tcp":
+			t.Type = ""
 		case "ws":
 			network := WsNetworkConfig{}
 			err := json.Unmarshal(info.NetworkSettings, &network)
@@ -59,14 +65,22 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.ControllerConfi
 				return option.Inbound{}, fmt.Errorf("parse path error: %s", err)
 			}
 			ed, _ := strconv.Atoi(u.Query().Get("ed"))
+			h := make(map[string]option.Listable[string], len(network.Headers))
+			for k, v := range network.Headers {
+				h[k] = option.Listable[string]{
+					v,
+				}
+			}
 			t.WebsocketOptions = option.V2RayWebsocketOptions{
 				Path:                u.Path,
 				EarlyDataHeaderName: "Sec-WebSocket-Protocol",
 				MaxEarlyData:        uint32(ed),
+				Headers:             h,
 			}
 		case "grpc":
-			t.GRPCOptions = option.V2RayGRPCOptions{
-				ServiceName: info.ServerName,
+			err := json.Unmarshal(info.NetworkSettings, &t.GRPCOptions)
+			if err != nil {
+				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
 		in.VMessOptions = option.VMessInboundOptions{
@@ -96,7 +110,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.ControllerConfi
 	return in, nil
 }
 
-func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.ControllerConfig) error {
+func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
 	c, err := getInboundOptions(tag, info, config)
 	if err != nil {
 		return err

@@ -52,6 +52,12 @@ func (c *TrafficCounter) GetDownCount(id string) int64 {
 	return 0
 }
 
+func (c *TrafficCounter) Len() int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	return len(c.counters)
+}
+
 func (c *TrafficCounter) Reset(id string) {
 	c.lock.RLock()
 	cts := c.GetCounter(id)

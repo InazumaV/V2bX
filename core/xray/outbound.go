@@ -11,7 +11,7 @@ import (
 )
 
 // BuildOutbound build freedom outbund config for addoutbound
-func buildOutbound(config *conf2.ControllerConfig, tag string) (*core.OutboundHandlerConfig, error) {
+func buildOutbound(config *conf2.Options, tag string) (*core.OutboundHandlerConfig, error) {
 	outboundDetourConfig := &conf.OutboundDetourConfig{}
 	outboundDetourConfig.Protocol = "freedom"
 	outboundDetourConfig.Tag = tag
