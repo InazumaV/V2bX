@@ -20,6 +20,7 @@ type Controller struct {
 	limiter                   *limiter.Limiter
 	traffic                   map[string]int64
 	userList                  []panel.UserInfo
+	info                      *panel.NodeInfo
 	ipRecorder                iprecoder.IpRecorder
 	nodeInfoMonitorPeriodic   *task.Task
 	userReportPeriodic        *task.Task
@@ -86,6 +87,7 @@ func (c *Controller) Start() error {
 	}
 	log.WithField("tag", c.tag).Infof("Added %d new users", added)
 	c.startTasks(node)
+	c.info = node
 	return nil
 }
 

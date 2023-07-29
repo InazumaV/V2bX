@@ -144,6 +144,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			_ = c.userReportPeriodic.Start(false)
 		}
 		log.WithField("tag", c.tag).Infof("Added %d new users", len(c.userList))
+		c.info = newNodeInfo
 		// exit
 		return nil
 	}
@@ -169,6 +170,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		_, err = c.server.AddUsers(&vCore.AddUsersParams{
 			Tag:      c.tag,
 			Config:   c.Options,
+			NodeInfo: c.info,
 			UserInfo: added,
 		})
 		if err != nil {
