@@ -1,9 +1,10 @@
 package limiter
 
 import (
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/format"
 	"time"
+
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/common/format"
 )
 
 func (l *Limiter) AddDynamicSpeedLimit(tag string, userInfo *panel.UserInfo, limitNum int, expire int64) error {

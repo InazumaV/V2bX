@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Yuzuki616/V2bX/api/iprecoder"
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/task"
-	"github.com/Yuzuki616/V2bX/conf"
-	vCore "github.com/Yuzuki616/V2bX/core"
-	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/InazumaV/V2bX/api/iprecoder"
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/common/task"
+	"github.com/InazumaV/V2bX/conf"
+	vCore "github.com/InazumaV/V2bX/core"
+	"github.com/InazumaV/V2bX/limiter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -86,8 +86,8 @@ func (c *Controller) Start() error {
 		return fmt.Errorf("add users error: %s", err)
 	}
 	log.WithField("tag", c.tag).Infof("Added %d new users", added)
-	c.startTasks(node)
 	c.info = node
+	c.startTasks(node)
 	return nil
 }
 

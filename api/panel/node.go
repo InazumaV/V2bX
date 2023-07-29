@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Yuzuki616/V2bX/common/crypt"
+	"github.com/InazumaV/V2bX/common/crypt"
 	"github.com/goccy/go-json"
 	log "github.com/sirupsen/logrus"
 	coreConf "github.com/xtls/xray-core/infra/conf"

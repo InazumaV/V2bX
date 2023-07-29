@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Yuzuki616/V2bX/common/rate"
-	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/InazumaV/V2bX/common/rate"
+	"github.com/InazumaV/V2bX/limiter"
 	routingSession "github.com/xtls/xray-core/features/routing/session"
 
 	"github.com/xtls/xray-core/common"

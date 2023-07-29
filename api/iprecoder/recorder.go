@@ -2,11 +2,12 @@ package iprecoder
 
 import (
 	"errors"
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/limiter"
+	"time"
+
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/InazumaV/V2bX/limiter"
 	"github.com/go-resty/resty/v2"
 	"github.com/goccy/go-json"
-	"time"
 )
 
 type Recorder struct {

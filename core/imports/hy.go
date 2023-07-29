@@ -3,4 +3,4 @@
 package imports
 
 // not yet tested
-import _ "github.com/Yuzuki616/V2bX/core/hy"
+import _ "github.com/InazumaV/V2bX/core/hy"

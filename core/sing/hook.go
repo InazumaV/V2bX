@@ -5,11 +5,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Yuzuki616/V2bX/common/rate"
+	"github.com/InazumaV/V2bX/common/rate"
 
-	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/InazumaV/V2bX/limiter"
 
-	"github.com/Yuzuki616/V2bX/common/counter"
+	"github.com/InazumaV/V2bX/common/counter"
 	"github.com/inazumav/sing-box/adapter"
 	"github.com/inazumav/sing-box/log"
 	N "github.com/sagernet/sing/common/network"

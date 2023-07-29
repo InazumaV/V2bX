@@ -9,11 +9,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Yuzuki616/V2bX/common/counter"
+	"github.com/InazumaV/V2bX/common/counter"
 
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/InazumaV/V2bX/limiter"
 	"github.com/Yuzuki616/hysteria/core/sockopt"
 	"github.com/Yuzuki616/quic-go"
 

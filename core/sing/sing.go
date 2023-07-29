@@ -8,8 +8,8 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/Yuzuki616/V2bX/conf"
-	vCore "github.com/Yuzuki616/V2bX/core"
+	"github.com/InazumaV/V2bX/conf"
+	vCore "github.com/InazumaV/V2bX/core"
 
 	"github.com/inazumav/sing-box/adapter"
 	"github.com/inazumav/sing-box/inbound"

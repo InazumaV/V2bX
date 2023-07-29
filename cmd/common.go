@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/common/exec"
 	"strings"
+
+	"github.com/InazumaV/V2bX/common/exec"
 )
 
 const (

@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/core"
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/core"
 )
 
 func (h *Hy) AddUsers(p *core.AddUsersParams) (int, error) {

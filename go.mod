@@ -1,4 +1,4 @@
-module github.com/Yuzuki616/V2bX
+module github.com/InazumaV/V2bX
 
 go 1.19
 
