@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/common/exec"
-	"github.com/spf13/cobra"
 	"time"
+
+	"github.com/InazumaV/V2bX/common/exec"
+	"github.com/spf13/cobra"
 )
 
 var (

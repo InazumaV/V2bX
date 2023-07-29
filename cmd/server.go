@@ -1,17 +1,18 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
 
-	vCore "github.com/Yuzuki616/V2bX/core"
+	log "github.com/sirupsen/logrus"
 
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/limiter"
-	"github.com/Yuzuki616/V2bX/node"
+	vCore "github.com/InazumaV/V2bX/core"
+
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/InazumaV/V2bX/limiter"
+	"github.com/InazumaV/V2bX/node"
 	"github.com/spf13/cobra"
 )
 

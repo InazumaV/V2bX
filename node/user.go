@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/Yuzuki616/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/api/panel"
 	log "github.com/sirupsen/logrus"
 )
 

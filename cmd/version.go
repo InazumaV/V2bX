@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	vCore "github.com/Yuzuki616/V2bX/core"
+	vCore "github.com/InazumaV/V2bX/core"
 	"github.com/spf13/cobra"
 )
 

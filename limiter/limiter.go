@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/format"
-	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/common/format"
+	"github.com/InazumaV/V2bX/conf"
 	"github.com/juju/ratelimit"
 	log "github.com/sirupsen/logrus"
 	"github.com/xtls/xray-core/common/task"

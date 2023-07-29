@@ -3,9 +3,9 @@ package sing
 import (
 	"errors"
 
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/counter"
-	"github.com/Yuzuki616/V2bX/core"
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/common/counter"
+	"github.com/InazumaV/V2bX/core"
 	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/option"
 )

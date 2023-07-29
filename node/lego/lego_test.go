@@ -1,10 +1,11 @@
 package lego
 
 import (
-	"github.com/Yuzuki616/V2bX/conf"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/InazumaV/V2bX/conf"
 )
 
 var l *Lego

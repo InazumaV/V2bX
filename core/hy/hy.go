@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Yuzuki616/V2bX/conf"
-	vCore "github.com/Yuzuki616/V2bX/core"
+	"github.com/InazumaV/V2bX/conf"
+	vCore "github.com/InazumaV/V2bX/core"
 	"github.com/hashicorp/go-multierror"
 )
 

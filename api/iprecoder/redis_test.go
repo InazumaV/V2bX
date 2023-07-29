@@ -1,10 +1,11 @@
 package iprecoder
 
 import (
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/Yuzuki616/V2bX/limiter"
 	"log"
 	"testing"
+
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/InazumaV/V2bX/limiter"
 )
 
 func TestRedis_SyncOnlineIp(t *testing.T) {

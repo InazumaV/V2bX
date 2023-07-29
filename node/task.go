@@ -3,10 +3,10 @@ package node
 import (
 	"time"
 
-	"github.com/Yuzuki616/V2bX/api/panel"
-	"github.com/Yuzuki616/V2bX/common/task"
-	vCore "github.com/Yuzuki616/V2bX/core"
-	"github.com/Yuzuki616/V2bX/limiter"
+	"github.com/InazumaV/V2bX/api/panel"
+	"github.com/InazumaV/V2bX/common/task"
+	vCore "github.com/InazumaV/V2bX/core"
+	"github.com/InazumaV/V2bX/limiter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -68,6 +68,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 		return nil
 	}
 	if newNodeInfo != nil {
+		c.info = newNodeInfo
 		// nodeInfo changed
 		if newUserInfo != nil {
 			c.userList = newUserInfo
@@ -144,7 +145,6 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			_ = c.userReportPeriodic.Start(false)
 		}
 		log.WithField("tag", c.tag).Infof("Added %d new users", len(c.userList))
-		c.info = newNodeInfo
 		// exit
 		return nil
 	}

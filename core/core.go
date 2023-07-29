@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Yuzuki616/V2bX/conf"
+	"github.com/InazumaV/V2bX/conf"
 )
 
 var (

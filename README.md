@@ -50,7 +50,7 @@ A V2board node server based on multi core, modified from XrayR.
 ### 一键安装
 
 ```
-wget -N https://raw.githubusercontents.com/Yuzuki616/V2bX-script/master/install.sh && bash install.sh
+wget -N https://raw.githubusercontents.com/InazumaV/V2bX-script/master/install.sh && bash install.sh
 ```
 
 ### 手动安装
@@ -85,4 +85,4 @@ go build -o V2bX -ldflags '-s -w' -gcflags="all=-trimpath=${PWD}" -asmflags="all
 
 ## Stars 增长记录
 
-[![Stargazers over time](https://starchart.cc/Yuzuki616/V2bX.svg)](https://starchart.cc/Yuzuki616/V2bX)
+[![Stargazers over time](https://starchart.cc/InazumaV/V2bX.svg)](https://starchart.cc/InazumaV/V2bX)

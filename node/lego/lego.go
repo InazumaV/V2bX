@@ -2,12 +2,13 @@ package lego
 
 import (
 	"fmt"
-	"github.com/Yuzuki616/V2bX/common/file"
-	"github.com/Yuzuki616/V2bX/conf"
-	"github.com/go-acme/lego/v4/certcrypto"
-	"github.com/go-acme/lego/v4/lego"
 	"os"
 	"path"
+
+	"github.com/InazumaV/V2bX/common/file"
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/go-acme/lego/v4/lego"
 )
 
 type Lego struct {

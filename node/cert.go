@@ -3,8 +3,8 @@ package node
 import (
 	"fmt"
 
-	"github.com/Yuzuki616/V2bX/common/file"
-	"github.com/Yuzuki616/V2bX/node/lego"
+	"github.com/InazumaV/V2bX/common/file"
+	"github.com/InazumaV/V2bX/node/lego"
 	log "github.com/sirupsen/logrus"
 )
 
