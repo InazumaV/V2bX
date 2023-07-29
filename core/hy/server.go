@@ -9,6 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Yuzuki616/V2bX/common/counter"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/limiter"
@@ -34,7 +36,7 @@ var serverPacketConnFuncFactoryMap = map[string]pktconns.ServerPacketConnFuncFac
 type Server struct {
 	tag     string
 	l       *limiter.Limiter
-	counter *UserTrafficCounter
+	counter *counter.TrafficCounter
 	users   sync.Map
 	running atomic.Bool
 	*cs.Server
@@ -47,7 +49,7 @@ func NewServer(tag string, l *limiter.Limiter) *Server {
 	}
 }
 
-func (s *Server) runServer(node *panel.NodeInfo, c *conf.ControllerConfig) error {
+func (s *Server) runServer(node *panel.NodeInfo, c *conf.Options) error {
 	/*if c.HyOptions == nil {
 		return errors.New("hy options is not vail")
 	}*/
@@ -122,7 +124,7 @@ func (s *Server) runServer(node *panel.NodeInfo, c *conf.ControllerConfig) error
 	// ACL
 	var aclEngine *acl.Engine
 	// Prometheus
-	s.counter = NewUserTrafficCounter()
+	s.counter = counter.NewTrafficCounter()
 	// Packet conn
 	pktConnFuncFactory := serverPacketConnFuncFactoryMap[""]
 	if pktConnFuncFactory == nil {

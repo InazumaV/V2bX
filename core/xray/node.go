@@ -3,6 +3,7 @@ package xray
 import (
 	"context"
 	"fmt"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/xtls/xray-core/core"
@@ -10,7 +11,7 @@ import (
 	"github.com/xtls/xray-core/features/outbound"
 )
 
-func (c *Core) AddNode(tag string, info *panel.NodeInfo, config *conf.ControllerConfig) error {
+func (c *Core) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
 	inboundConfig, err := buildInbound(config, info, tag)
 	if err != nil {
 		return fmt.Errorf("build inbound error: %s", err)

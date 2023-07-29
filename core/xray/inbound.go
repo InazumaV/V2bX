@@ -17,7 +17,7 @@ import (
 )
 
 // BuildInbound build Inbound config for different protocol
-func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
+func buildInbound(config *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*core.InboundHandlerConfig, error) {
 	in := &coreConf.InboundDetourConfig{}
 	// Set network protocol
 	t := coreConf.TransportProtocol(nodeInfo.Network)
@@ -150,7 +150,7 @@ func buildInbound(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, tag s
 	return in.Build()
 }
 
-func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
+func buildV2ray(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
 	if nodeInfo.ExtraConfig.EnableVless == "true" {
 		//Set vless
 		inbound.Protocol = "vless"
@@ -213,7 +213,7 @@ func buildV2ray(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound
 	return nil
 }
 
-func buildTrojan(config *conf.ControllerConfig, inbound *coreConf.InboundDetourConfig) error {
+func buildTrojan(config *conf.Options, inbound *coreConf.InboundDetourConfig) error {
 	inbound.Protocol = "trojan"
 	if config.XrayOptions.EnableFallback {
 		// Set fallback
@@ -237,7 +237,7 @@ func buildTrojan(config *conf.ControllerConfig, inbound *coreConf.InboundDetourC
 	return nil
 }
 
-func buildShadowsocks(config *conf.ControllerConfig, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
+func buildShadowsocks(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreConf.InboundDetourConfig) error {
 	inbound.Protocol = "shadowsocks"
 	settings := &coreConf.ShadowsocksServerConfig{
 		Cipher: nodeInfo.Cipher,

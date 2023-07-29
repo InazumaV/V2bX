@@ -2,6 +2,7 @@ package xray
 
 import (
 	"fmt"
+
 	conf2 "github.com/Yuzuki616/V2bX/conf"
 	"github.com/goccy/go-json"
 	"github.com/xtls/xray-core/common/net"
@@ -10,7 +11,7 @@ import (
 )
 
 // BuildOutbound build freedom outbund config for addoutbound
-func buildOutbound(config *conf2.ControllerConfig, tag string) (*core.OutboundHandlerConfig, error) {
+func buildOutbound(config *conf2.Options, tag string) (*core.OutboundHandlerConfig, error) {
 	outboundDetourConfig := &conf.OutboundDetourConfig{}
 	outboundDetourConfig.Protocol = "freedom"
 	outboundDetourConfig.Tag = tag

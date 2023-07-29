@@ -3,6 +3,7 @@ package hy
 import (
 	"encoding/base64"
 	"errors"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/core"
 )
@@ -23,8 +24,8 @@ func (h *Hy) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64)
 	v, _ := h.servers.Load(tag)
 	s := v.(*Server)
 	auth := base64.StdEncoding.EncodeToString([]byte(uuid))
-	up = s.counter.getCounters(auth).UpCounter.Load()
-	down = s.counter.getCounters(auth).DownCounter.Load()
+	up = s.counter.GetCounter(auth).UpCounter.Load()
+	down = s.counter.GetCounter(auth).DownCounter.Load()
 	if reset {
 		s.counter.Reset(auth)
 	}

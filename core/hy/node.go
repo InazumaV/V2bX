@@ -3,12 +3,13 @@ package hy
 import (
 	"errors"
 	"fmt"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/limiter"
 )
 
-func (h *Hy) AddNode(tag string, info *panel.NodeInfo, c *conf.ControllerConfig) error {
+func (h *Hy) AddNode(tag string, info *panel.NodeInfo, c *conf.Options) error {
 	if info.Type != "hysteria" {
 		return errors.New("the core not support " + info.Type)
 	}

@@ -2,13 +2,14 @@ package hy
 
 import (
 	"encoding/base64"
+	"log"
+	"testing"
+	"time"
+
 	"github.com/Yuzuki616/V2bX/api/panel"
 	"github.com/Yuzuki616/V2bX/conf"
 	"github.com/Yuzuki616/V2bX/limiter"
 	"github.com/sirupsen/logrus"
-	"log"
-	"testing"
-	"time"
 )
 
 func TestServer(t *testing.T) {
@@ -21,7 +22,7 @@ func TestServer(t *testing.T) {
 		UpMbps:   100,
 		DownMbps: 100,
 		HyObfs:   "atresssdaaaadd",
-	}, &conf.ControllerConfig{
+	}, &conf.Options{
 		ListenIP:  "127.0.0.1",
 		HyOptions: conf.HyOptions{},
 		CertConfig: &conf.CertConfig{
@@ -35,7 +36,7 @@ func TestServer(t *testing.T) {
 			time.Sleep(10 * time.Second)
 			auth := base64.StdEncoding.EncodeToString([]byte("test1111"))
 			log.Println(auth)
-			log.Println(s.counter.getCounters(auth).UpCounter.Load())
+			log.Println(s.counter.GetUpCount(auth))
 		}
 	}()
 	select {}

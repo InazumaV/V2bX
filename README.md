@@ -81,6 +81,7 @@ go build -o V2bX -ldflags '-s -w' -gcflags="all=-trimpath=${PWD}" -asmflags="all
 * [VNet-V2ray](https://github.com/ProxyPanel/VNet-V2ray)
 * [Air-Universe](https://github.com/crossfw/Air-Universe)
 * [XrayR](https://github.com/XrayR/XrayR)
+* [sing-box](https://github.com/SagerNet/sing-box)
 
 ## Stars 增长记录
 

@@ -2,6 +2,7 @@ package conf
 
 import (
 	"log"
+	"strings"
 	"testing"
 )
 
@@ -11,9 +12,6 @@ func TestConf_LoadFromPath(t *testing.T) {
 }
 
 func TestConf_Watch(t *testing.T) {
-	c := New()
-	log.Println(c.Watch("../example/config.yml.example", func() {
-		log.Println(1)
-	}))
-	select {}
+	//c := New()
+	log.Println(strings.Split("aaaa", " "))
 }
