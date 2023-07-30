@@ -46,7 +46,6 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	}
 	switch info.Type {
 	case "v2ray":
-		in.Type = "vmess"
 		t := option.V2RayTransportOptions{
 			Type: info.Network,
 		}
@@ -83,10 +82,20 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
-		in.VMessOptions = option.VMessInboundOptions{
-			ListenOptions: listen,
-			TLS:           &tls,
-			Transport:     &t,
+		if info.ExtraConfig.EnableVless == "true" {
+			in.Type = "vless"
+			in.VLESSOptions = option.VLESSInboundOptions{
+				ListenOptions: listen,
+				TLS:           &tls,
+				Transport:     &t,
+			}
+		} else {
+			in.Type = "vmess"
+			in.VMessOptions = option.VMessInboundOptions{
+				ListenOptions: listen,
+				TLS:           &tls,
+				Transport:     &t,
+			}
 		}
 	case "shadowsocks":
 		in.Type = "shadowsocks"
