@@ -7,6 +7,7 @@ type Options struct {
 	CertConfig  *CertConfig `yaml:"CertConfig"`
 	XrayOptions XrayOptions `yaml:"-"`
 	HyOptions   HyOptions   `yaml:"-"`
+	BoxOptions  BoxOptions  `yaml:"-"`
 }
 
 type XrayOptions struct {
@@ -19,6 +20,13 @@ type XrayOptions struct {
 	DisableSniffing     bool             `yaml:"DisableSniffing"`
 	EnableFallback      bool             `yaml:"EnableFallback"`
 	FallBackConfigs     []FallBackConfig `yaml:"FallBackConfigs"`
+}
+type BoxOptions struct {
+	EnableProxyProtocol      bool   `yaml:"EnableProxyProtocol"`
+	DomainStrategy           string `yaml:"DomainStrategy"`
+	TCPFastOpen              bool   `yaml:"EnableTFO"`
+	SniffEnabled             bool   `json:"EnableSniff"`
+	SniffOverrideDestination bool   `json:"SniffOverrideDestination"`
 }
 
 type FallBackConfig struct {

@@ -183,6 +183,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	// parse protocol params
 	switch c.NodeType {
 	case "v2ray":
+	case "vless":
 		rsp := V2rayNodeRsp{}
 		err = json.Unmarshal(r.Body(), &rsp)
 		if err != nil {

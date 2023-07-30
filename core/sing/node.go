@@ -6,13 +6,13 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/inazumav/sing-box/inbound"
+	F "github.com/sagernet/sing/common/format"
 	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
-
-	"github.com/inazumav/sing-box/inbound"
-	F "github.com/sagernet/sing/common/format"
+	"time"
 
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
@@ -31,16 +31,55 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
 	listen := option.ListenOptions{
-		//ProxyProtocol: true,
-		Listen:     (*option.ListenAddress)(&addr),
-		ListenPort: uint16(info.Port),
+		Listen:        (*option.ListenAddress)(&addr),
+		ListenPort:    uint16(info.Port),
+		ProxyProtocol: c.BoxOptions.EnableProxyProtocol,
+		TCPFastOpen:   c.BoxOptions.TCPFastOpen,
+		InboundOptions: option.InboundOptions{
+			SniffEnabled:             c.BoxOptions.SniffEnabled,
+			SniffOverrideDestination: c.BoxOptions.SniffOverrideDestination,
+			//DomainStrategy:          ,
+		},
 	}
-	tls := option.InboundTLSOptions{
-		Enabled:         info.Tls,
-		CertificatePath: c.CertConfig.CertFile,
-		KeyPath:         c.CertConfig.KeyFile,
-		ServerName:      info.ServerName,
+	tls := option.InboundTLSOptions{}
+	if info.Tls {
+		if c.CertConfig == nil {
+			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
+		}
+		switch c.CertConfig.CertMode {
+		case "none", "":
+			break // disable
+		case "reality":
+			rc := c.CertConfig.RealityConfig
+			if len(rc.ShortIds) == 0 {
+				rc.ShortIds = []string{""}
+			}
+			tls.Reality.ShortID = rc.ShortIds
+			tls.Reality.PrivateKey = rc.PrivateKey
+			mtd, _ := strconv.Atoi(strconv.FormatUint(rc.Xver, 10))
+			tls.Reality.MaxTimeDifference = option.Duration(time.Duration(mtd) * time.Second)
+		case "remote":
+			if info.ExtraConfig.EnableReality == "true" {
+				rc := info.ExtraConfig.RealityConfig
+				tls.Reality.Enabled = true
+				if len(rc.ShortIds) == 0 {
+					rc.ShortIds = []string{""}
+				}
+				tls.Reality.ShortID = rc.ShortIds
+				tls.Reality.PrivateKey = rc.PrivateKey
+				mtd, _ := strconv.Atoi(rc.MaxTimeDiff)
+				tls.Reality.MaxTimeDifference = option.Duration(time.Duration(mtd) * time.Second)
+			}
+		default:
+			tls = option.InboundTLSOptions{
+				Enabled:         info.Tls,
+				CertificatePath: c.CertConfig.CertFile,
+				KeyPath:         c.CertConfig.KeyFile,
+				ServerName:      info.ServerName,
+			}
+		}
 	}
+
 	in := option.Inbound{
 		Tag: tag,
 	}
