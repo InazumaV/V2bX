@@ -45,6 +45,7 @@ func (c *Controller) startTasks(node *panel.NodeInfo) {
 			Interval: time.Duration(c.LimitConfig.DynamicSpeedLimitConfig.Periodic) * time.Second,
 			Execute:  c.SpeedChecker,
 		}
+		log.Printf("[%s: %d] Start dynamic speed limit", c.apiClient.NodeType, c.apiClient.NodeId)
 	}
 }
 
