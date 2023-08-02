@@ -5,8 +5,8 @@ type Options struct {
 	SendIP      string      `yaml:"SendIP"`
 	LimitConfig LimitConfig `yaml:"LimitConfig"`
 	CertConfig  *CertConfig `yaml:"CertConfig"`
-	XrayOptions XrayOptions `yaml:"-"`
-	HyOptions   HyOptions   `yaml:"-"`
+	XrayOptions XrayOptions `yaml:"XrayOptions"`
+	HyOptions   HyOptions   `yaml:"HyOptions"`
 }
 
 type XrayOptions struct {
