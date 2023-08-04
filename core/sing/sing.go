@@ -129,7 +129,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 	if err != nil {
 		return nil, E.Cause(err, "create v2ray api server")
 	}
-	router.SetV2RayServer(server)
+	router.SetClashServer(server)
 	return &Box{
 		router:     router,
 		inbounds:   inMap,
