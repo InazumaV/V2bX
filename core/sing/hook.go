@@ -48,13 +48,13 @@ func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapte
 	if l.CheckDomainRule(m.Domain) {
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ",
-			"Limited ", m.User, "access to", m.Domain, " by domain rule")
+			"Limited ", m.User, " access to ", m.Domain, " by domain rule")
 		return conn, &Tracker{l: func() {}}
 	}
 	if l.CheckProtocolRule(m.Protocol) {
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ",
-			"Limited ", m.User, "use", m.Domain, " by protocol rule")
+			"Limited ", m.User, " use ", m.Domain, " by protocol rule")
 		return conn, &Tracker{l: func() {}}
 	}
 	ip := m.Source.Addr.String()
@@ -90,13 +90,13 @@ func (h *HookServer) RoutedPacketConnection(_ context.Context, conn N.PacketConn
 	if l.CheckDomainRule(m.Domain) {
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ",
-			"Limited ", m.User, "access to", m.Domain, " by domain rule")
+			"Limited ", m.User, " access to ", m.Domain, " by domain rule")
 		return conn, t
 	}
 	if l.CheckProtocolRule(m.Protocol) {
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ",
-			"Limited ", m.User, "use", m.Domain, " by protocol rule")
+			"Limited ", m.User, " use ", m.Domain, " by protocol rule")
 		return conn, t
 	}
 	ip := m.Source.Addr.String()
