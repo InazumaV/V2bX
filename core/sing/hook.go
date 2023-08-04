@@ -49,10 +49,16 @@ type Hooker struct {
 	counter sync.Map
 }
 
-func (h *Hooker) RoutedConnection(inbound string, outbound string, user string, conn net.Conn) net.Conn {
+func (h *Hooker) RoutedConnection(metadata adapter.InboundContext, outbound string, user string, conn net.Conn) net.Conn {
+	inbound := metadata.Inbound
 	l, err := limiter.GetLimiter(inbound)
 	if err != nil {
 		log.Error("get limiter for ", inbound, " error: ", err)
+	}
+	if l.CheckDomainRule(metadata.Domain) {
+		conn.Close()
+		h.logger.Error("[", inbound, "] ", "Limited ", user, " access domain ", metadata.Domain, " reject by rule")
+		return conn
 	}
 	ip, _, _ := strings.Cut(conn.RemoteAddr().String(), ":")
 	if b, r := l.CheckLimit(user, ip, true); r {
@@ -71,7 +77,17 @@ func (h *Hooker) RoutedConnection(inbound string, outbound string, user string, 
 	}
 }
 
-func (h *Hooker) RoutedPacketConnection(inbound string, outbound string, user string, conn N.PacketConn) N.PacketConn {
+func (h *Hooker) RoutedPacketConnection(metadata adapter.InboundContext, outbound string, user string, conn N.PacketConn) N.PacketConn {
+	inbound := metadata.Inbound
+	l, err := limiter.GetLimiter(inbound)
+	if err != nil {
+		log.Error("get limiter for ", inbound, " error: ", err)
+	}
+	if l.CheckDomainRule(metadata.Domain) {
+		conn.Close()
+		h.logger.Error("[", inbound, "] ", "Limited ", user, " access domain ", metadata.Domain, " reject by rule")
+		return conn
+	}
 	if c, ok := h.counter.Load(inbound); ok {
 		return counter.NewPacketConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(user))
 	} else {
