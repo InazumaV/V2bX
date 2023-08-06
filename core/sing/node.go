@@ -99,22 +99,29 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}
 	case "shadowsocks":
 		in.Type = "shadowsocks"
-		p := make([]byte, 32)
-		_, _ = rand.Read(p)
-		randomPasswd := hex.EncodeToString(p)
-		if strings.Contains(info.Cipher, "2022") {
-			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
+		var keyLength int
+		switch info.Cipher {
+		case "2022-blake3-aes-128-gcm":
+			keyLength = 16
+		case "2022-blake3-aes-256-gcm":
+			keyLength = 32
+		default:
+			keyLength = 8
 		}
 		in.ShadowsocksOptions = option.ShadowsocksInboundOptions{
 			ListenOptions: listen,
 			Method:        info.Cipher,
-			Password:      info.ServerKey,
-			Users: []option.ShadowsocksUser{
-				{
-					Password: randomPasswd,
-				},
-			},
 		}
+		p := make([]byte, keyLength)
+		_, _ = rand.Read(p)
+		randomPasswd := hex.EncodeToString(p)
+		if strings.Contains(info.Cipher, "2022") {
+			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
+			in.ShadowsocksOptions.Password = randomPasswd
+		}
+		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
+			Password: randomPasswd,
+		}}
 	}
 	return in, nil
 }
