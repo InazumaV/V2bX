@@ -41,6 +41,7 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 				Password: p.UserInfo[i].Uuid,
 			}
 		}
+		err = b.inbounds[p.Tag].(*inbound.ShadowsocksMulti).AddUsers(us)
 	}
 	if err != nil {
 		return 0, err
