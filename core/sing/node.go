@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/inazumav/sing-box/inbound"
 	F "github.com/sagernet/sing/common/format"
@@ -40,11 +41,69 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
 		},
 	}
-	tls := option.InboundTLSOptions{
-		Enabled:         info.Tls,
-		CertificatePath: c.CertConfig.CertFile,
-		KeyPath:         c.CertConfig.KeyFile,
-		ServerName:      info.ServerName,
+	var tls option.InboundTLSOptions
+	if info.Tls || info.Type == "hysteria" {
+		if c.CertConfig == nil {
+			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
+		}
+		tls.Enabled = true
+		tls.Insecure = true
+		tls.ServerName = info.ServerName
+		switch c.CertConfig.CertMode {
+		case "none", "":
+			break // disable
+		case "reality":
+			if c.CertConfig.RealityConfig == nil {
+				return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
+			}
+			rc := c.CertConfig.RealityConfig
+			tls.ServerName = rc.ServerNames[0]
+			if len(rc.ShortIds) == 0 {
+				rc.ShortIds = []string{""}
+			}
+			dest, _ := strconv.Atoi(rc.Dest)
+			mtd, _ := strconv.Atoi(strconv.FormatUint(rc.MaxTimeDiff, 10))
+			tls.Reality = &option.InboundRealityOptions{
+				Enabled:           true,
+				ShortID:           rc.ShortIds,
+				PrivateKey:        rc.PrivateKey,
+				MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+				Handshake: option.InboundRealityHandshakeOptions{
+					ServerOptions: option.ServerOptions{
+						Server:     rc.ServerNames[0],
+						ServerPort: uint16(dest),
+					},
+				},
+			}
+
+		case "remote":
+			if info.ExtraConfig.EnableReality == "true" {
+				if c.CertConfig.RealityConfig == nil {
+					return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
+				}
+				rc := info.ExtraConfig.RealityConfig
+				if len(rc.ShortIds) == 0 {
+					rc.ShortIds = []string{""}
+				}
+				dest, _ := strconv.Atoi(rc.Dest)
+				mtd, _ := strconv.Atoi(rc.MaxTimeDiff)
+				tls.Reality = &option.InboundRealityOptions{
+					Enabled:           true,
+					ShortID:           rc.ShortIds,
+					PrivateKey:        rc.PrivateKey,
+					MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+					Handshake: option.InboundRealityHandshakeOptions{
+						ServerOptions: option.ServerOptions{
+							Server:     rc.ServerNames[0],
+							ServerPort: uint16(dest),
+						},
+					},
+				}
+			}
+		default:
+			tls.CertificatePath = c.CertConfig.CertFile
+			tls.KeyPath = c.CertConfig.KeyFile
+		}
 	}
 	in := option.Inbound{
 		Tag: tag,
