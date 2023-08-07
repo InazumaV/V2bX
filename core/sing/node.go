@@ -5,10 +5,12 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/google/uuid"
 	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/inazumav/sing-box/inbound"
 	F "github.com/sagernet/sing/common/format"
@@ -30,15 +32,78 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
 	listen := option.ListenOptions{
-		//ProxyProtocol: true,
-		Listen:     (*option.ListenAddress)(&addr),
-		ListenPort: uint16(info.Port),
+		Listen:        (*option.ListenAddress)(&addr),
+		ListenPort:    uint16(info.Port),
+		ProxyProtocol: c.SingOptions.EnableProxyProtocol,
+		TCPFastOpen:   c.SingOptions.TCPFastOpen,
+		InboundOptions: option.InboundOptions{
+			SniffEnabled:             c.SingOptions.SniffEnabled,
+			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
+		},
 	}
-	tls := option.InboundTLSOptions{
-		Enabled:         info.Tls,
-		CertificatePath: c.CertConfig.CertFile,
-		KeyPath:         c.CertConfig.KeyFile,
-		ServerName:      info.ServerName,
+	var tls option.InboundTLSOptions
+	if info.Tls || info.Type == "hysteria" {
+		if c.CertConfig == nil {
+			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
+		}
+		tls.Enabled = true
+		tls.Insecure = true
+		tls.ServerName = info.ServerName
+		switch c.CertConfig.CertMode {
+		case "none", "":
+			break // disable
+		case "reality":
+			if c.CertConfig.RealityConfig == nil {
+				return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
+			}
+			rc := c.CertConfig.RealityConfig
+			tls.ServerName = rc.ServerNames[0]
+			if len(rc.ShortIds) == 0 {
+				rc.ShortIds = []string{""}
+			}
+			dest, _ := strconv.Atoi(rc.Dest)
+			mtd, _ := strconv.Atoi(strconv.FormatUint(rc.MaxTimeDiff, 10))
+			tls.Reality = &option.InboundRealityOptions{
+				Enabled:           true,
+				ShortID:           rc.ShortIds,
+				PrivateKey:        rc.PrivateKey,
+				MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+				Handshake: option.InboundRealityHandshakeOptions{
+					ServerOptions: option.ServerOptions{
+						Server:     rc.ServerNames[0],
+						ServerPort: uint16(dest),
+					},
+				},
+			}
+
+		case "remote":
+			if info.ExtraConfig.EnableReality == "true" {
+				if c.CertConfig.RealityConfig == nil {
+					return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
+				}
+				rc := info.ExtraConfig.RealityConfig
+				if len(rc.ShortIds) == 0 {
+					rc.ShortIds = []string{""}
+				}
+				dest, _ := strconv.Atoi(rc.Dest)
+				mtd, _ := strconv.Atoi(rc.MaxTimeDiff)
+				tls.Reality = &option.InboundRealityOptions{
+					Enabled:           true,
+					ShortID:           rc.ShortIds,
+					PrivateKey:        rc.PrivateKey,
+					MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+					Handshake: option.InboundRealityHandshakeOptions{
+						ServerOptions: option.ServerOptions{
+							Server:     rc.ServerNames[0],
+							ServerPort: uint16(dest),
+						},
+					},
+				}
+			}
+		default:
+			tls.CertificatePath = c.CertConfig.CertFile
+			tls.KeyPath = c.CertConfig.KeyFile
+		}
 	}
 	in := option.Inbound{
 		Tag: tag,
@@ -121,6 +186,46 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
 			Password: randomPasswd,
 		}}
+	case "trojan":
+		in.Type = "trojan"
+		t := option.V2RayTransportOptions{
+			Type: info.Network,
+		}
+		switch info.Network {
+		case "tcp":
+			t.Type = ""
+		case "grpc":
+			err := json.Unmarshal(info.NetworkSettings, &t.GRPCOptions)
+			if err != nil {
+				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+			}
+		}
+		randomPasswd := uuid.New().String()
+		in.TrojanOptions = option.TrojanInboundOptions{
+			ListenOptions: listen,
+			Users: []option.TrojanUser{{
+				Name:     randomPasswd,
+				Password: randomPasswd,
+			}},
+			TLS:       &tls,
+			Transport: &t,
+		}
+		if c.SingOptions.FallBackConfigs != nil {
+			// fallback handling
+			fallback := c.SingOptions.FallBackConfigs.FallBack
+			fallbackPort, err := strconv.Atoi(fallback.ServerPort)
+			if err == nil {
+				in.TrojanOptions.Fallback = &option.ServerOptions{
+					Server:     fallback.Server,
+					ServerPort: uint16(fallbackPort),
+				}
+			}
+			fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
+			fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
+			if err := processFallback(c, fallbackForALPN); err == nil {
+				in.TrojanOptions.FallbackForALPN = fallbackForALPN
+			}
+		}
 	}
 	return in, nil
 }

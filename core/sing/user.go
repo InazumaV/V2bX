@@ -50,6 +50,15 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 			}
 		}
 		err = b.inbounds[p.Tag].(*inbound.ShadowsocksMulti).AddUsers(us)
+	case "trojan":
+		us := make([]option.TrojanUser, len(p.UserInfo))
+		for i := range p.UserInfo {
+			us[i] = option.TrojanUser{
+				Name:     p.UserInfo[i].Uuid,
+				Password: p.UserInfo[i].Uuid,
+			}
+		}
+		err = b.inbounds[p.Tag].(*inbound.Trojan).AddUsers(us)
 	}
 	if err != nil {
 		return 0, err

@@ -86,14 +86,14 @@ type V2rayExtraConfig struct {
 }
 
 type RealityConfig struct {
-	Dest         interface{} `yaml:"Dest" json:"Dest"`
-	Xver         string      `yaml:"Xver" json:"Xver"`
-	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
-	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
-	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
-	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
-	MaxTimeDiff  string      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
-	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
+	Dest         string   `yaml:"Dest" json:"Dest"`
+	Xver         string   `yaml:"Xver" json:"Xver"`
+	ServerNames  []string `yaml:"ServerNames" json:"ServerNames"`
+	PrivateKey   string   `yaml:"PrivateKey" json:"PrivateKey"`
+	MinClientVer string   `yaml:"MinClientVer" json:"MinClientVer"`
+	MaxClientVer string   `yaml:"MaxClientVer" json:"MaxClientVer"`
+	MaxTimeDiff  string   `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
+	ShortIds     []string `yaml:"ShortIds" json:"ShortIds"`
 }
 
 type DNSConfig struct {
