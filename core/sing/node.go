@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/google/uuid"
 	"net/netip"
 	"net/url"
 	"strconv"
@@ -30,9 +31,14 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
 	listen := option.ListenOptions{
-		//ProxyProtocol: true,
-		Listen:     (*option.ListenAddress)(&addr),
-		ListenPort: uint16(info.Port),
+		Listen:        (*option.ListenAddress)(&addr),
+		ListenPort:    uint16(info.Port),
+		ProxyProtocol: c.SingOptions.EnableProxyProtocol,
+		TCPFastOpen:   c.SingOptions.TCPFastOpen,
+		InboundOptions: option.InboundOptions{
+			SniffEnabled:             c.SingOptions.SniffEnabled,
+			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
+		},
 	}
 	tls := option.InboundTLSOptions{
 		Enabled:         info.Tls,
@@ -121,6 +127,46 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
 			Password: randomPasswd,
 		}}
+	case "trojan":
+		in.Type = "trojan"
+		t := option.V2RayTransportOptions{
+			Type: info.Network,
+		}
+		switch info.Network {
+		case "tcp":
+			t.Type = ""
+		case "grpc":
+			err := json.Unmarshal(info.NetworkSettings, &t.GRPCOptions)
+			if err != nil {
+				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+			}
+		}
+		randomPasswd := uuid.New().String()
+		in.TrojanOptions = option.TrojanInboundOptions{
+			ListenOptions: listen,
+			Users: []option.TrojanUser{{
+				Name:     randomPasswd,
+				Password: randomPasswd,
+			}},
+			TLS:       &tls,
+			Transport: &t,
+		}
+		if c.SingOptions.FallBackConfigs != nil {
+			// fallback handling
+			fallback := c.SingOptions.FallBackConfigs.FallBack
+			fallbackPort, err := strconv.Atoi(fallback.ServerPort)
+			if err == nil {
+				in.TrojanOptions.Fallback = &option.ServerOptions{
+					Server:     fallback.Server,
+					ServerPort: uint16(fallbackPort),
+				}
+			}
+			fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
+			fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
+			if err := processFallback(c, fallbackForALPN); err == nil {
+				in.TrojanOptions.FallbackForALPN = fallbackForALPN
+			}
+		}
 	}
 	return in, nil
 }
