@@ -106,7 +106,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		case "2022-blake3-aes-256-gcm":
 			keyLength = 32
 		default:
-			keyLength = 8
+			keyLength = 16
 		}
 		in.ShadowsocksOptions = option.ShadowsocksInboundOptions{
 			ListenOptions: listen,
@@ -117,10 +117,9 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		randomPasswd := hex.EncodeToString(p)
 		if strings.Contains(info.Cipher, "2022") {
 			in.ShadowsocksOptions.Password = info.ServerKey
-			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
 		}
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
-			Password: randomPasswd,
+			Password: base64.StdEncoding.EncodeToString([]byte(randomPasswd)),
 		}}
 	}
 	return in, nil
