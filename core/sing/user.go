@@ -50,7 +50,7 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 }
 
 func (b *Box) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
-	if v, ok := b.hookServer.Hooker().counter.Load(tag); ok {
+	if v, ok := b.hookServer.counter.Load(tag); ok {
 		c := v.(*counter.TrafficCounter)
 		up = c.GetUpCount(uuid)
 		down = c.GetDownCount(uuid)
