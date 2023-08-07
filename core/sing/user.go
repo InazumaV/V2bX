@@ -1,6 +1,7 @@
 package sing
 
 import (
+	"encoding/base64"
 	"errors"
 
 	"github.com/InazumaV/V2bX/api/panel"
@@ -36,9 +37,16 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 	case "shadowsocks":
 		us := make([]option.ShadowsocksUser, len(p.UserInfo))
 		for i := range p.UserInfo {
+			var password = p.UserInfo[i].Uuid
+			switch p.NodeInfo.Cipher {
+			case "2022-blake3-aes-128-gcm":
+				password = base64.StdEncoding.EncodeToString([]byte(password[:16]))
+			case "2022-blake3-aes-256-gcm":
+				password = base64.StdEncoding.EncodeToString([]byte(password[:32]))
+			}
 			us[i] = option.ShadowsocksUser{
 				Name:     p.UserInfo[i].Uuid,
-				Password: p.UserInfo[i].Uuid,
+				Password: password,
 			}
 		}
 		err = b.inbounds[p.Tag].(*inbound.ShadowsocksMulti).AddUsers(us)

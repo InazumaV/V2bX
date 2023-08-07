@@ -116,8 +116,8 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		_, _ = rand.Read(p)
 		randomPasswd := hex.EncodeToString(p)
 		if strings.Contains(info.Cipher, "2022") {
+			in.ShadowsocksOptions.Password = info.ServerKey
 			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
-			in.ShadowsocksOptions.Password = randomPasswd
 		}
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
 			Password: randomPasswd,
