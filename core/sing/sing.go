@@ -265,5 +265,7 @@ func (b *Box) Protocols() []string {
 	return []string{
 		"v2ray",
 		"shadowsocks",
+		"trojan",
+		"hysteria",
 	}
 }

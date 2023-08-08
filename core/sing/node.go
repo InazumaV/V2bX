@@ -226,6 +226,15 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				in.TrojanOptions.FallbackForALPN = fallbackForALPN
 			}
 		}
+	case "hysteria":
+		in.Type = "hysteria"
+		in.HysteriaOptions = option.HysteriaInboundOptions{
+			ListenOptions: listen,
+			UpMbps:        info.UpMbps,
+			DownMbps:      info.DownMbps,
+			Obfs:          info.HyObfs,
+			TLS:           &tls,
+		}
 	}
 	return in, nil
 }

@@ -6,7 +6,6 @@ type Options struct {
 	LimitConfig LimitConfig `yaml:"LimitConfig"`
 	CertConfig  *CertConfig `yaml:"CertConfig"`
 	XrayOptions XrayOptions `yaml:"XrayOptions"`
-	HyOptions   HyOptions   `yaml:"HyOptions"`
 	SingOptions SingOptions `yaml:"SingOptions"`
 }
 
@@ -46,10 +45,4 @@ type FallBackConfigForSing struct {
 type FallBack struct {
 	Server     string `yaml:"Server"`
 	ServerPort string `yaml:"ServerPort"`
-}
-
-type HyOptions struct {
-	Resolver          string `yaml:"Resolver"`
-	ResolvePreference string `yaml:"ResolvePreference"`
-	SendDevice        string `yaml:"SendDevice"`
 }

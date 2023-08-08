@@ -59,6 +59,15 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 			}
 		}
 		err = b.inbounds[p.Tag].(*inbound.Trojan).AddUsers(us)
+	case "hysteria":
+		us := make([]option.HysteriaUser, len(p.UserInfo))
+		for i := range p.UserInfo {
+			us[i] = option.HysteriaUser{
+				Name:       p.UserInfo[i].Uuid,
+				AuthString: p.UserInfo[i].Uuid,
+			}
+		}
+		err = b.inbounds[p.Tag].(*inbound.Hysteria).AddUsers(us)
 	}
 	if err != nil {
 		return 0, err
@@ -91,6 +100,10 @@ func (b *Box) DelUsers(users []panel.UserInfo, tag string) error {
 			del = i.(*inbound.VMess)
 		case "shadowsocks":
 			del = i.(*inbound.ShadowsocksMulti)
+		case "trojan":
+			del = i.(*inbound.Trojan)
+		case "hysteria":
+			del = i.(*inbound.Hysteria)
 		}
 	} else {
 		return errors.New("the inbound not found")
