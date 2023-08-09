@@ -18,7 +18,7 @@ require (
 	github.com/inazumav/sing-box v0.0.0-20230730105931-e8479113c010
 	github.com/juju/ratelimit v1.0.2
 	github.com/oschwald/geoip2-golang v1.9.0
-	github.com/sagernet/sing v0.2.9
+	github.com/sagernet/sing v0.2.10-0.20230807080248-4db0062caa0a
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/xtls/xray-core v1.8.3
