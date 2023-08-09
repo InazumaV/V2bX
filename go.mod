@@ -13,7 +13,7 @@ require (
 	github.com/goccy/go-json v0.10.2
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/inazumav/sing-box v0.0.0-20230809093045-c5fd24fc8b60
+	github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f
 	github.com/juju/ratelimit v1.0.2
 	github.com/sagernet/sing v0.2.10-0.20230807080248-4db0062caa0a
 	github.com/sirupsen/logrus v1.9.3

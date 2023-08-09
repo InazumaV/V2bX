@@ -10,7 +10,6 @@ import (
 
 	"github.com/InazumaV/V2bX/conf"
 	vCore "github.com/InazumaV/V2bX/core"
-
 	"github.com/inazumav/sing-box/adapter"
 	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/log"
@@ -20,6 +19,7 @@ import (
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
+	"github.com/sagernet/sing/service/pause"
 )
 
 var _ adapter.Service = (*Box)(nil)
@@ -48,6 +48,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 		Output:    c.SingConfig.LogConfig.Output,
 	}
 	ctx := context.Background()
+	ctx = pause.ContextWithDefaultManager(ctx)
 	createdAt := time.Now()
 	experimentalOptions := common.PtrValueOrDefault(options.Experimental)
 	applyDebugOptions(common.PtrValueOrDefault(experimentalOptions.Debug))
