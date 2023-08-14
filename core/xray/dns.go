@@ -27,7 +27,7 @@ func updateDNSConfig(node *panel.NodeInfo) (err error) {
 		dnsConfigJSON, err := json.MarshalIndent(dnsConfig, "", "  ")
 		if err != nil {
 			log.WithField("err", err).Error("Error marshaling dnsConfig to JSON")
-			return
+			return err
 		}
 		err = saveDnsConfig(dnsConfigJSON, dnsPath)
 	}
@@ -38,7 +38,7 @@ func saveDnsConfig(dns []byte, dnsPath string) (err error) {
 	currentData, err := os.ReadFile(dnsPath)
 	if err != nil {
 		log.WithField("err", err).Error("Failed to read XRAY_DNS_PATH")
-		return
+		return err
 	}
 	if !bytes.Equal(currentData, dns) {
 		coreDnsConfig := &coreConf.DNSConfig{}
@@ -48,7 +48,7 @@ func saveDnsConfig(dns []byte, dnsPath string) (err error) {
 		_, err := coreDnsConfig.Build()
 		if err != nil {
 			log.WithField("err", err).Error("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
-			return
+			return err
 		}
 		if err = os.Truncate(dnsPath, 0); err != nil {
 			log.WithField("err", err).Error("Failed to clear XRAY DNS PATH file")
