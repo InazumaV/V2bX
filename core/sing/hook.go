@@ -2,9 +2,10 @@ package sing
 
 import (
 	"context"
-	"github.com/inazumav/sing-box/common/urltest"
 	"net"
 	"sync"
+
+	"github.com/inazumav/sing-box/common/urltest"
 
 	"github.com/InazumaV/V2bX/common/rate"
 
@@ -71,11 +72,11 @@ func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapte
 		},
 	}
 	if c, ok := h.counter.Load(m.Inbound); ok {
-		return counter.NewConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(m.Inbound)), t
+		return counter.NewConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(m.User)), t
 	} else {
 		c := counter.NewTrafficCounter()
 		h.counter.Store(m.Inbound, c)
-		return counter.NewConnCounter(conn, c.GetCounter(m.Inbound)), t
+		return counter.NewConnCounter(conn, c.GetCounter(m.User)), t
 	}
 }
 
