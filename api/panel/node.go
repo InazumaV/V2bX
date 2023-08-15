@@ -193,8 +193,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			if node.ExtraConfig.RealityConfig == nil {
 				node.ExtraConfig.EnableReality = "false"
 			} else {
-				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token +
-					node.ExtraConfig.RealityConfig.PrivateKey))
+				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token))
 				node.ExtraConfig.RealityConfig.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
 			}
 		}
