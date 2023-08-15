@@ -1,11 +1,8 @@
 package panel
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
-	coreConf "github.com/xtls/xray-core/infra/conf"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -13,7 +10,6 @@ import (
 
 	"github.com/InazumaV/V2bX/common/crypt"
 	"github.com/goccy/go-json"
-	log "github.com/sirupsen/logrus"
 )
 
 type CommonNodeRsp struct {
@@ -60,6 +56,7 @@ type NodeInfo struct {
 	Host            string
 	Port            int
 	Network         string
+	RawDNS          RawDNS
 	ExtraConfig     V2rayExtraConfig
 	NetworkSettings json.RawMessage
 	Tls             bool
@@ -71,6 +68,11 @@ type NodeInfo struct {
 	HyObfs          string
 	PushInterval    time.Duration
 	PullInterval    time.Duration
+}
+
+type RawDNS struct {
+	DNSMap  map[string]map[string]interface{}
+	DNSJson []byte
 }
 
 type Rules struct {
@@ -96,11 +98,6 @@ type RealityConfig struct {
 	ShortIds     []string `yaml:"ShortIds" json:"ShortIds"`
 }
 
-type DNSConfig struct {
-	Servers []interface{} `json:"servers"`
-	Tag     string        `json:"tag"`
-}
-
 func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	const path = "/api/v1/server/UniProxy/config"
 	r, err := c.client.
@@ -117,6 +114,10 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	node = &NodeInfo{
 		Id:   c.NodeId,
 		Type: c.NodeType,
+		RawDNS: RawDNS{
+			DNSMap:  make(map[string]map[string]interface{}),
+			DNSJson: []byte(""),
+		},
 	}
 	common := CommonNodeRsp{}
 	err = json.Unmarshal(r.Body(), &common)
@@ -124,14 +125,6 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		return nil, fmt.Errorf("decode common params error: %s", err)
 	}
 
-	dnsPath := os.Getenv("XRAY_DNS_PATH")
-	dnsConfig := DNSConfig{
-		Servers: []interface{}{
-			"1.1.1.1",
-			"localhost"},
-		Tag: "dns_inbound",
-	}
-	var isDnsConfigUpdating bool
 	for i := range common.Routes {
 		var matchs []string
 		if _, ok := common.Routes[i].Match.(string); ok {
@@ -157,31 +150,21 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 				}
 			}
 		case "dns":
+			var domains []string
+			for _, v := range matchs {
+				domains = append(domains, v)
+			}
 			if matchs[0] != "main" {
-				var domains []string
-				for _, v := range matchs {
-					domains = append(domains, v)
+				node.RawDNS.DNSMap[strconv.Itoa(i)] = map[string]interface{}{
+					"address": common.Routes[i].ActionValue,
+					"domains": domains,
 				}
-				dnsConfig.Servers = append(dnsConfig.Servers,
-					map[string]interface{}{
-						"address": common.Routes[i].ActionValue,
-						"domains": domains,
-					},
-				)
-				isDnsConfigUpdating = true
 			} else {
 				dns := []byte(strings.Join(matchs[1:], ""))
-				saveDnsConfig(dns, dnsPath)
+				node.RawDNS.DNSJson = dns
 				break
 			}
 		}
-	}
-	if isDnsConfigUpdating {
-		dnsConfigJSON, err := json.MarshalIndent(dnsConfig, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshaling dnsConfig to JSON:", err)
-		}
-		saveDnsConfig(dnsConfigJSON, dnsPath)
 	}
 	node.ServerName = common.ServerName
 	node.Host = common.Host
@@ -251,31 +234,4 @@ func intervalToTime(i interface{}) time.Duration {
 	default:
 		return time.Duration(reflect.ValueOf(i).Int()) * time.Second
 	}
-}
-
-func saveDnsConfig(dns []byte, dnsPath string) {
-	currentData, err := os.ReadFile(dnsPath)
-	if err != nil {
-		log.WithField("err", err).Error("Failed to read XRAY_DNS_PATH")
-		return
-	}
-	if !bytes.Equal(currentData, dns) {
-		coreDnsConfig := &coreConf.DNSConfig{}
-		if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
-			log.WithField("err", err).Error("Failed to unmarshal DNS config")
-		}
-		_, err := coreDnsConfig.Build()
-		if err != nil {
-			log.WithField("err", err).Error("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
-			return
-		}
-		if err = os.Truncate(dnsPath, 0); err != nil {
-			log.WithField("err", err).Error("Failed to clear XRAY DNS PATH file")
-		}
-		if err = os.WriteFile(dnsPath, dns, 0644); err != nil {
-			log.WithField("err", err).Error("Failed to write DNS to XRAY DNS PATH file")
-		}
-	}
-	log.Println("reloading config")
-	time.Sleep(5 * time.Second)
 }
