@@ -28,8 +28,8 @@ func (n *Node) Start(nodes []*conf.NodeConfig, core vCore.Core) error {
 		err = n.controllers[i].Start()
 		if err != nil {
 			return fmt.Errorf("start node controller [%s-%s-%d] error: %s",
-				c.ApiConfig.NodeType,
 				c.ApiConfig.APIHost,
+				c.ApiConfig.NodeType,
 				c.ApiConfig.NodeID,
 				err)
 		}
