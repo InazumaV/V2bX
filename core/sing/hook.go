@@ -42,6 +42,7 @@ func (h *HookServer) PreStart() error {
 }
 
 func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapter.InboundContext, _ adapter.Rule) (net.Conn, adapter.Tracker) {
+	t := &Tracker{l: func() {}}
 	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
 		log.Error("get limiter for ", m.Inbound, " error: ", err)
@@ -50,26 +51,24 @@ func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapte
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ",
 			"Limited ", m.User, " access to ", m.Domain, " by domain rule")
-		return conn, &Tracker{l: func() {}}
+		return conn, t
 	}
 	if l.CheckProtocolRule(m.Protocol) {
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ",
 			"Limited ", m.User, " use ", m.Domain, " by protocol rule")
-		return conn, &Tracker{l: func() {}}
+		return conn, t
 	}
 	ip := m.Source.Addr.String()
 	if b, r := l.CheckLimit(m.User, ip, true); r {
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
-		return conn, &Tracker{l: func() {}}
+		return conn, t
 	} else if b != nil {
 		conn = rate.NewConnRateLimiter(conn, b)
 	}
-	t := &Tracker{
-		l: func() {
-			l.ConnLimiter.DelConnCount(m.User, ip)
-		},
+	t.l = func() {
+		l.ConnLimiter.DelConnCount(m.User, ip)
 	}
 	if c, ok := h.counter.Load(m.Inbound); ok {
 		return counter.NewConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(m.User)), t
