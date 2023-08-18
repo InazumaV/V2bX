@@ -264,7 +264,8 @@ func (b *Box) Router() adapter.Router {
 
 func (b *Box) Protocols() []string {
 	return []string{
-		"v2ray",
+		"vmess",
+		"vless",
 		"shadowsocks",
 		"trojan",
 		"hysteria",

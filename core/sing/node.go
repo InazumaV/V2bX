@@ -75,10 +75,9 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 					},
 				},
 			}
-
 		case "remote":
 			if info.ExtraConfig.EnableReality == "true" {
-				if c.CertConfig.RealityConfig == nil {
+				if info.ExtraConfig.RealityConfig == nil {
 					return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
 				}
 				rc := info.ExtraConfig.RealityConfig
@@ -86,6 +85,9 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 					rc.ShortIds = []string{""}
 				}
 				dest, _ := strconv.Atoi(rc.Dest)
+				if rc.MaxTimeDiff == "" {
+					rc.MaxTimeDiff = "60"
+				}
 				mtd, _ := strconv.Atoi(rc.MaxTimeDiff)
 				tls.Reality = &option.InboundRealityOptions{
 					Enabled:           true,
@@ -109,7 +111,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		Tag: tag,
 	}
 	switch info.Type {
-	case "v2ray":
+	case "vmess", "vless":
 		t := option.V2RayTransportOptions{
 			Type: info.Network,
 		}
@@ -146,7 +148,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
-		if info.ExtraConfig.EnableVless == "true" {
+		if info.ExtraConfig.EnableVless == "true" || info.Type == "vless" {
 			in.Type = "vless"
 			in.VLESSOptions = option.VLESSInboundOptions{
 				ListenOptions: listen,
@@ -161,6 +163,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				Transport:     &t,
 			}
 		}
+
 	case "shadowsocks":
 		in.Type = "shadowsocks"
 		var keyLength int

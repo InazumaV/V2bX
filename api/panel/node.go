@@ -31,11 +31,24 @@ type BaseConfig struct {
 	PullInterval any `json:"pull_interval"`
 }
 
-type V2rayNodeRsp struct {
+type VMessNodeRsp struct {
 	Tls             int             `json:"tls"`
 	Network         string          `json:"network"`
-	NetworkSettings json.RawMessage `json:"networkSettings"`
-	ServerName      string          `json:"server_name"`
+	NetworkSettings json.RawMessage `json:"network_settings"`
+}
+
+type VLESSNodeRsp struct {
+	Flow            string          `json:"flow"`
+	Tls             int             `json:"tls"`
+	TlsSettings     json.RawMessage `json:"tls_settings"`
+	Network         string          `json:"network"`
+	NetworkSettings json.RawMessage `json:"network_settings"`
+}
+
+type TlsSettings struct {
+	ServerName string `json:"server_name"`
+	ServerPort int    `json:"server_port"`
+	ShortID    string `json:"short_id"`
 }
 
 type ShadowsocksNodeRsp struct {
@@ -49,6 +62,13 @@ type HysteriaNodeRsp struct {
 	Obfs     string `json:"obfs"`
 }
 
+type ExtraConfig struct {
+	EnableVless   string         `json:"enable_vless"`
+	Flow          string         `json:"flow"`
+	EnableReality string         `json:"enable_reality"`
+	RealityConfig *RealityConfig `json:"reality_config"`
+}
+
 type NodeInfo struct {
 	Id              int
 	Type            string
@@ -57,7 +77,8 @@ type NodeInfo struct {
 	Port            int
 	Network         string
 	RawDNS          RawDNS
-	ExtraConfig     V2rayExtraConfig
+	ExtraConfig     ExtraConfig
+	TlsSettings     TlsSettings
 	NetworkSettings json.RawMessage
 	Tls             bool
 	ServerName      string
@@ -78,13 +99,6 @@ type RawDNS struct {
 type Rules struct {
 	Regexp   []string
 	Protocol []string
-}
-
-type V2rayExtraConfig struct {
-	EnableVless   string         `json:"EnableVless"`
-	VlessFlow     string         `json:"VlessFlow"`
-	EnableReality string         `json:"EnableReality"`
-	RealityConfig *RealityConfig `json:"RealityConfig"`
 }
 
 type RealityConfig struct {
@@ -173,28 +187,58 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	node.PushInterval = intervalToTime(common.BaseConfig.PushInterval)
 	// parse protocol params
 	switch c.NodeType {
-	case "v2ray":
-		rsp := V2rayNodeRsp{}
+	case "vmess":
+		rsp := VMessNodeRsp{}
 		err = json.Unmarshal(r.Body(), &rsp)
 		if err != nil {
 			return nil, fmt.Errorf("decode v2ray params error: %s", err)
 		}
 		node.Network = rsp.Network
 		node.NetworkSettings = rsp.NetworkSettings
-		node.ServerName = rsp.ServerName
 		if rsp.Tls == 1 {
 			node.Tls = true
 		}
 		err = json.Unmarshal(rsp.NetworkSettings, &node.ExtraConfig)
 		if err != nil {
-			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
+			return nil, fmt.Errorf("decode vless extra error: %s", err)
 		}
 		if node.ExtraConfig.EnableReality == "true" {
 			if node.ExtraConfig.RealityConfig == nil {
 				node.ExtraConfig.EnableReality = "false"
 			} else {
-				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token))
+				key := crypt.GenX25519Private([]byte(c.NodeType + c.Token))
 				node.ExtraConfig.RealityConfig.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
+			}
+		}
+	case "vless":
+		rsp := VLESSNodeRsp{}
+		err = json.Unmarshal(r.Body(), &rsp)
+		if err != nil {
+			return nil, fmt.Errorf("decode v2ray params error: %s", err)
+		}
+		node.Network = rsp.Network
+		node.NetworkSettings = rsp.NetworkSettings
+		if rsp.Tls != 0 {
+			node.Tls = true
+		}
+		if rsp.Tls == 2 {
+			if err := json.Unmarshal(rsp.TlsSettings, &node.TlsSettings); err != nil {
+				return nil, fmt.Errorf("decode vless extra error: %s", err)
+			}
+			key := crypt.GenX25519Private([]byte(c.NodeType + c.Token))
+			node.ExtraConfig = ExtraConfig{
+				Flow:          rsp.Flow,
+				EnableReality: "true",
+				RealityConfig: &RealityConfig{
+					Dest: strconv.Itoa(node.TlsSettings.ServerPort),
+					ServerNames: []string{
+						node.TlsSettings.ServerName,
+					},
+					ShortIds: []string{
+						node.TlsSettings.ShortID,
+					},
+					PrivateKey: base64.RawURLEncoding.EncodeToString(key),
+				},
 			}
 		}
 	case "shadowsocks":
