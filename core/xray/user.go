@@ -71,21 +71,19 @@ func (c *Core) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int6
 }
 
 func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
-	users := make([]*protocol.User, 0, len(p.UserInfo))
+	users := make([]*protocol.User, 0, len(p.Users))
 	switch p.NodeInfo.Type {
-	case "v2ray":
-		if p.NodeInfo.ExtraConfig.EnableVless == "true" {
-			users = buildVlessUsers(p.Tag, p.UserInfo, p.NodeInfo.ExtraConfig.VlessFlow)
-		} else {
-			users = buildVmessUsers(p.Tag, p.UserInfo)
-		}
+	case "vmess":
+		users = buildVmessUsers(p.Tag, p.Users)
+	case "vless":
+		users = buildVlessUsers(p.Tag, p.Users, p.VAllss.Flow)
 	case "trojan":
-		users = buildTrojanUsers(p.Tag, p.UserInfo)
+		users = buildTrojanUsers(p.Tag, p.Users)
 	case "shadowsocks":
 		users = buildSSUsers(p.Tag,
-			p.UserInfo,
-			p.NodeInfo.Cipher,
-			p.NodeInfo.ServerKey)
+			p.Users,
+			p.Shadowsocks.Cipher,
+			p.Shadowsocks.ServerKey)
 	default:
 		return 0, fmt.Errorf("unsupported node type: %s", p.NodeInfo.Type)
 	}

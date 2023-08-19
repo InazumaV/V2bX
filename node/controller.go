@@ -65,7 +65,7 @@ func (c *Controller) Start() error {
 		return fmt.Errorf("update rule error: %s", err)
 	}
 	c.limiter = l
-	if node.Tls || node.Type == "hysteria" {
+	if node.Security == panel.Tls {
 		err = c.requestCert()
 		if err != nil {
 			return fmt.Errorf("request cert error: %s", err)
@@ -78,8 +78,7 @@ func (c *Controller) Start() error {
 	}
 	added, err := c.server.AddUsers(&vCore.AddUsersParams{
 		Tag:      c.tag,
-		Config:   c.Options,
-		UserInfo: c.userList,
+		Users:    c.userList,
 		NodeInfo: node,
 	})
 	if err != nil {

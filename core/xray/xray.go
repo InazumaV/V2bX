@@ -188,7 +188,8 @@ func (c *Core) Close() error {
 
 func (c *Core) Protocols() []string {
 	return []string{
-		"v2ray",
+		"vmess",
+		"vless",
 		"shadowsocks",
 		"trojan",
 	}

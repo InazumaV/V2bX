@@ -6,11 +6,11 @@ import (
 )
 
 type AddUsersParams struct {
-	Tag      string
-	Config   *conf.Options
-	UserInfo []panel.UserInfo
-	NodeInfo *panel.NodeInfo
+	Tag   string
+	Users []panel.UserInfo
+	*panel.NodeInfo
 }
+
 type Core interface {
 	Start() error
 	Close() error

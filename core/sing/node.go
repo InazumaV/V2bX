@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"github.com/google/uuid"
 	"net/netip"
 	"net/url"
 	"strconv"
@@ -33,7 +32,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	}
 	listen := option.ListenOptions{
 		Listen:        (*option.ListenAddress)(&addr),
-		ListenPort:    uint16(info.Port),
+		ListenPort:    uint16(info.Common.ServerPort),
 		ProxyProtocol: c.SingOptions.EnableProxyProtocol,
 		TCPFastOpen:   c.SingOptions.TCPFastOpen,
 		InboundOptions: option.InboundOptions{
@@ -42,83 +41,56 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		},
 	}
 	var tls option.InboundTLSOptions
-	if info.Tls || info.Type == "hysteria" {
+	switch info.Security {
+	case panel.Tls:
 		if c.CertConfig == nil {
 			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
 		}
-		tls.Enabled = true
-		tls.Insecure = true
-		tls.ServerName = info.ServerName
 		switch c.CertConfig.CertMode {
 		case "none", "":
 			break // disable
-		case "reality":
-			if c.CertConfig.RealityConfig == nil {
-				return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
-			}
-			rc := c.CertConfig.RealityConfig
-			tls.ServerName = rc.ServerNames[0]
-			if len(rc.ShortIds) == 0 {
-				rc.ShortIds = []string{""}
-			}
-			dest, _ := strconv.Atoi(rc.Dest)
-			mtd, _ := strconv.Atoi(strconv.FormatUint(rc.MaxTimeDiff, 10))
-			tls.Reality = &option.InboundRealityOptions{
-				Enabled:           true,
-				ShortID:           rc.ShortIds,
-				PrivateKey:        rc.PrivateKey,
-				MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
-				Handshake: option.InboundRealityHandshakeOptions{
-					ServerOptions: option.ServerOptions{
-						Server:     rc.ServerNames[0],
-						ServerPort: uint16(dest),
-					},
-				},
-			}
-
-		case "remote":
-			if info.ExtraConfig.EnableReality == "true" {
-				if c.CertConfig.RealityConfig == nil {
-					return option.Inbound{}, fmt.Errorf("RealityConfig is not valid")
-				}
-				rc := info.ExtraConfig.RealityConfig
-				if len(rc.ShortIds) == 0 {
-					rc.ShortIds = []string{""}
-				}
-				dest, _ := strconv.Atoi(rc.Dest)
-				mtd, _ := strconv.Atoi(rc.MaxTimeDiff)
-				tls.Reality = &option.InboundRealityOptions{
-					Enabled:           true,
-					ShortID:           rc.ShortIds,
-					PrivateKey:        rc.PrivateKey,
-					MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
-					Handshake: option.InboundRealityHandshakeOptions{
-						ServerOptions: option.ServerOptions{
-							Server:     rc.ServerNames[0],
-							ServerPort: uint16(dest),
-						},
-					},
-				}
-			}
 		default:
+			tls.Enabled = true
 			tls.CertificatePath = c.CertConfig.CertFile
 			tls.KeyPath = c.CertConfig.KeyFile
+		}
+	case panel.Reality:
+		tls.Enabled = true
+		v := info.VAllss
+		tls.ServerName = v.TlsSettings.PrivateKey
+		if len(v.TlsSettings.ShortIds) == 0 {
+			v.TlsSettings.ShortIds = []string{""}
+		}
+		dest, _ := strconv.Atoi(v.TlsSettings.ServerPort)
+		mtd, _ := strconv.Atoi(strconv.FormatUint(v.RealityConfig.MaxTimeDiff, 10))
+		tls.Reality = &option.InboundRealityOptions{
+			Enabled:           true,
+			ShortID:           v.TlsSettings.ShortIds,
+			PrivateKey:        v.TlsSettings.PrivateKey,
+			MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+			Handshake: option.InboundRealityHandshakeOptions{
+				ServerOptions: option.ServerOptions{
+					Server:     v.TlsSettings.ServerName[0],
+					ServerPort: uint16(dest),
+				},
+			},
 		}
 	}
 	in := option.Inbound{
 		Tag: tag,
 	}
 	switch info.Type {
-	case "v2ray":
+	case "vmess", "vless":
+		n := info.VAllss
 		t := option.V2RayTransportOptions{
-			Type: info.Network,
+			Type: n.Network,
 		}
-		switch info.Network {
+		switch n.Network {
 		case "tcp":
 			t.Type = ""
 		case "ws":
 			network := WsNetworkConfig{}
-			err := json.Unmarshal(info.NetworkSettings, &network)
+			err := json.Unmarshal(n.NetworkSettings, &network)
 			if err != nil {
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
@@ -141,12 +113,13 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				Headers:             h,
 			}
 		case "grpc":
-			err := json.Unmarshal(info.NetworkSettings, &t.GRPCOptions)
+			err := json.Unmarshal(n.NetworkSettings, &t.GRPCOptions)
 			if err != nil {
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
-		if info.ExtraConfig.EnableVless == "true" {
+		tls.ServerName = n.ServerName
+		if info.Type == "vless" {
 			in.Type = "vless"
 			in.VLESSOptions = option.VLESSInboundOptions{
 				ListenOptions: listen,
@@ -163,8 +136,9 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}
 	case "shadowsocks":
 		in.Type = "shadowsocks"
+		n := info.Shadowsocks
 		var keyLength int
-		switch info.Cipher {
+		switch n.Cipher {
 		case "2022-blake3-aes-128-gcm":
 			keyLength = 16
 		case "2022-blake3-aes-256-gcm":
@@ -174,13 +148,13 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}
 		in.ShadowsocksOptions = option.ShadowsocksInboundOptions{
 			ListenOptions: listen,
-			Method:        info.Cipher,
+			Method:        n.Cipher,
 		}
 		p := make([]byte, keyLength)
 		_, _ = rand.Read(p)
 		randomPasswd := string(p)
-		if strings.Contains(info.Cipher, "2022") {
-			in.ShadowsocksOptions.Password = info.ServerKey
+		if strings.Contains(n.Cipher, "2022") {
+			in.ShadowsocksOptions.Password = n.ServerKey
 			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
 		}
 		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
@@ -188,27 +162,9 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}}
 	case "trojan":
 		in.Type = "trojan"
-		t := option.V2RayTransportOptions{
-			Type: info.Network,
-		}
-		switch info.Network {
-		case "tcp":
-			t.Type = ""
-		case "grpc":
-			err := json.Unmarshal(info.NetworkSettings, &t.GRPCOptions)
-			if err != nil {
-				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
-			}
-		}
-		randomPasswd := uuid.New().String()
 		in.TrojanOptions = option.TrojanInboundOptions{
 			ListenOptions: listen,
-			Users: []option.TrojanUser{{
-				Name:     randomPasswd,
-				Password: randomPasswd,
-			}},
-			TLS:       &tls,
-			Transport: &t,
+			TLS:           &tls,
 		}
 		if c.SingOptions.FallBackConfigs != nil {
 			// fallback handling
@@ -230,9 +186,9 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		in.Type = "hysteria"
 		in.HysteriaOptions = option.HysteriaInboundOptions{
 			ListenOptions: listen,
-			UpMbps:        info.UpMbps,
-			DownMbps:      info.DownMbps,
-			Obfs:          info.HyObfs,
+			UpMbps:        info.Hysteria.UpMbps,
+			DownMbps:      info.Hysteria.DownMbps,
+			Obfs:          info.Hysteria.Obfs,
 			TLS:           &tls,
 		}
 	}

@@ -31,7 +31,7 @@ func (c *Controller) renewCertTask() error {
 
 func (c *Controller) requestCert() error {
 	switch c.CertConfig.CertMode {
-	case "reality", "none", "":
+	case "none", "":
 	case "file":
 		if c.CertConfig.CertFile == "" || c.CertConfig.KeyFile == "" {
 			return fmt.Errorf("cert file path or key file path not exist")
