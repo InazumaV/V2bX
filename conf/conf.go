@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"github.com/InazumaV/V2bX/common/json5"
 	"os"
 
 	"github.com/goccy/go-json"
@@ -28,5 +29,5 @@ func (p *Conf) LoadFromPath(filePath string) error {
 		return fmt.Errorf("open config file error: %s", err)
 	}
 	defer f.Close()
-	return json.NewDecoder(f).Decode(p)
+	return json.NewDecoder(json5.NewTrimNodeReader(f)).Decode(p)
 }
