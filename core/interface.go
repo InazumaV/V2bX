@@ -20,4 +20,5 @@ type Core interface {
 	GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64)
 	DelUsers(users []panel.UserInfo, tag string) error
 	Protocols() []string
+	Type() string
 }

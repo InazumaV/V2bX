@@ -39,12 +39,12 @@ func isSupported(protocol string, protocols []string) bool {
 	return false
 }
 
-func (s *Selector) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
+func (s *Selector) AddNode(tag string, info *panel.NodeInfo, option *conf.Options) error {
 	for i := range s.cores {
-		if !isSupported(info.Type, s.cores[i].Protocols()) {
+		if option.Core != s.cores[i].Type() {
 			continue
 		}
-		err := s.cores[i].AddNode(tag, info, config)
+		err := s.cores[i].AddNode(tag, info, option)
 		if err != nil {
 			return err
 		}
@@ -96,4 +96,8 @@ func (s *Selector) Protocols() []string {
 		protocols = append(protocols, s.cores[i].Protocols()...)
 	}
 	return protocols
+}
+
+func (s *Selector) Type() string {
+	return "selector"
 }

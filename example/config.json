@@ -1,0 +1,65 @@
+{
+  "Log": {
+    "Level": "error"
+  },
+  "Cores": [
+    {
+      "Type": "sing",
+      "Log": {
+        "Level": "error",
+        "Timestamp": true
+      }
+    },{
+      "Type": "xray",
+      "Log": {
+        "Level": "error"
+      },
+      "DnsConfigPath": "",
+      ...
+    }
+  ],
+  "Nodes": [
+    {
+      "Core": "sing",
+      "ApiHost": "http://127.0.0.1",
+      "ApiKey": "test",
+      "NodeID": 33,
+      "NodeType": "shadowsocks",
+      "Timeout": 30,
+      "RuleListPath": "",
+      "ListenIP": "0.0.0.0",
+      "SendIP": "0.0.0.0",
+      "EnableProxyProtocol": true,
+      "EnableTFO": true,
+      ...
+    },{
+      "ApiConfig": {
+        "ApiHost": "http://127.0.0.1",
+        "ApiKey": "test",
+        "NodeID": 33,
+        "Timeout": 30,
+        "RuleListPath": ""
+      },
+      "Options": {
+        "Core": "sing",
+        "EnableProxyProtocol": true,
+        "EnableTFO": true,
+        ...
+      }
+    },
+    {
+      "Core": "xray",
+      "ApiHost": "http://127.0.0.1",
+      "ApiKey": "test",
+      "NodeID": 33,
+      "NodeType": "shadowsocks",
+      "Timeout": 30,
+      "RuleListPath": "",
+      "ListenIP": "0.0.0.0",
+      "SendIP": "0.0.0.0",
+      "EnableProxyProtocol": true,
+      "EnableTFO": true,
+      ...
+    }
+  ]
+}

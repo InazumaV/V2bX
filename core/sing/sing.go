@@ -271,3 +271,7 @@ func (b *Box) Protocols() []string {
 		"hysteria",
 	}
 }
+
+func (b *Box) Type() string {
+	return "sing"
+}

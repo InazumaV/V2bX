@@ -194,3 +194,7 @@ func (c *Core) Protocols() []string {
 		"trojan",
 	}
 }
+
+func (c *Core) Type() string {
+	return "xray"
+}

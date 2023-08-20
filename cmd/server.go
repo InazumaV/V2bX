@@ -31,7 +31,7 @@ var serverCommand = cobra.Command{
 func init() {
 	serverCommand.PersistentFlags().
 		StringVarP(&config, "config", "c",
-			"/etc/V2bX/config.yml", "config file path")
+			"/etc/V2bX/config.json", "config file path")
 	serverCommand.PersistentFlags().
 		BoolVarP(&watch, "watch", "w",
 			true, "watch file path change")
@@ -46,9 +46,19 @@ func serverHandle(_ *cobra.Command, _ []string) {
 		log.WithField("err", err).Error("Load config file failed")
 		return
 	}
+	switch c.LogConfig.Level {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	}
 	limiter.Init()
 	log.Info("Start V2bX...")
-	vc, err := vCore.NewCore(&c.CoreConfig)
+	vc, err := vCore.NewCore(c.CoresConfig)
 	if err != nil {
 		log.WithField("err", err).Error("new core failed")
 		return
@@ -60,7 +70,7 @@ func serverHandle(_ *cobra.Command, _ []string) {
 	}
 	defer vc.Close()
 	nodes := node.New()
-	err = nodes.Start(c.NodesConfig, vc)
+	err = nodes.Start(c.NodeConfig, vc)
 	if err != nil {
 		log.WithField("err", err).Error("Run nodes failed")
 		return
@@ -74,7 +84,7 @@ func serverHandle(_ *cobra.Command, _ []string) {
 				log.WithField("err", err).Error("Restart node failed")
 				return
 			}
-			vc, err = vCore.NewCore(&c.CoreConfig)
+			vc, err = vCore.NewCore(c.CoresConfig)
 			if err != nil {
 				log.WithField("err", err).Error("New core failed")
 				return
@@ -84,7 +94,7 @@ func serverHandle(_ *cobra.Command, _ []string) {
 				log.WithField("err", err).Error("Start core failed")
 				return
 			}
-			err = nodes.Start(c.NodesConfig, vc)
+			err = nodes.Start(c.NodeConfig, vc)
 			if err != nil {
 				log.WithField("err", err).Error("Run nodes failed")
 				return

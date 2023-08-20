@@ -1,27 +1,27 @@
 package conf
 
 type XrayConfig struct {
-	LogConfig          *XrayLogConfig        `yaml:"Log"`
-	AssetPath          string                `yaml:"AssetPath"`
-	DnsConfigPath      string                `yaml:"DnsConfigPath"`
-	RouteConfigPath    string                `yaml:"RouteConfigPath"`
-	ConnectionConfig   *XrayConnectionConfig `yaml:"XrayConnectionConfig"`
-	InboundConfigPath  string                `yaml:"InboundConfigPath"`
-	OutboundConfigPath string                `yaml:"OutboundConfigPath"`
+	LogConfig          *XrayLogConfig        `json:"Log"`
+	AssetPath          string                `json:"AssetPath"`
+	DnsConfigPath      string                `json:"DnsConfigPath"`
+	RouteConfigPath    string                `json:"RouteConfigPath"`
+	ConnectionConfig   *XrayConnectionConfig `json:"XrayConnectionConfig"`
+	InboundConfigPath  string                `json:"InboundConfigPath"`
+	OutboundConfigPath string                `json:"OutboundConfigPath"`
 }
 
 type XrayLogConfig struct {
-	Level      string `yaml:"Level"`
-	AccessPath string `yaml:"AccessPath"`
-	ErrorPath  string `yaml:"ErrorPath"`
+	Level      string `json:"Level"`
+	AccessPath string `json:"AccessPath"`
+	ErrorPath  string `json:"ErrorPath"`
 }
 
 type XrayConnectionConfig struct {
-	Handshake    uint32 `yaml:"handshake"`
-	ConnIdle     uint32 `yaml:"connIdle"`
-	UplinkOnly   uint32 `yaml:"uplinkOnly"`
-	DownlinkOnly uint32 `yaml:"downlinkOnly"`
-	BufferSize   int32  `yaml:"bufferSize"`
+	Handshake    uint32 `json:"handshake"`
+	ConnIdle     uint32 `json:"connIdle"`
+	UplinkOnly   uint32 `json:"uplinkOnly"`
+	DownlinkOnly uint32 `json:"downlinkOnly"`
+	BufferSize   int32  `json:"bufferSize"`
 }
 
 func NewXrayConfig() *XrayConfig {
@@ -43,5 +43,38 @@ func NewXrayConfig() *XrayConfig {
 			DownlinkOnly: 4,
 			BufferSize:   64,
 		},
+	}
+}
+
+type XrayOptions struct {
+	EnableProxyProtocol bool                    `json:"EnableProxyProtocol"`
+	EnableDNS           bool                    `json:"EnableDNS"`
+	DNSType             string                  `json:"DNSType"`
+	EnableUot           bool                    `json:"EnableUot"`
+	EnableTFO           bool                    `json:"EnableTFO"`
+	DisableIVCheck      bool                    `json:"DisableIVCheck"`
+	DisableSniffing     bool                    `json:"DisableSniffing"`
+	EnableFallback      bool                    `json:"EnableFallback"`
+	FallBackConfigs     []FallBackConfigForXray `json:"FallBackConfigs"`
+}
+
+type FallBackConfigForXray struct {
+	SNI              string `json:"SNI"`
+	Alpn             string `json:"Alpn"`
+	Path             string `json:"Path"`
+	Dest             string `json:"Dest"`
+	ProxyProtocolVer uint64 `json:"ProxyProtocolVer"`
+}
+
+func NewXrayOptions() *XrayOptions {
+	return &XrayOptions{
+		EnableProxyProtocol: false,
+		EnableDNS:           false,
+		DNSType:             "AsIs",
+		EnableUot:           false,
+		EnableTFO:           false,
+		DisableIVCheck:      false,
+		DisableSniffing:     false,
+		EnableFallback:      false,
 	}
 }
