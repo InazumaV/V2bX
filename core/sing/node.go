@@ -57,7 +57,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	case panel.Reality:
 		tls.Enabled = true
 		v := info.VAllss
-		tls.ServerName = v.TlsSettings.PrivateKey
+		tls.ServerName = v.TlsSettings.ServerName[0]
 		if len(v.TlsSettings.ShortIds) == 0 {
 			v.TlsSettings.ShortIds = []string{""}
 		}
