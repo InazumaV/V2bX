@@ -1,19 +1,17 @@
 package cmd
 
 import (
+	"github.com/InazumaV/V2bX/conf"
+	vCore "github.com/InazumaV/V2bX/core"
+	"github.com/InazumaV/V2bX/limiter"
+	"github.com/InazumaV/V2bX/node"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
-
-	log "github.com/sirupsen/logrus"
-
-	vCore "github.com/InazumaV/V2bX/core"
-
-	"github.com/InazumaV/V2bX/conf"
-	"github.com/InazumaV/V2bX/limiter"
-	"github.com/InazumaV/V2bX/node"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -55,6 +53,16 @@ func serverHandle(_ *cobra.Command, _ []string) {
 		log.SetLevel(log.WarnLevel)
 	case "error":
 		log.SetLevel(log.ErrorLevel)
+	}
+	if c.LogConfig.Output != "" {
+		w := &lumberjack.Logger{
+			Filename:   c.LogConfig.Output,
+			MaxSize:    100,
+			MaxBackups: 3,
+			MaxAge:     28,
+			Compress:   true,
+		}
+		log.SetOutput(w)
 	}
 	limiter.Init()
 	log.Info("Start V2bX...")

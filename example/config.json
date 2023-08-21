@@ -2,7 +2,10 @@
   "Log": {
     // V2bX 的日志配置，独立于各 Core 的 log 配置
 
-    "Level": "error"
+    // 日志等级，info, warn, error, none
+    "Level": "error",
+    // 日志输出路径，默认输出到标准输出
+    "Output": ""
   },
   "Cores": [
     {
