@@ -1,65 +1,93 @@
 {
   "Log": {
-    "Level": "error"
+    // V2bX 的日志配置，独立于各 Core 的 log 配置
+
+    // 日志等级，info, warn, error, none
+    "Level": "error",
+    // 日志输出路径，默认输出到标准输出
+    "Output": ""
   },
   "Cores": [
     {
+      // Core类型
       "Type": "sing",
       "Log": {
+        // 同 SingBox log 部分配置
+
         "Level": "error",
         "Timestamp": true
       }
-    },{
+      // More
+    },
+    {
       "Type": "xray",
       "Log": {
+        // 同 Xray-core log 部分配置
+
         "Level": "error"
       },
-      "DnsConfigPath": "",
-      ...
+      "DnsConfigPath": ""
+      // More
     }
   ],
   "Nodes": [
+    // Node配置有两种写法
     {
+      // 写法1
+
+      // Core类型
       "Core": "sing",
+      // API接口地址
       "ApiHost": "http://127.0.0.1",
+      // API密钥，即Token
       "ApiKey": "test",
+      // 节点ID
       "NodeID": 33,
+      // 节点类型
       "NodeType": "shadowsocks",
+      // 请求超时时间
       "Timeout": 30,
+      // 本地审计规则
       "RuleListPath": "",
+      // 监听IP
       "ListenIP": "0.0.0.0",
+      // 发送IP
       "SendIP": "0.0.0.0",
-      "EnableProxyProtocol": true,
-      "EnableTFO": true,
-      ...
-    },{
-      "ApiConfig": {
-        "ApiHost": "http://127.0.0.1",
-        "ApiKey": "test",
-        "NodeID": 33,
-        "Timeout": 30,
-        "RuleListPath": ""
-      },
-      "Options": {
-        "Core": "sing",
-        "EnableProxyProtocol": true,
-        "EnableTFO": true,
-        ...
-      }
-    },
-    {
-      "Core": "xray",
-      "ApiHost": "http://127.0.0.1",
-      "ApiKey": "test",
-      "NodeID": 33,
-      "NodeType": "shadowsocks",
-      "Timeout": 30,
-      "RuleListPath": "",
-      "ListenIP": "0.0.0.0",
-      "SendIP": "0.0.0.0",
-      "EnableProxyProtocol": true,
-      "EnableTFO": true,
-      ...
+      // 开启 Proxy Protocol，参见 https://github.com/haproxy/haproxy/blob/master/doc/proxy-protocol.txt
+      "EnableProxyProtocol": false,
+      // 开启 TCP Fast Open
+      "EnableTFO": true
+      // More
     }
+    /*,
+        {
+          // 写法2
+
+          "ApiConfig": {
+            "ApiHost": "http://127.0.0.1",
+            "ApiKey": "test",
+            "NodeID": 33,
+            "Timeout": 30,
+            "RuleListPath": ""
+          },
+          "Options": {
+            "Core": "sing",
+            "EnableProxyProtocol": true,
+            "EnableTFO": true
+          }
+        },
+        {
+          "Core": "xray",
+          "ApiHost": "http://127.0.0.1",
+          "ApiKey": "test",
+          "NodeID": 33,
+          "NodeType": "shadowsocks",
+          "Timeout": 30,
+          "RuleListPath": "",
+          "ListenIP": "0.0.0.0",
+          "SendIP": "0.0.0.0",
+          "EnableProxyProtocol": true,
+          "EnableTFO": true
+        }*/
   ]
 }
