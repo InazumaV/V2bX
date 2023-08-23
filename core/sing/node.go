@@ -58,22 +58,19 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		tls.Enabled = true
 		v := info.VAllss
 		tls.ServerName = v.TlsSettings.ServerName
-		if len(v.TlsSettings.ShortIds) == 0 {
-			v.TlsSettings.ShortIds = []string{""}
-		}
 		dest, _ := strconv.Atoi(v.TlsSettings.ServerPort)
-		mtd, _ := strconv.Atoi(strconv.FormatUint(v.RealityConfig.MaxTimeDiff, 10))
+		mtd, _ := time.ParseDuration(v.RealityConfig.MaxTimeDiff)
 		tls.Reality = &option.InboundRealityOptions{
-			Enabled:           true,
-			ShortID:           v.TlsSettings.ShortIds,
-			PrivateKey:        v.TlsSettings.PrivateKey,
-			MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
+			Enabled:    true,
+			ShortID:    []string{v.TlsSettings.ShortId},
+			PrivateKey: v.TlsSettings.PrivateKey,
 			Handshake: option.InboundRealityHandshakeOptions{
 				ServerOptions: option.ServerOptions{
 					Server:     tls.ServerName,
 					ServerPort: uint16(dest),
 				},
 			},
+			MaxTimeDifference: option.Duration(mtd),
 		}
 	}
 	in := option.Inbound{
@@ -118,7 +115,6 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
 			}
 		}
-		tls.ServerName = n.ServerName
 		if info.Type == "vless" {
 			in.Type = "vless"
 			in.VLESSOptions = option.VLESSInboundOptions{

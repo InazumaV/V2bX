@@ -70,10 +70,10 @@ type VAllssNode struct {
 }
 
 type TlsSettings struct {
-	ServerName string   `json:"server_name"`
-	ServerPort string   `json:"server_port"`
-	ShortIds   []string `json:"short_ids"`
-	PrivateKey string   `json:"-"`
+	ServerName string `json:"server_name"`
+	ServerPort string `json:"server_port"`
+	ShortId    string `json:"short_id"`
+	PrivateKey string `json:"-"`
 }
 
 type RealityConfig struct {
@@ -81,7 +81,7 @@ type RealityConfig struct {
 	Xver         uint64 `json:"Xver"`
 	MinClientVer string `json:"MinClientVer"`
 	MaxClientVer string `json:"MaxClientVer"`
-	MaxTimeDiff  uint64 `json:"MaxTimeDiff"`
+	MaxTimeDiff  string `json:"MaxTimeDiff"`
 }
 
 type ShadowsocksNode struct {
@@ -148,7 +148,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			}
 		}
 		if node.Security == Reality {
-			key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token))
+			key := crypt.GenX25519Private([]byte("vless" + c.Token))
 			rsp.TlsSettings.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
 		}
 	case "shadowsocks":

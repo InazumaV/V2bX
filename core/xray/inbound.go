@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
 	"github.com/goccy/go-json"
@@ -107,19 +109,16 @@ func buildInbound(option *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 		if err != nil {
 			return nil, fmt.Errorf("marshal reality dest error: %s", err)
 		}
-		short := nodeInfo.VAllss.TlsSettings.ShortIds
-		if len(short) == 0 {
-			short = []string{""}
-		}
+		mtd, _ := time.ParseDuration(v.RealityConfig.MaxTimeDiff)
 		in.StreamSetting.REALITYSettings = &coreConf.REALITYConfig{
 			Dest:         d,
 			Xver:         v.RealityConfig.Xver,
-			ServerNames:  v.TlsSettings.ServerName,
+			ServerNames:  []string{v.TlsSettings.ServerName},
 			PrivateKey:   v.TlsSettings.PrivateKey,
 			MinClientVer: v.RealityConfig.MinClientVer,
 			MaxClientVer: v.RealityConfig.MaxClientVer,
-			MaxTimeDiff:  v.RealityConfig.MaxTimeDiff,
-			ShortIds:     short,
+			MaxTimeDiff:  uint64(mtd.Microseconds()),
+			ShortIds:     []string{v.TlsSettings.ShortId},
 		}
 		break
 	}
