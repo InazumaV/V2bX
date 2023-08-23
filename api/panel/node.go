@@ -3,7 +3,6 @@ package panel
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -234,7 +233,6 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	cm.BaseConfig = nil
 
 	c.nodeEtag = r.Header().Get("ETag")
-	log.Print(node.VAllss.TlsSettings.ServerName)
 	return
 }
 
