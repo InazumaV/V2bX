@@ -73,7 +73,7 @@ type TlsSettings struct {
 	ServerName string `json:"server_name"`
 	ServerPort string `json:"server_port"`
 	ShortId    string `json:"short_id"`
-	PrivateKey string `json:"-"`
+	PrivateKey string `json:"private_key"`
 }
 
 type RealityConfig struct {
@@ -148,8 +148,10 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 			}
 		}
 		if node.Security == Reality {
-			key := crypt.GenX25519Private([]byte("vless" + c.Token))
-			rsp.TlsSettings.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
+			if rsp.TlsSettings.PrivateKey == "" {
+				key := crypt.GenX25519Private([]byte("vless" + c.Token))
+				rsp.TlsSettings.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
+			}
 		}
 	case "shadowsocks":
 		rsp := &ShadowsocksNode{}
