@@ -3,12 +3,13 @@ package panel
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/InazumaV/V2bX/common/crypt"
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/InazumaV/V2bX/common/crypt"
 	"github.com/goccy/go-json"
 )
 
@@ -70,7 +71,7 @@ type VAllssNode struct {
 }
 
 type TlsSettings struct {
-	ServerName []string `json:"sever_name"`
+	ServerName string   `json:"server_name"`
 	ServerPort string   `json:"server_port"`
 	ShortIds   []string `json:"short_ids"`
 	PrivateKey string   `json:"-"`
@@ -142,14 +143,14 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		node.VAllss = rsp
 		node.Security = node.VAllss.Tls
 		if len(rsp.NetworkSettings) > 0 {
-			/*err = json.Unmarshal(rsp.NetworkSettings, &rsp.RealityConfig)
+			err = json.Unmarshal(rsp.NetworkSettings, &rsp.RealityConfig)
 			if err != nil {
 				return nil, fmt.Errorf("decode reality config error: %s", err)
-			}*/
-			if node.Security == Reality {
-				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token))
-				rsp.TlsSettings.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
 			}
+		}
+		if node.Security == Reality {
+			key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token))
+			rsp.TlsSettings.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
 		}
 	case "shadowsocks":
 		rsp := &ShadowsocksNode{}
@@ -233,6 +234,7 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	cm.BaseConfig = nil
 
 	c.nodeEtag = r.Header().Get("ETag")
+	log.Print(node.VAllss.TlsSettings.ServerName)
 	return
 }
 

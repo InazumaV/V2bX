@@ -57,7 +57,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	case panel.Reality:
 		tls.Enabled = true
 		v := info.VAllss
-		tls.ServerName = v.TlsSettings.ServerName[0]
+		tls.ServerName = v.TlsSettings.ServerName
 		if len(v.TlsSettings.ShortIds) == 0 {
 			v.TlsSettings.ShortIds = []string{""}
 		}
@@ -70,7 +70,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 			MaxTimeDifference: option.Duration(time.Duration(mtd) * time.Second),
 			Handshake: option.InboundRealityHandshakeOptions{
 				ServerOptions: option.ServerOptions{
-					Server:     v.TlsSettings.ServerName[0],
+					Server:     tls.ServerName,
 					ServerPort: uint16(dest),
 				},
 			},
@@ -207,11 +207,14 @@ func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) er
 		c,
 		nil,
 	)
-	b.inbounds[tag] = in
+	if err != nil {
+		return fmt.Errorf("init inbound error： %s", err)
+	}
 	err = in.Start()
 	if err != nil {
 		return fmt.Errorf("start inbound error: %s", err)
 	}
+	b.inbounds[tag] = in
 	err = b.router.AddInbound(in)
 	if err != nil {
 		return fmt.Errorf("add inbound error: %s", err)
