@@ -98,6 +98,8 @@ func (b *Box) DelUsers(users []panel.UserInfo, tag string) error {
 		switch i.Type() {
 		case "vmess":
 			del = i.(*inbound.VMess)
+		case "vless":
+			del = i.(*inbound.VLESS)
 		case "shadowsocks":
 			del = i.(*inbound.ShadowsocksMulti)
 		case "trojan":
