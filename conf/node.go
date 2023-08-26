@@ -33,9 +33,9 @@ type Options struct {
 	CertConfig  *CertConfig  `json:"CertConfig"`
 }
 
-func (n *NodeConfig) UnmarshalJSON(b []byte) (err error) {
+func (n *NodeConfig) UnmarshalJSON(data []byte) (err error) {
 	r := rawNodeConfig{}
-	err = json.Unmarshal(b, &r)
+	err = json.Unmarshal(data, &r)
 	if err != nil {
 		return err
 	}
@@ -48,14 +48,14 @@ func (n *NodeConfig) UnmarshalJSON(b []byte) (err error) {
 		n.ApiConfig = ApiConfig{
 			Timeout: 30,
 		}
-		err = json.Unmarshal(b, &n.ApiConfig)
+		err = json.Unmarshal(data, &n.ApiConfig)
 		if err != nil {
 			return
 		}
 	}
-
 	if r.OptRaw != nil {
-		err = json.Unmarshal(*r.OptRaw, &n.Options)
+		data = *r.OptRaw
+		err = json.Unmarshal(data, &n.Options)
 		if err != nil {
 			return
 		}
@@ -65,18 +65,18 @@ func (n *NodeConfig) UnmarshalJSON(b []byte) (err error) {
 			ListenIP: "0.0.0.0",
 			SendIP:   "0.0.0.0",
 		}
-		err = json.Unmarshal(b, &n.Options)
+		err = json.Unmarshal(data, &n.Options)
 		if err != nil {
 			return
 		}
-		switch n.Options.Core {
-		case "xray":
-			n.Options.XrayOptions = NewXrayOptions()
-			return json.Unmarshal(b, n.Options.XrayOptions)
-		case "sing":
-			n.Options.SingOptions = NewSingOptions()
-			return json.Unmarshal(b, n.Options.SingOptions)
-		}
+	}
+	switch n.Options.Core {
+	case "xray":
+		n.Options.XrayOptions = NewXrayOptions()
+		return json.Unmarshal(data, n.Options.XrayOptions)
+	case "sing":
+		n.Options.SingOptions = NewSingOptions()
+		return json.Unmarshal(data, n.Options.SingOptions)
 	}
 	return
 }
