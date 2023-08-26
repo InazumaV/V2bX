@@ -48,7 +48,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 			return nil, fmt.Errorf("open original config error: %s", err)
 		}
 		defer f.Close()
-		err = json.NewDecoder(f).Decode(options)
+		err = json.NewDecoder(f).Decode(&options)
 		if err != nil {
 			return nil, fmt.Errorf("decode original config error: %s", err)
 		}
