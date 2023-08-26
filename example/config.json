@@ -16,6 +16,13 @@
 
         "Level": "error",
         "Timestamp": true
+      },
+      "NTP": {
+        // 同 SingBox ntp 部分配置
+        // VMess VLESS 建议开启
+        "Enable": true,
+        "Server":     "time.apple.com",
+        "ServerPort": 0
       }
       // More
     },

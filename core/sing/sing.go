@@ -59,6 +59,14 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 		Timestamp: c.SingConfig.LogConfig.Timestamp,
 		Output:    c.SingConfig.LogConfig.Output,
 	}
+	options.NTP = &option.NTPOptions{
+		Enabled:       c.SingConfig.NtpConfig.Enable,
+		WriteToSystem: true,
+		ServerOptions: option.ServerOptions{
+			Server:     c.SingConfig.NtpConfig.Server,
+			ServerPort: c.SingConfig.NtpConfig.ServerPort,
+		},
+	}
 	ctx := context.Background()
 	ctx = pause.ContextWithDefaultManager(ctx)
 	createdAt := time.Now()

@@ -2,6 +2,7 @@ package conf
 
 type SingConfig struct {
 	LogConfig    SingLogConfig `json:"Log"`
+	NtpConfig    SingNtpConfig `json:"NTP"`
 	OriginalPath string        `json:"OriginalPath"`
 }
 
@@ -18,6 +19,11 @@ func NewSingConfig() *SingConfig {
 			Level:     "error",
 			Timestamp: true,
 		},
+		NtpConfig: SingNtpConfig{
+			Enable:     false,
+			Server:     "time.apple.com",
+			ServerPort: 0,
+		},
 	}
 }
 
@@ -27,6 +33,12 @@ type SingOptions struct {
 	SniffEnabled             bool                   `json:"EnableSniff"`
 	SniffOverrideDestination bool                   `json:"SniffOverrideDestination"`
 	FallBackConfigs          *FallBackConfigForSing `json:"FallBackConfigs"`
+}
+
+type SingNtpConfig struct {
+	Enable     bool   `json:"Enable"`
+	Server     string `json:"Server"`
+	ServerPort uint16 `json:"ServerPort"`
 }
 
 type FallBackConfigForSing struct {
