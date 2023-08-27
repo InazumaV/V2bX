@@ -1,0 +1,191 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev_new
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
+  release:
+    types: [published]
+
+jobs:
+
+  build:
+    strategy:
+      matrix:
+        # Include amd64 on all platforms.
+        goos: [windows, freebsd, linux, dragonfly, darwin]
+        goarch: [amd64, 386]
+        exclude:
+          # Exclude i386 on darwin and dragonfly.
+          - goarch: 386
+            goos: dragonfly
+          - goarch: 386
+            goos: darwin
+        include:
+          # BEIGIN MacOS ARM64
+          - goos: darwin
+            goarch: arm64
+          # END MacOS ARM64
+          # BEGIN Linux ARM 5 6 7
+          - goos: linux
+            goarch: arm
+            goarm: 7
+          - goos: linux
+            goarch: arm
+            goarm: 6
+          - goos: linux
+            goarch: arm
+            goarm: 5
+          # END Linux ARM 5 6 7
+          # BEGIN Android ARM 8
+          - goos: android
+            goarch: arm64
+          # END Android ARM 8
+          # BEGIN Other architectures
+          # BEGIN riscv64 & ARM64
+          - goos: linux
+            goarch: arm64
+          - goos: linux
+            goarch: riscv64
+          # END riscv64 & ARM64
+          # BEGIN MIPS
+          - goos: linux
+            goarch: mips64
+          - goos: linux
+            goarch: mips64le
+          - goos: linux
+            goarch: mipsle
+          - goos: linux
+            goarch: mips
+          # END MIPS
+          # BEGIN PPC
+          - goos: linux
+            goarch: ppc64
+          - goos: linux
+            goarch: ppc64le
+          # END PPC
+          # BEGIN FreeBSD ARM
+          - goos: freebsd
+            goarch: arm64
+          - goos: freebsd
+            goarch: arm
+            goarm: 7
+          # END FreeBSD ARM
+          # BEGIN S390X
+          - goos: linux
+            goarch: s390x
+          # END S390X
+          # END Other architectures
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      GOARM: ${{ matrix.goarm }}
+      CGO_ENABLED: 0
+    steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v3
+      - name: Show workflow information
+        id: get_filename
+        run: |
+          export _NAME=$(jq ".[\"$GOOS-$GOARCH$GOARM$GOMIPS\"].friendlyName" -r < .github/build/friendly-filenames.json)
+          echo "GOOS: $GOOS, GOARCH: $GOARCH, GOARM: $GOARM, GOMIPS: $GOMIPS, RELEASE_NAME: $_NAME"
+          echo "::set-output name=ASSET_NAME::$_NAME"
+          echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.20'
+
+      - name: Get project dependencies
+        run: go mod download
+      - name: Get release version
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          echo "version=$(echo $GITHUB_REF | cut -d / -f 3)" >> $GITHUB_ENV
+      - name: Get other version
+        if: ${{ github.event_name != 'release' }}
+        run: |
+          echo "version=${{ github.sha }}" >> $GITHUB_ENV
+      - name: Build V2bX
+        run: |
+          echo "version: $version"
+          mkdir -p build_assets
+          go build -v -o build_assets/V2bX -tags "sing xray with_reality_server with_quic" -trimpath -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=$version' -s -w -buildid="
+
+      - name: Build Mips softfloat V2bX
+        if: matrix.goarch == 'mips' || matrix.goarch == 'mipsle'
+        run: |
+          echo "version: $version"
+          GOMIPS=softfloat go build -v -o build_assets/V2bX_softfloat -tags "sing xray with_reality_server with_quic" -trimpath -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=$version' -s -w -buildid="
+      - name: Rename Windows V2bX
+        if: matrix.goos == 'windows'
+        run: |
+          cd ./build_assets || exit 1
+          mv V2bX V2bX.exe
+      - name: Prepare to release
+        run: |
+          cp ${GITHUB_WORKSPACE}/README.md ./build_assets/README.md
+          cp ${GITHUB_WORKSPACE}/LICENSE ./build_assets/LICENSE
+          cp ${GITHUB_WORKSPACE}/example/dns.json ./build_assets/dns.json
+          cp ${GITHUB_WORKSPACE}/example/route.json ./build_assets/route.json
+          cp ${GITHUB_WORKSPACE}/example/custom_outbound.json ./build_assets/custom_outbound.json
+          cp ${GITHUB_WORKSPACE}/example/custom_inbound.json ./build_assets/custom_inbound.json
+          cp ${GITHUB_WORKSPACE}/example/rulelist ./build_assets/rulelist
+          cp ${GITHUB_WORKSPACE}/example/config.json ./build_assets/config.json
+          LIST=('geoip geoip geoip' 'domain-list-community dlc geosite')
+          for i in "${LIST[@]}"
+          do
+            INFO=($(echo $i | awk 'BEGIN{FS=" ";OFS=" "} {print $1,$2,$3}'))
+            FILE_NAME="${INFO[2]}.dat"
+            echo -e "Downloading ${FILE_NAME}..."
+            curl -L "https://github.com/v2fly/${INFO[0]}/releases/latest/download/${INFO[1]}.dat" -o ./build_assets/${FILE_NAME}
+            echo -e "Verifying HASH key..."
+            HASH="$(curl -sL "https://github.com/v2fly/${INFO[0]}/releases/latest/download/${INFO[1]}.dat.sha256sum" | awk -F ' ' '{print $1}')"
+            [ "$(sha256sum "./build_assets/${FILE_NAME}" | awk -F ' ' '{print $1}')" == "${HASH}" ] || { echo -e "The HASH key of ${FILE_NAME} does not match cloud one."; exit 1; }
+          done
+      - name: Create ZIP archive
+        shell: bash
+        run: |
+          pushd build_assets || exit 1
+          touch -mt $(date +%Y01010000) *
+          zip -9vr ../V2bX-$ASSET_NAME.zip .
+          popd || exit 1
+          FILE=./V2bX-$ASSET_NAME.zip
+          DGST=$FILE.dgst
+          for METHOD in {"md5","sha1","sha256","sha512"}
+          do
+            openssl dgst -$METHOD $FILE | sed 's/([^)]*)//g' >>$DGST
+          done
+      - name: Change the name
+        run: |
+          mv build_assets V2bX-$ASSET_NAME
+      - name: Upload files to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: V2bX-${{ steps.get_filename.outputs.ASSET_NAME }}
+          path: |
+            ./V2bX-${{ steps.get_filename.outputs.ASSET_NAME }}/*
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./V2bX-${{ steps.get_filename.outputs.ASSET_NAME }}.zip*
+          tag: ${{ github.ref }}
+          file_glob: true
