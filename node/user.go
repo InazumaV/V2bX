@@ -12,7 +12,7 @@ func (c *Controller) reportUserTrafficTask() (err error) {
 	// Get User traffic
 	userTraffic := make([]panel.UserTraffic, 0)
 	for i := range c.userList {
-		down, up := c.server.GetUserTraffic(c.tag, c.userList[i].Uuid, true)
+		up, down := c.server.GetUserTraffic(c.tag, c.userList[i].Uuid, true)
 		if up > 0 || down > 0 {
 			if c.LimitConfig.EnableDynamicSpeedLimit {
 				if _, ok := c.traffic[c.userList[i].Uuid]; ok {
