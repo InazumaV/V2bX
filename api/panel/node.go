@@ -61,7 +61,7 @@ type VAllssNode struct {
 	Tls             int             `json:"tls"`
 	TlsSettings     TlsSettings     `json:"tls_settings"`
 	Network         string          `json:"network"`
-	NetworkSettings json.RawMessage `json:"networkSettings"`
+	NetworkSettings json.RawMessage `json:"network_settings"`
 	ServerName      string          `json:"server_name"`
 
 	// vless only
