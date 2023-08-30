@@ -22,7 +22,7 @@ func buildInbound(option *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 	var err error
 	var network string
 	switch nodeInfo.Type {
-	case "v2ray":
+	case "vmess", "vless":
 		err = buildV2ray(option, nodeInfo, in)
 		network = nodeInfo.VAllss.Network
 	case "trojan":
