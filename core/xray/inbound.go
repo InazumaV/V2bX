@@ -38,8 +38,6 @@ func buildInbound(option *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 		return nil, err
 	}
 	// Set network protocol
-	t := coreConf.TransportProtocol(network)
-	in.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	// Set server port
 	in.PortList = &coreConf.PortList{
 		Range: []coreConf.PortRange{
@@ -170,6 +168,9 @@ func buildV2ray(config *conf.Options, nodeInfo *panel.NodeInfo, inbound *coreCon
 	if len(v.NetworkSettings) == 0 {
 		return nil
 	}
+
+	t := coreConf.TransportProtocol(nodeInfo.VAllss.Network)
+	inbound.StreamSetting = &coreConf.StreamConfig{Network: &t}
 	switch v.Network {
 	case "tcp":
 		err := json.Unmarshal(v.NetworkSettings, &inbound.StreamSetting.TCPSettings)
