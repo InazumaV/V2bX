@@ -105,7 +105,10 @@ func buildInbound(option *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 		// Reality
 		in.StreamSetting.Security = "reality"
 		v := nodeInfo.VAllss
-		d, err := json.Marshal(v.TlsSettings.ServerName)
+		d, err := json.Marshal(fmt.Sprintf(
+			"%s:%s",
+			v.TlsSettings.ServerName,
+			v.TlsSettings.ServerPort))
 		if err != nil {
 			return nil, fmt.Errorf("marshal reality dest error: %s", err)
 		}
