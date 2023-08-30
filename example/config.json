@@ -54,8 +54,6 @@
       "NodeType": "shadowsocks",
       // 请求超时时间
       "Timeout": 30,
-      // 本地审计规则
-      "RuleListPath": "",
       // 监听IP
       "ListenIP": "0.0.0.0",
       // 发送IP
@@ -67,7 +65,7 @@
 
       // 设置 Domain Strategy
       // 可选 prefer_ipv4 / prefer_ipv6 / ipv4_only / ipv6_only
-      "DomainStrategy": "ipv4_only",
+      "DomainStrategy": "ipv4_only"
 
       // More
     }
@@ -80,27 +78,29 @@
             "ApiKey": "test",
             "NodeID": 33,
             "Timeout": 30,
-            "RuleListPath": ""
           },
           "Options": {
             "Core": "sing",
             "EnableProxyProtocol": true,
             "EnableTFO": true
             "DomainStrategy": "ipv4_only",
+            // More
           }
         },
         {
+        // Xray
+
           "Core": "xray",
           "ApiHost": "http://127.0.0.1",
           "ApiKey": "test",
           "NodeID": 33,
           "NodeType": "shadowsocks",
           "Timeout": 30,
-          "RuleListPath": "",
           "ListenIP": "0.0.0.0",
           "SendIP": "0.0.0.0",
           "EnableProxyProtocol": true,
           "EnableTFO": true
+          // More
         }*/
   ]
 }
