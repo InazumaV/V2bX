@@ -27,8 +27,10 @@ func buildInbound(option *conf.Options, nodeInfo *panel.NodeInfo, tag string) (*
 		network = nodeInfo.VAllss.Network
 	case "trojan":
 		err = buildTrojan(option, in)
+		network = "tcp"
 	case "shadowsocks":
 		err = buildShadowsocks(option, nodeInfo, in)
+		network = "tcp"
 	default:
 		return nil, fmt.Errorf("unsupported node type: %s, Only support: V2ray, Trojan, Shadowsocks", nodeInfo.Type)
 	}
