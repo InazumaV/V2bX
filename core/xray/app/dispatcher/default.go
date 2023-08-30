@@ -294,7 +294,7 @@ func (d *DefaultDispatcher) Dispatch(ctx context.Context, destination net.Destin
 					ob.Target = destination
 				}
 			}
-			d.routedDispatch(ctx, outbound, destination, l, result.Protocol())
+			d.routedDispatch(ctx, outbound, destination, l, content.Protocol)
 		}()
 	}
 	return inbound, nil
@@ -346,7 +346,7 @@ func (d *DefaultDispatcher) DispatchLink(ctx context.Context, destination net.De
 			}
 			destination.Address.Family()
 		}
-		d.routedDispatch(ctx, outbound, destination, nil, result.Protocol())
+		d.routedDispatch(ctx, outbound, destination, nil, content.Protocol)
 	}
 
 	return nil
