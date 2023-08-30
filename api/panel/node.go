@@ -65,8 +65,8 @@ type VAllssNode struct {
 	ServerName      string          `json:"server_name"`
 
 	// vless only
-	Flow          string `json:"flow"`
-	RealityConfig RealityConfig
+	Flow          string        `json:"flow"`
+	RealityConfig RealityConfig `json:"-"`
 }
 
 type TlsSettings struct {
@@ -77,7 +77,6 @@ type TlsSettings struct {
 }
 
 type RealityConfig struct {
-	Dest         string `json:"Dest"`
 	Xver         uint64 `json:"Xver"`
 	MinClientVer string `json:"MinClientVer"`
 	MaxClientVer string `json:"MaxClientVer"`
