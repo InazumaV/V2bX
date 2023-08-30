@@ -63,7 +63,12 @@
       // 开启 Proxy Protocol，参见 https://github.com/haproxy/haproxy/blob/master/doc/proxy-protocol.txt
       "EnableProxyProtocol": false,
       // 开启 TCP Fast Open
-      "EnableTFO": true
+      "EnableTFO": true,
+
+      // 设置 Domain Strategy
+      // 可选 prefer_ipv4 / prefer_ipv6 / ipv4_only / ipv6_only
+      "DomainStrategy": "ipv4_only",
+
       // More
     }
     /*,
@@ -81,6 +86,7 @@
             "Core": "sing",
             "EnableProxyProtocol": true,
             "EnableTFO": true
+            "DomainStrategy": "ipv4_only",
           }
         },
         {

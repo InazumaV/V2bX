@@ -38,6 +38,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		InboundOptions: option.InboundOptions{
 			SniffEnabled:             c.SingOptions.SniffEnabled,
 			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
+			DomainStrategy:           c.SingOptions.DomainStrategy,
 		},
 	}
 	var tls option.InboundTLSOptions

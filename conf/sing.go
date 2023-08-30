@@ -1,5 +1,9 @@
 package conf
 
+import (
+	"github.com/inazumav/sing-box/option"
+)
+
 type SingConfig struct {
 	LogConfig    SingLogConfig `json:"Log"`
 	NtpConfig    SingNtpConfig `json:"NTP"`
@@ -31,6 +35,7 @@ type SingOptions struct {
 	EnableProxyProtocol      bool                   `json:"EnableProxyProtocol"`
 	TCPFastOpen              bool                   `json:"EnableTFO"`
 	SniffEnabled             bool                   `json:"EnableSniff"`
+	DomainStrategy           option.DomainStrategy  `json:"DomainStrategy"`
 	SniffOverrideDestination bool                   `json:"SniffOverrideDestination"`
 	FallBackConfigs          *FallBackConfigForSing `json:"FallBackConfigs"`
 }
