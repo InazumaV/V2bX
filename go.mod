@@ -1,8 +1,6 @@
 module github.com/InazumaV/V2bX
 
-go 1.21
-
-toolchain go1.21.0
+go 1.20
 
 require (
 	github.com/beevik/ntp v1.2.0
@@ -17,7 +15,6 @@ require (
 	github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f
 	github.com/juju/ratelimit v1.0.2
 	github.com/sagernet/sing v0.2.10-0.20230807080248-4db0062caa0a
-	github.com/sagernet/sing-vmess v0.1.7
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/xtls/xray-core v1.8.4
@@ -167,6 +164,7 @@ require (
 	github.com/sagernet/sing-shadowsocks2 v0.1.3 // indirect
 	github.com/sagernet/sing-shadowtls v0.1.4 // indirect
 	github.com/sagernet/sing-tun v0.1.12-0.20230808120247-47ab78d303db // indirect
+	github.com/sagernet/sing-vmess v0.1.7 // indirect
 	github.com/sagernet/smux v0.0.0-20230312102458-337ec2a5af37 // indirect
 	github.com/sagernet/tfo-go v0.0.0-20230303015439-ffcfd8c41cf9 // indirect
 	github.com/sagernet/utls v0.0.0-20230309024959-6732c2ab36f2 // indirect
