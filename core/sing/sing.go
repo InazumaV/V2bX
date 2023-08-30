@@ -48,7 +48,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 			return nil, fmt.Errorf("open original config error: %s", err)
 		}
 		defer f.Close()
-		err = json.NewDecoder(f).Decode(options)
+		err = json.NewDecoder(f).Decode(&options)
 		if err != nil {
 			return nil, fmt.Errorf("decode original config error: %s", err)
 		}
@@ -58,6 +58,14 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 		Level:     c.SingConfig.LogConfig.Level,
 		Timestamp: c.SingConfig.LogConfig.Timestamp,
 		Output:    c.SingConfig.LogConfig.Output,
+	}
+	options.NTP = &option.NTPOptions{
+		Enabled:       c.SingConfig.NtpConfig.Enable,
+		WriteToSystem: true,
+		ServerOptions: option.ServerOptions{
+			Server:     c.SingConfig.NtpConfig.Server,
+			ServerPort: c.SingConfig.NtpConfig.ServerPort,
+		},
 	}
 	ctx := context.Background()
 	ctx = pause.ContextWithDefaultManager(ctx)

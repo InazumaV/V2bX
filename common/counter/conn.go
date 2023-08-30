@@ -24,23 +24,23 @@ func NewConnCounter(conn net.Conn, s *TrafficStorage) net.Conn {
 		ExtendedConn: bufio.NewExtendedConn(conn),
 		storage:      s,
 		readFunc: func(n int64) {
-			s.DownCounter.Add(n)
+			s.UpCounter.Add(n)
 		},
 		writeFunc: func(n int64) {
-			s.UpCounter.Add(n)
+			s.DownCounter.Add(n)
 		},
 	}
 }
 
 func (c *ConnCounter) Read(b []byte) (n int, err error) {
 	n, err = c.ExtendedConn.Read(b)
-	c.storage.DownCounter.Store(int64(n))
+	c.storage.UpCounter.Store(int64(n))
 	return
 }
 
 func (c *ConnCounter) Write(b []byte) (n int, err error) {
 	n, err = c.ExtendedConn.Write(b)
-	c.storage.UpCounter.Store(int64(n))
+	c.storage.DownCounter.Store(int64(n))
 	return
 }
 
@@ -50,7 +50,7 @@ func (c *ConnCounter) ReadBuffer(buffer *buf.Buffer) error {
 		return err
 	}
 	if buffer.Len() > 0 {
-		c.storage.DownCounter.Add(int64(buffer.Len()))
+		c.storage.UpCounter.Add(int64(buffer.Len()))
 	}
 	return nil
 }
@@ -62,7 +62,7 @@ func (c *ConnCounter) WriteBuffer(buffer *buf.Buffer) error {
 		return err
 	}
 	if dataLen > 0 {
-		c.storage.UpCounter.Add(dataLen)
+		c.storage.DownCounter.Add(dataLen)
 	}
 	return nil
 }
@@ -95,10 +95,10 @@ func NewPacketConnCounter(conn network.PacketConn, s *TrafficStorage) network.Pa
 		PacketConn: conn,
 		storage:    s,
 		readFunc: func(n int64) {
-			s.DownCounter.Add(n)
+			s.UpCounter.Add(n)
 		},
 		writeFunc: func(n int64) {
-			s.UpCounter.Add(n)
+			s.DownCounter.Add(n)
 		},
 	}
 }
@@ -108,7 +108,7 @@ func (p *PacketConnCounter) ReadPacket(buff *buf.Buffer) (destination M.Socksadd
 	if err != nil {
 		return
 	}
-	p.storage.DownCounter.Add(int64(buff.Len()))
+	p.storage.UpCounter.Add(int64(buff.Len()))
 	return
 }
 
@@ -119,7 +119,7 @@ func (p *PacketConnCounter) WritePacket(buff *buf.Buffer, destination M.Socksadd
 		return
 	}
 	if n > 0 {
-		p.storage.UpCounter.Add(int64(n))
+		p.storage.DownCounter.Add(int64(n))
 	}
 	return
 }

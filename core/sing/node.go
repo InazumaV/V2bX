@@ -38,6 +38,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		InboundOptions: option.InboundOptions{
 			SniffEnabled:             c.SingOptions.SniffEnabled,
 			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
+			DomainStrategy:           c.SingOptions.DomainStrategy,
 		},
 	}
 	var tls option.InboundTLSOptions
@@ -86,33 +87,43 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		case "tcp":
 			t.Type = ""
 		case "ws":
-			network := WsNetworkConfig{}
-			err := json.Unmarshal(n.NetworkSettings, &network)
-			if err != nil {
-				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
-			}
-			var u *url.URL
-			u, err = url.Parse(network.Path)
-			if err != nil {
-				return option.Inbound{}, fmt.Errorf("parse path error: %s", err)
-			}
-			ed, _ := strconv.Atoi(u.Query().Get("ed"))
-			h := make(map[string]option.Listable[string], len(network.Headers))
-			for k, v := range network.Headers {
-				h[k] = option.Listable[string]{
-					v,
+			var (
+				path    string
+				ed      int
+				headers map[string]option.Listable[string]
+			)
+			if len(n.NetworkSettings) != 0 {
+				network := WsNetworkConfig{}
+				err := json.Unmarshal(n.NetworkSettings, &network)
+				if err != nil {
+					return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+				}
+				var u *url.URL
+				u, err = url.Parse(network.Path)
+				if err != nil {
+					return option.Inbound{}, fmt.Errorf("parse path error: %s", err)
+				}
+				path = u.Path
+				ed, _ = strconv.Atoi(u.Query().Get("ed"))
+				headers = make(map[string]option.Listable[string], len(network.Headers))
+				for k, v := range network.Headers {
+					headers[k] = option.Listable[string]{
+						v,
+					}
 				}
 			}
 			t.WebsocketOptions = option.V2RayWebsocketOptions{
-				Path:                u.Path,
+				Path:                path,
 				EarlyDataHeaderName: "Sec-WebSocket-Protocol",
 				MaxEarlyData:        uint32(ed),
-				Headers:             h,
+				Headers:             headers,
 			}
 		case "grpc":
-			err := json.Unmarshal(n.NetworkSettings, &t.GRPCOptions)
-			if err != nil {
-				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+			if len(n.NetworkSettings) != 0 {
+				err := json.Unmarshal(n.NetworkSettings, &t.GRPCOptions)
+				if err != nil {
+					return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+				}
 			}
 		}
 		if info.Type == "vless" {
