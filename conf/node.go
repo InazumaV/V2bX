@@ -29,20 +29,26 @@ func (n *NodeConfig) UnmarshalJSON(data []byte) (err error) {
 	if err != nil {
 		return err
 	}
+	n.ApiConfig = ApiConfig{
+		APIHost: "http://127.0.0.1",
+		Timeout: 30,
+	}
 	if len(r.ApiRaw) > 0 {
 		err = json.Unmarshal(r.ApiRaw, &n.ApiConfig)
 		if err != nil {
 			return
 		}
 	} else {
-		n.ApiConfig = ApiConfig{
-			APIHost: "http://127.0.0.1",
-			Timeout: 30,
-		}
 		err = json.Unmarshal(data, &n.ApiConfig)
 		if err != nil {
 			return
 		}
+	}
+
+	n.Options = Options{
+		ListenIP:   "0.0.0.0",
+		SendIP:     "0.0.0.0",
+		CertConfig: NewCertConfig(),
 	}
 	if len(r.OptRaw) > 0 {
 		err = json.Unmarshal(r.OptRaw, &n.Options)
@@ -50,10 +56,6 @@ func (n *NodeConfig) UnmarshalJSON(data []byte) (err error) {
 			return
 		}
 	} else {
-		n.Options = Options{
-			ListenIP: "0.0.0.0",
-			SendIP:   "0.0.0.0",
-		}
 		err = json.Unmarshal(data, &n.Options)
 		if err != nil {
 			return

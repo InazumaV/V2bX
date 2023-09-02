@@ -10,3 +10,9 @@ type CertConfig struct {
 	Email            string            `json:"Email"`
 	DNSEnv           map[string]string `json:"DNSEnv"`
 }
+
+func NewCertConfig() *CertConfig {
+	return &CertConfig{
+		CertMode: "none",
+	}
+}
