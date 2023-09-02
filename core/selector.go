@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/InazumaV/V2bX/api/panel"
@@ -40,11 +41,19 @@ func isSupported(protocol string, protocols []string) bool {
 }
 
 func (s *Selector) AddNode(tag string, info *panel.NodeInfo, option *conf.Options) error {
-	for i := range s.cores {
-		if option.Core != s.cores[i].Type() {
+	for i, c := range s.cores {
+		if len(option.Core) == 0 {
+			if isSupported(info.Type, c.Protocols()) {
+				option.Core = c.Type()
+				err := option.UnmarshalJSON(option.RawOptions)
+				if err != nil {
+					return fmt.Errorf("unmarshal option error: %s", err)
+				}
+			}
+		} else if option.Core != c.Type() {
 			continue
 		}
-		err := s.cores[i].AddNode(tag, info, option)
+		err := c.AddNode(tag, info, option)
 		if err != nil {
 			return err
 		}
