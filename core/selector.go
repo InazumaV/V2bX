@@ -43,12 +43,13 @@ func isSupported(protocol string, protocols []string) bool {
 func (s *Selector) AddNode(tag string, info *panel.NodeInfo, option *conf.Options) error {
 	for i, c := range s.cores {
 		if len(option.Core) == 0 {
-			if isSupported(info.Type, c.Protocols()) {
-				option.Core = c.Type()
-				err := option.UnmarshalJSON(option.RawOptions)
-				if err != nil {
-					return fmt.Errorf("unmarshal option error: %s", err)
-				}
+			if !isSupported(info.Type, c.Protocols()) {
+				continue
+			}
+			option.Core = c.Type()
+			err := option.UnmarshalJSON(option.RawOptions)
+			if err != nil {
+				return fmt.Errorf("unmarshal option error: %s", err)
 			}
 		} else if option.Core != c.Type() {
 			continue
