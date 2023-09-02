@@ -77,12 +77,14 @@ func serverHandle(_ *cobra.Command, _ []string) {
 		return
 	}
 	defer vc.Close()
+	log.Info("Core ", vc.Type(), " started")
 	nodes := node.New()
 	err = nodes.Start(c.NodeConfig, vc)
 	if err != nil {
 		log.WithField("err", err).Error("Run nodes failed")
 		return
 	}
+	log.Info("Nodes started")
 	dns := os.Getenv("XRAY_DNS_PATH")
 	if watch {
 		err = c.Watch(config, dns, func() {
@@ -102,11 +104,13 @@ func serverHandle(_ *cobra.Command, _ []string) {
 				log.WithField("err", err).Error("Start core failed")
 				return
 			}
+			log.Info("Core ", vc.Type(), " restarted")
 			err = nodes.Start(c.NodeConfig, vc)
 			if err != nil {
 				log.WithField("err", err).Error("Run nodes failed")
 				return
 			}
+			log.Info("Nodes restarted")
 			runtime.GC()
 		})
 		if err != nil {

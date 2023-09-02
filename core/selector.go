@@ -108,5 +108,13 @@ func (s *Selector) Protocols() []string {
 }
 
 func (s *Selector) Type() string {
-	return "selector"
+	t := "Selector("
+	for i := range s.cores {
+		if i != 0 {
+			t += " "
+		}
+		t += s.cores[i].Type()
+	}
+	t += ")"
+	return t
 }

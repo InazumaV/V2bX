@@ -87,6 +87,7 @@ func (o *Options) UnmarshalJSON(data []byte) error {
 		o.SingOptions = NewSingOptions()
 		return json.Unmarshal(data, o.SingOptions)
 	default:
+		o.Core = ""
 		o.RawOptions = data
 	}
 	return nil
