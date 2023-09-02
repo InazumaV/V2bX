@@ -10,8 +10,8 @@ type NodeConfig struct {
 }
 
 type rawNodeConfig struct {
-	ApiRaw *json.RawMessage `json:"ApiConfig"`
-	OptRaw *json.RawMessage `json:"Options"`
+	ApiRaw json.RawMessage `json:"ApiConfig"`
+	OptRaw json.RawMessage `json:"Options"`
 }
 
 type ApiConfig struct {
@@ -29,8 +29,8 @@ func (n *NodeConfig) UnmarshalJSON(data []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	if r.ApiRaw != nil {
-		err = json.Unmarshal(*r.ApiRaw, &n.ApiConfig)
+	if len(r.ApiRaw) > 0 {
+		err = json.Unmarshal(r.ApiRaw, &n.ApiConfig)
 		if err != nil {
 			return
 		}
@@ -44,9 +44,8 @@ func (n *NodeConfig) UnmarshalJSON(data []byte) (err error) {
 			return
 		}
 	}
-	if r.OptRaw != nil {
-		data = *r.OptRaw
-		err = json.Unmarshal(data, &n.Options)
+	if len(r.OptRaw) > 0 {
+		err = json.Unmarshal(r.OptRaw, &n.Options)
 		if err != nil {
 			return
 		}
