@@ -92,6 +92,7 @@ func (l *Lego) SetProvider() error {
 func (l *Lego) CreateCert() (err error) {
 	request := certificate.ObtainRequest{
 		Domains: []string{l.config.CertDomain},
+		Bundle:  true,
 	}
 	certificates, err := l.client.Certificate.Obtain(request)
 	if err != nil {
@@ -114,7 +115,7 @@ func (l *Lego) RenewCert() error {
 	res, err := l.client.Certificate.Renew(certificate.Resource{
 		Domain:      l.config.CertDomain,
 		Certificate: file,
-	}, false, false, "")
+	}, true, false, "")
 	if err != nil {
 		return err
 	}
