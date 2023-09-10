@@ -220,4 +220,4 @@ require (
 	lukechampine.com/blake3 v1.2.1 // indirect
 )
 
-//exclude gvisor.dev/gvisor v0.0.0-20230313184804-9bf6dd27710d
+replace github.com/sagernet/sing-shadowsocks v0.2.4 => github.com/inazumav/sing-shadowsocks v0.0.0-20230815111927-7c68cbaeec5c

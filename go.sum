@@ -381,6 +381,8 @@ github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df h1:MZf03xP9WdakyXhOWuAD5
 github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df/go.mod h1:QMZY7/J/KSQEhKWFeDesPjMj+wCHReeknARU3wqlyN4=
 github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f h1:jfwKhScZeQHUkMxQpJZ6ow2e3k4UDbwau6AsCzXwauw=
 github.com/inazumav/sing-box v0.0.0-20230809113805-82b279719f5f/go.mod h1:3c9SPznRTGFV/3Cba2oyDLLQ44pqWW/9PzLXjvAaUec=
+github.com/inazumav/sing-shadowsocks v0.0.0-20230815111927-7c68cbaeec5c h1:s19tVW05fXaL4kHuV1NQOeA3NgJ4SpVvQqmUXpnVH4M=
+github.com/inazumav/sing-shadowsocks v0.0.0-20230815111927-7c68cbaeec5c/go.mod h1:80fNKP0wnqlu85GZXV1H1vDPC/2t+dQbFggOw4XuFUM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
@@ -660,8 +662,6 @@ github.com/sagernet/sing-dns v0.1.8 h1:zTYnxzA7mssg/Lwd70+RFPi8i3djioGnVS7zKwSF6
 github.com/sagernet/sing-dns v0.1.8/go.mod h1:lHv8WMl9GKfMV8Wt1AJTtjVTF/h5/owpGY2YutYZF6g=
 github.com/sagernet/sing-mux v0.1.2 h1:av2/m6e+Gh+ECTuJZqYCjJz55BNkot0VyRMkREqyF/g=
 github.com/sagernet/sing-mux v0.1.2/go.mod h1:r2V8AlOzXaRCHXK7fILCUGzuI2iILweTaG8C5xlpHxo=
-github.com/sagernet/sing-shadowsocks v0.2.4 h1:s/CqXlvFAZhlIoHWUwPw5CoNnQ9Ibki9pckjuugtVfY=
-github.com/sagernet/sing-shadowsocks v0.2.4/go.mod h1:80fNKP0wnqlu85GZXV1H1vDPC/2t+dQbFggOw4XuFUM=
 github.com/sagernet/sing-shadowsocks2 v0.1.3 h1:WXoLvCFi5JTFBRYorf1YePGYIQyJ/zbsBM6Fwbl5kGA=
 github.com/sagernet/sing-shadowsocks2 v0.1.3/go.mod h1:DOhJc/cLeqRv0wuePrQso+iUmDxOnWF4eT/oMcRzYFw=
 github.com/sagernet/sing-shadowtls v0.1.4 h1:aTgBSJEgnumzFenPvc+kbD9/W0PywzWevnVpEx6Tw3k=
