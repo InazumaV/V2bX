@@ -18,7 +18,9 @@ type Selector struct {
 func (s *Selector) Start() error {
 	for i := range s.cores {
 		err := s.cores[i].Start()
-		return err
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
