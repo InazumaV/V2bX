@@ -21,7 +21,7 @@
         // 同 SingBox ntp 部分配置
         // VMess VLESS 建议开启
         "Enable": true,
-        "Server":     "time.apple.com",
+        "Server": "time.apple.com",
         "ServerPort": 0
       }
       // More
@@ -42,6 +42,9 @@
     {
       // 写法1
 
+      // Node标识名，便于查看日志，不填将通过下发的节点配置自动生成
+      // 务必注意不要重复，否则会出现问题
+      "Name": "sing_node1",
       // Core类型
       "Core": "sing",
       // API接口地址
@@ -76,13 +79,14 @@
     /*,
         {
           // 写法2
-
+          // 类似旧配置文件 ApiConfig 部分
           "ApiConfig": {
             "ApiHost": "http://127.0.0.1",
             "ApiKey": "test",
             "NodeID": 33,
             "Timeout": 30,
           },
+          // 类似旧配置文件 ControllerConfig 部分
           "Options": {
             "Core": "sing",
             "EnableProxyProtocol": true,

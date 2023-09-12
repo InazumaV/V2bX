@@ -75,7 +75,7 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			c.userList = newU
 		}
 		c.traffic = make(map[string]int64)
-		// Remove old tag
+		// Remove old node
 		log.WithField("tag", c.tag).Info("Node changed, reload")
 		err = c.server.DelNode(c.tag)
 		if err != nil {
@@ -85,11 +85,26 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			}).Error("Delete node failed")
 			return nil
 		}
-		// Remove Old limiter
-		limiter.DeleteLimiter(c.tag)
-		// Add new Limiter
-		c.tag = c.buildNodeTag(newN)
-		l := limiter.AddLimiter(c.tag, &c.LimitConfig, c.userList)
+
+		// Update limiter
+		if len(c.Options.Name) == 0 {
+			c.tag = c.buildNodeTag(newN)
+			// Remove Old limiter
+			limiter.DeleteLimiter(c.tag)
+			// Add new Limiter
+			l := limiter.AddLimiter(c.tag, &c.LimitConfig, c.userList)
+			c.limiter = l
+		}
+		// Update rule
+		err = c.limiter.UpdateRule(&newN.Rules)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"tag": c.tag,
+				"err": err,
+			}).Error("Update Rule failed")
+			return nil
+		}
+
 		// check cert
 		if newN.Security == panel.Tls {
 			err = c.requestCert()
@@ -122,15 +137,6 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			}).Error("Add users failed")
 			return nil
 		}
-		err = l.UpdateRule(&newN.Rules)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"tag": c.tag,
-				"err": err,
-			}).Error("Update Rule failed")
-			return nil
-		}
-		c.limiter = l
 		// Check interval
 		if c.nodeInfoMonitorPeriodic.Interval != newN.PullInterval &&
 			newN.PullInterval != 0 {
