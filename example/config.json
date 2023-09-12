@@ -62,12 +62,16 @@
       "EnableProxyProtocol": false,
       // 开启 TCP Fast Open
       "EnableTFO": true,
-
       // 设置 Domain Strategy
       // 可选 prefer_ipv4 / prefer_ipv6 / ipv4_only / ipv6_only
       "DomainStrategy": "ipv4_only"
 
       // More
+    },
+    {
+      // 引用其他配置文件
+
+      "Include": "../example/config_node1.json"
     }
     /*,
         {
