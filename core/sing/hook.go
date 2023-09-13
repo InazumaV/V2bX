@@ -22,6 +22,10 @@ type HookServer struct {
 	counter sync.Map
 }
 
+func (h *HookServer) ModeList() []string {
+	return nil
+}
+
 func NewHookServer(logger log.Logger) *HookServer {
 	return &HookServer{
 		logger:  logger,
