@@ -1,142 +1,47 @@
 {
   "Log": {
-    // V2bX 的日志配置，独立于各 Core 的 log 配置
-
-    // 日志等级，info, warn, error, none
-    "Level": "error",
-
-    // 日志输出路径，默认输出到标准输出
+    "Level": "info",
     "Output": ""
   },
   "Cores": [
     {
-      // Core类型
       "Type": "sing",
-
-      // Core标识名，可选，如果需要启动多个同类型内核则必填
-      "Name": "sing1",
-
       "Log": {
-        // 同 SingBox log 部分配置
-
         "Level": "error",
         "Timestamp": true
       },
       "NTP": {
-        // 同 SingBox ntp 部分配置
-        // VMess VLESS 建议开启
         "Enable": true,
         "Server": "time.apple.com",
         "ServerPort": 0
       }
-      // More
-    },
-    {
-      "Type": "sing",
-      "Name": "sing2",
-      "Log": {
-        "Level": "info",
-        "Timestamp": false
-      },
-    },
-    {
-      "Type": "xray",
-      "Log": {
-        // 同 Xray-core log 部分配置
-
-        "Level": "error"
-      },
-      "DnsConfigPath": ""
-      // More
     }
   ],
   "Nodes": [
-    // Node配置有两种写法
     {
-      // 写法1
-
-      // Node标识名，便于查看日志，不填将通过下发的节点配置自动生成
-      // 务必注意不要重复，否则会出现问题
-      "Name": "sing_node1",
-
-      // 要使用的Core的类型
-      // 如果填写了CoreName可不填
-      // 建议视情况填写Core和CoreName其中一个，如果均没有填写将随机选择支持的内核
       "Core": "sing",
-
-      // 要使用的Core的标识名，如果没有定义多个同类型内核可不填
-      "CoreName": "sing1",
-
-      // API接口地址
       "ApiHost": "http://127.0.0.1",
-
-      // API密钥，即Token
       "ApiKey": "test",
-
-      // 节点ID
       "NodeID": 33,
-
-      // 节点类型
       "NodeType": "shadowsocks",
-
-      // 请求超时时间
       "Timeout": 30,
-
-      // 监听IP
       "ListenIP": "0.0.0.0",
-
-      // 发送IP
       "SendIP": "0.0.0.0",
-
-      // 开启 Proxy Protocol，参见 https://github.com/haproxy/haproxy/blob/master/doc/proxy-protocol.txt
       "EnableProxyProtocol": false,
-
-      // 开启 TCP Fast Open
-      "EnableTFO": true,
-
-      // 设置 Domain Strategy
-      // 可选 prefer_ipv4 / prefer_ipv6 / ipv4_only / ipv6_only
-      "DomainStrategy": "ipv4_only"
-
-      // More
-    },
-    {
-      // 引用其他配置文件
-      "Include": "../example/config_node1.json",
+      "DomainStrategy": "ipv4_only",
+      "LimitConfig": {
+        "EnableRealtime": false,
+        "SpeedLimit": 0,
+        "IPLimit": 0,
+        "ConnLimit": 0,
+        "EnableDynamicSpeedLimit": false,
+        "DynamicSpeedLimitConfig": {
+          "Periodic": 60,
+          "Traffic": 1000,
+          "SpeedLimit": 100,
+          "ExpireTime": 60
+        }
+      }
     }
-    /*,
-        {
-          // 写法2
-          // 类似旧配置文件 ApiConfig 部分
-          "ApiConfig": {
-            "ApiHost": "http://127.0.0.1",
-            "ApiKey": "test",
-            "NodeID": 33,
-            "Timeout": 30,
-          },
-          // 类似旧配置文件 ControllerConfig 部分
-          "Options": {
-            "Core": "sing",
-            "EnableProxyProtocol": true,
-            "EnableTFO": true
-            "DomainStrategy": "ipv4_only",
-            // More
-          }
-        },
-        {
-        // Xray
-
-          "Core": "xray",
-          "ApiHost": "http://127.0.0.1",
-          "ApiKey": "test",
-          "NodeID": 33,
-          "NodeType": "shadowsocks",
-          "Timeout": 30,
-          "ListenIP": "0.0.0.0",
-          "SendIP": "0.0.0.0",
-          "EnableProxyProtocol": true,
-          "EnableTFO": true
-          // More
-        }*/
   ]
 }
