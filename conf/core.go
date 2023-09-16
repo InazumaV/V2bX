@@ -6,6 +6,7 @@ import (
 
 type CoreConfig struct {
 	Type       string      `json:"Type"`
+	Name       string      `json:"Name"`
 	XrayConfig *XrayConfig `json:"-"`
 	SingConfig *SingConfig `json:"-"`
 }

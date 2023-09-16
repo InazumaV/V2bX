@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/InazumaV/V2bX/conf"
 )
@@ -17,21 +16,7 @@ func NewCore(c []conf.CoreConfig) (Core, error) {
 	}
 	// multi core
 	if len(c) > 1 {
-		var cs []Core
-		for _, t := range c {
-			f, ok := cores[strings.ToLower(t.Type)]
-			if !ok {
-				return nil, errors.New("unknown core type: " + t.Type)
-			}
-			core1, err := f(&t)
-			if err != nil {
-				return nil, err
-			}
-			cs = append(cs, core1)
-		}
-		return &Selector{
-			cores: cs,
-		}, nil
+		return NewSelector(c)
 	}
 	// one core
 	if f, ok := cores[c[0].Type]; ok {

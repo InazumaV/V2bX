@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/InazumaV/V2bX/api/panel"
@@ -11,8 +12,30 @@ import (
 )
 
 type Selector struct {
-	cores []Core
+	cores map[string]Core
 	nodes sync.Map
+}
+
+func NewSelector(c []conf.CoreConfig) (Core, error) {
+	cs := make(map[string]Core, len(c))
+	for _, t := range c {
+		f, ok := cores[strings.ToLower(t.Type)]
+		if !ok {
+			return nil, errors.New("unknown core type: " + t.Type)
+		}
+		core1, err := f(&t)
+		if err != nil {
+			return nil, err
+		}
+		if t.Name == "" {
+			cs[t.Type] = core1
+		} else {
+			cs[t.Name] = core1
+		}
+	}
+	return &Selector{
+		cores: cs,
+	}, nil
 }
 
 func (s *Selector) Start() error {
@@ -43,32 +66,47 @@ func isSupported(protocol string, protocols []string) bool {
 }
 
 func (s *Selector) AddNode(tag string, info *panel.NodeInfo, option *conf.Options) error {
-	for i, c := range s.cores {
-		if len(option.Core) == 0 {
-			if !isSupported(info.Type, c.Protocols()) {
+	var core Core
+	if len(option.CoreName) > 0 {
+		// use name to select core
+		if c, ok := s.cores[option.CoreName]; ok {
+			core = c
+		}
+	} else {
+		// use type to select core
+		for _, c := range s.cores {
+			if len(option.Core) == 0 {
+				if !isSupported(info.Type, c.Protocols()) {
+					continue
+				}
+			} else if option.Core != c.Type() {
 				continue
 			}
-			option.Core = c.Type()
-			err := option.UnmarshalJSON(option.RawOptions)
-			if err != nil {
-				return fmt.Errorf("unmarshal option error: %s", err)
-			}
-		} else if option.Core != c.Type() {
-			continue
+			core = c
 		}
-		err := c.AddNode(tag, info, option)
-		if err != nil {
-			return err
-		}
-		s.nodes.Store(tag, i)
-		return nil
 	}
-	return errors.New("the node type is not support")
+	if core == nil {
+		return errors.New("the node type is not support")
+	}
+	if len(option.Core) == 0 {
+		option.Core = core.Type()
+		err := option.UnmarshalJSON(option.RawOptions)
+		if err != nil {
+			return fmt.Errorf("unmarshal option error: %s", err)
+		}
+		option.RawOptions = nil
+	}
+	err := core.AddNode(tag, info, option)
+	if err != nil {
+		return err
+	}
+	s.nodes.Store(tag, core)
+	return nil
 }
 
 func (s *Selector) DelNode(tag string) error {
 	if t, e := s.nodes.Load(tag); e {
-		err := s.cores[t.(int)].DelNode(tag)
+		err := s.cores[t.(string)].DelNode(tag)
 		if err != nil {
 			return err
 		}
@@ -83,7 +121,7 @@ func (s *Selector) AddUsers(p *AddUsersParams) (added int, err error) {
 	if !e {
 		return 0, errors.New("the node is not have")
 	}
-	return s.cores[t.(int)].AddUsers(p)
+	return t.(Core).AddUsers(p)
 }
 
 func (s *Selector) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
@@ -91,7 +129,7 @@ func (s *Selector) GetUserTraffic(tag, uuid string, reset bool) (up int64, down 
 	if !e {
 		return 0, 0
 	}
-	return s.cores[t.(int)].GetUserTraffic(tag, uuid, reset)
+	return t.(Core).GetUserTraffic(tag, uuid, reset)
 }
 
 func (s *Selector) DelUsers(users []panel.UserInfo, tag string) error {
@@ -99,7 +137,7 @@ func (s *Selector) DelUsers(users []panel.UserInfo, tag string) error {
 	if !e {
 		return errors.New("the node is not have")
 	}
-	return s.cores[t.(int)].DelUsers(users, tag)
+	return t.(Core).DelUsers(users, tag)
 }
 
 func (s *Selector) Protocols() []string {
@@ -112,11 +150,18 @@ func (s *Selector) Protocols() []string {
 
 func (s *Selector) Type() string {
 	t := "Selector("
-	for i := range s.cores {
-		if i != 0 {
+	var flag bool
+	for n, c := range s.cores {
+		if flag {
 			t += " "
+		} else {
+			flag = true
 		}
-		t += s.cores[i].Type()
+		if len(n) == 0 {
+			t += c.Type()
+		} else {
+			t += n
+		}
 	}
 	t += ")"
 	return t
