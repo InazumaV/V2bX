@@ -116,5 +116,5 @@ func (c *Controller) Close() error {
 }
 
 func (c *Controller) buildNodeTag(node *panel.NodeInfo) string {
-	return fmt.Sprintf("%s-%s-%d", c.apiClient.APIHost, node.Type, node.Id)
+	return fmt.Sprintf("[%s]-%s:%d", c.apiClient.APIHost, node.Type, node.Id)
 }
