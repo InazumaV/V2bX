@@ -26,6 +26,7 @@
         "Server": "time.apple.com",
         "ServerPort": 0
       },
+      "DnsConfigPath": "/etc/V2bX/dns.json",
       // SingBox源配置文件目录，用于引用标准SingBox配置文件
       "OriginalPath": "/etc/V2bX/sing_origin.json"
     },
@@ -113,7 +114,9 @@
       // 开启 TCP Fast Open
       "EnableTFO": true,
 
-      // 设置 Domain Strategy
+      // 开启 DNS
+      "EnableDNS" : true,
+      // 设置 Domain Strategy 需要开启 DNS ，默认 AsIS
       // 可选 prefer_ipv4 / prefer_ipv6 / ipv4_only / ipv6_only
       "DomainStrategy": "ipv4_only",
 

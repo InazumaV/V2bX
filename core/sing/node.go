@@ -30,6 +30,10 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	if err != nil {
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
+	var domainStrategy option.DomainStrategy
+	if c.SingOptions.EnableDNS {
+		domainStrategy = c.SingOptions.DomainStrategy
+	}
 	listen := option.ListenOptions{
 		Listen:        (*option.ListenAddress)(&addr),
 		ListenPort:    uint16(info.Common.ServerPort),
@@ -38,7 +42,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		InboundOptions: option.InboundOptions{
 			SniffEnabled:             c.SingOptions.SniffEnabled,
 			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
-			DomainStrategy:           c.SingOptions.DomainStrategy,
+			DomainStrategy:           domainStrategy,
 		},
 	}
 	var tls option.InboundTLSOptions
@@ -203,6 +207,10 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 }
 
 func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
+	err := updateDNSConfig(info)
+	if err != nil {
+		return fmt.Errorf("build dns error: %s", err)
+	}
 	c, err := getInboundOptions(tag, info, config)
 	if err != nil {
 		return err

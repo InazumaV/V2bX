@@ -26,6 +26,11 @@ import (
 
 var _ adapter.Service = (*Box)(nil)
 
+type DNSConfig struct {
+	Servers []map[string]interface{} `json:"servers"`
+	Rules   []map[string]interface{} `json:"rules"`
+}
+
 type Box struct {
 	createdAt  time.Time
 	router     adapter.Router
@@ -67,6 +72,17 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 			Server:     c.SingConfig.NtpConfig.Server,
 			ServerPort: c.SingConfig.NtpConfig.ServerPort,
 		},
+	}
+	os.Setenv("SING_DNS_PATH", "")
+	if c.SingConfig.DnsConfigPath != "" {
+		if f, err := os.Open(c.SingConfig.DnsConfigPath); err != nil {
+			log.Error("Failed to read DNS config file")
+		} else {
+			if err = json.NewDecoder(f).Decode(&option.DNSOptions{}); err != nil {
+				log.Error("Failed to unmarshal DNS config")
+			}
+		}
+		os.Setenv("SING_DNS_PATH", c.SingConfig.DnsConfigPath)
 	}
 	ctx := context.Background()
 	ctx = service.ContextWithDefaultRegistry(ctx)

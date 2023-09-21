@@ -7,7 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	coreConf "github.com/xtls/xray-core/infra/conf"
 	"os"
-	"time"
 )
 
 func updateDNSConfig(node *panel.NodeInfo) (err error) {
@@ -57,7 +56,5 @@ func saveDnsConfig(dns []byte, dnsPath string) (err error) {
 			log.WithField("err", err).Error("Failed to write DNS to XRAY DNS PATH file")
 		}
 	}
-	log.Println("reloading config")
-	time.Sleep(5 * time.Second)
 	return err
 }

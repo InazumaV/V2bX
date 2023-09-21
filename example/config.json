@@ -10,6 +10,7 @@
         "Level": "error",
         "Timestamp": true
       },
+      "DnsConfigPath": "/etc/V2bX/dns.json",
       "NTP": {
         "Enable": true,
         "Server": "time.apple.com",
@@ -28,6 +29,7 @@
       "ListenIP": "0.0.0.0",
       "SendIP": "0.0.0.0",
       "EnableProxyProtocol": false,
+      "EnableDNS": true
       "DomainStrategy": "ipv4_only",
       "LimitConfig": {
         "EnableRealtime": false,

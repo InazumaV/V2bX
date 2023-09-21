@@ -5,9 +5,10 @@ import (
 )
 
 type SingConfig struct {
-	LogConfig    SingLogConfig `json:"Log"`
-	NtpConfig    SingNtpConfig `json:"NTP"`
-	OriginalPath string        `json:"OriginalPath"`
+	LogConfig     SingLogConfig `json:"Log"`
+	NtpConfig     SingNtpConfig `json:"NTP"`
+	DnsConfigPath string        `json:"DnsConfigPath"`
+	OriginalPath  string        `json:"OriginalPath"`
 }
 
 type SingLogConfig struct {
@@ -35,6 +36,7 @@ type SingOptions struct {
 	EnableProxyProtocol      bool                   `json:"EnableProxyProtocol"`
 	TCPFastOpen              bool                   `json:"EnableTFO"`
 	SniffEnabled             bool                   `json:"EnableSniff"`
+	EnableDNS                bool                   `json:"EnableDNS"`
 	DomainStrategy           option.DomainStrategy  `json:"DomainStrategy"`
 	SniffOverrideDestination bool                   `json:"SniffOverrideDestination"`
 	FallBackConfigs          *FallBackConfigForSing `json:"FallBackConfigs"`
@@ -59,6 +61,7 @@ type FallBack struct {
 
 func NewSingOptions() *SingOptions {
 	return &SingOptions{
+		EnableDNS:                false,
 		EnableProxyProtocol:      false,
 		TCPFastOpen:              false,
 		SniffEnabled:             true,

@@ -9,5 +9,5 @@
   "SendIP": "0.0.0.0",
   "EnableProxyProtocol": false,
   "EnableTFO": true,
-  "DomainStrategy": "ipv4_only"
+  "DNSType": "ipv4_only"
 }
