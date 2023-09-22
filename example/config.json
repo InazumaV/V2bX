@@ -29,7 +29,7 @@
       "ListenIP": "0.0.0.0",
       "SendIP": "0.0.0.0",
       "EnableProxyProtocol": false,
-      "EnableDNS": true
+      "EnableDNS": true,
       "DomainStrategy": "ipv4_only",
       "LimitConfig": {
         "EnableRealtime": false,

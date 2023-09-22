@@ -36,7 +36,7 @@
       "Log": {
         "Level": "info",
         "Timestamp": false
-      },
+      }
     },
     {
       "Type": "xray",
@@ -183,10 +183,6 @@
       }
     },
     {
-      // 引用其他配置文件
-      "Include": "../example/config_full_node1.json",
-    },
-    {
       // xray内核
 
       "Core": "xray",
@@ -227,7 +223,7 @@
         "Alpn": "",
         "Path": "",
         "Dest": "",
-        "ProxyProtocolVer": 0,
+        "ProxyProtocolVer": 0
       }
     },
     {
@@ -238,16 +234,24 @@
         "ApiHost": "http://127.0.0.1",
         "ApiKey": "test",
         "NodeID": 33,
-        "Timeout": 30,
+        "Timeout": 30
       },
       // 类似旧配置文件 ControllerConfig 部分
       "Options": {
         "Core": "sing",
         "EnableProxyProtocol": true,
         "EnableTFO": true,
-        "DomainStrategy": "ipv4_only",
+        "DomainStrategy": "ipv4_only"
         // More
       }
+    },
+    {
+      // 引用本地其他配置文件
+      "Include": "../example/config_full_node1.json"
+    },
+    {
+      // 通过Http引用远端配置文件
+      "Include": "http://127.0.0.1:11451/config_full_node1.json"
     }
   ]
 }
