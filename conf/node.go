@@ -2,11 +2,12 @@ package conf
 
 import (
 	"fmt"
-	"io"
-	"os"
-
 	"github.com/InazumaV/V2bX/common/json5"
 	"github.com/goccy/go-json"
+	"io"
+	"net/http"
+	"os"
+	"strings"
 )
 
 type NodeConfig struct {
@@ -36,12 +37,29 @@ func (n *NodeConfig) UnmarshalJSON(data []byte) (err error) {
 		return err
 	}
 	if len(rn.Include) != 0 {
-		f, err := os.Open(rn.Include)
-		if err != nil {
-			return fmt.Errorf("open include file error: %s", err)
+		file, _ := strings.CutPrefix(rn.Include, ":")
+		switch file {
+		case "http", "https":
+			rsp, err := http.Get(file)
+			if err != nil {
+				return err
+			}
+			defer rsp.Body.Close()
+			data, err = io.ReadAll(json5.NewTrimNodeReader(rsp.Body))
+			if err != nil {
+				return fmt.Errorf("open include file error: %s", err)
+			}
+		default:
+			f, err := os.Open(rn.Include)
+			if err != nil {
+				return fmt.Errorf("open include file error: %s", err)
+			}
+			defer f.Close()
+			data, err = io.ReadAll(json5.NewTrimNodeReader(f))
+			if err != nil {
+				return fmt.Errorf("open include file error: %s", err)
+			}
 		}
-		defer f.Close()
-		data, err = io.ReadAll(json5.NewTrimNodeReader(f))
 		err = json.Unmarshal(data, &rn)
 		if err != nil {
 			return fmt.Errorf("unmarshal include file error: %s", err)
