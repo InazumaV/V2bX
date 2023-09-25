@@ -21,7 +21,6 @@ import (
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/service"
-	"github.com/sagernet/sing/service/pause"
 )
 
 var _ adapter.Service = (*Box)(nil)
