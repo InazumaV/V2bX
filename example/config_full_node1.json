@@ -1,0 +1,13 @@
+{
+  "Core": "xray",
+  "ApiHost": "https://127.0.0.1",
+  "ApiKey": "key",
+  "NodeID": 1,
+  "NodeType": "vmess",
+  "Timeout": 30,
+  "ListenIP": "0.0.0.0",
+  "SendIP": "0.0.0.0",
+  "EnableProxyProtocol": false,
+  "EnableTFO": true,
+  "DNSType": "ipv4_only"
+}

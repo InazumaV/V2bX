@@ -28,22 +28,19 @@ A V2board node server based on multi core, modified from XrayR.
 | 自动申请tls证书 | √     | √      | √           | √        |
 | 自动续签tls证书 | √     | √      | √           | √        |
 | 在线人数统计    | √     | √      | √           | √        |
-| 审计规则      | √     | √      | √           |          |
+| 审计规则      | √     | √      | √           | √         |
 | 自定义DNS    | √     | √      | √           | √        |
 | 在线IP数限制   | √     | √      | √           | √        |
-| 连接数限制     | √     | √      | √           |          |
-| 跨节点IP数限制  | √     | √      | √           |          |
-| 按照用户限速    | √     | √      | √           |          |
-| 动态限速(未测试) | √     | √      | √           |          |
+| 连接数限制     | √     | √      | √           | √         |
+| 跨节点IP数限制  |      |       |            |          |
+| 按照用户限速    | √     | √      | √           | √         |
+| 动态限速(未测试) | √     | √      | √           | √         |
 
 ## TODO
 
 - [ ] 重新实现动态限速
 - [ ] 重新实现在线IP同步（跨节点在线IP限制）
-- [x] 集成基本操作Command(Start, Stop, Restart, Status, Uninstall)
-- [ ] 完善Hysteria内核支持
 - [ ] 完善使用文档
-- [ ] 尽可能统一日志输出格式
 
 ## 软件安装
 
@@ -59,8 +56,8 @@ wget -N https://raw.githubusercontents.com/InazumaV/V2bX-script/master/install.s
 
 ## 构建
 ``` bash
-# 通过-tag选项指定要编译的内核， 可选 xray， hy
-go build -o V2bX -ldflags '-s -w' -gcflags="all=-trimpath=${PWD}" -asmflags="all=-trimpath=${PWD} -tags "xray hy"
+# 通过-tags选项指定要编译的内核， 可选 xray， sing
+go build -o V2bX -ldflags '-s -w' -gcflags="all=-trimpath=${PWD}" -asmflags="all=-trimpath=${PWD} -tags "xray sing"
 ```
 
 ## 配置文件及详细使用教程

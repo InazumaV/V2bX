@@ -2,25 +2,24 @@ package conf
 
 import (
 	"fmt"
-	"io"
+	"github.com/InazumaV/V2bX/common/json5"
 	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-json"
 )
 
 type Conf struct {
-	CoreConfig  CoreConfig    `yaml:"CoreConfig"`
-	NodesConfig []*NodeConfig `yaml:"Nodes"`
+	LogConfig   LogConfig    `json:"Log"`
+	CoresConfig []CoreConfig `json:"Cores"`
+	NodeConfig  []NodeConfig `json:"Nodes"`
 }
 
 func New() *Conf {
 	return &Conf{
-		CoreConfig: CoreConfig{
-			Type:       "xray",
-			XrayConfig: NewXrayConfig(),
-			SingConfig: NewSingConfig(),
+		LogConfig: LogConfig{
+			Level:  "info",
+			Output: "",
 		},
-		NodesConfig: []*NodeConfig{},
 	}
 }
 
@@ -30,13 +29,5 @@ func (p *Conf) LoadFromPath(filePath string) error {
 		return fmt.Errorf("open config file error: %s", err)
 	}
 	defer f.Close()
-	content, err := io.ReadAll(f)
-	if err != nil {
-		return fmt.Errorf("read file error: %s", err)
-	}
-	err = yaml.Unmarshal(content, p)
-	if err != nil {
-		return fmt.Errorf("decode config error: %s", err)
-	}
-	return nil
+	return json.NewDecoder(json5.NewTrimNodeReader(f)).Decode(p)
 }

@@ -1,24 +1,18 @@
 package conf
 
 type CertConfig struct {
-	CertMode         string            `yaml:"CertMode"` // none, file, http, dns
-	RejectUnknownSni bool              `yaml:"RejectUnknownSni"`
-	CertDomain       string            `yaml:"CertDomain"`
-	CertFile         string            `yaml:"CertFile"`
-	KeyFile          string            `yaml:"KeyFile"`
-	Provider         string            `yaml:"Provider"` // alidns, cloudflare, gandi, godaddy....
-	Email            string            `yaml:"Email"`
-	DNSEnv           map[string]string `yaml:"DNSEnv"`
-	RealityConfig    *RealityConfig    `yaml:"RealityConfig"`
+	CertMode         string            `json:"CertMode"` // none, file, http, dns
+	RejectUnknownSni bool              `json:"RejectUnknownSni"`
+	CertDomain       string            `json:"CertDomain"`
+	CertFile         string            `json:"CertFile"`
+	KeyFile          string            `json:"KeyFile"`
+	Provider         string            `json:"Provider"` // alidns, cloudflare, gandi, godaddy....
+	Email            string            `json:"Email"`
+	DNSEnv           map[string]string `json:"DNSEnv"`
 }
 
-type RealityConfig struct {
-	Dest         interface{} `yaml:"Dest" json:"Dest"`
-	Xver         uint64      `yaml:"Xver" json:"Xver"`
-	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
-	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
-	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
-	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
-	MaxTimeDiff  uint64      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
-	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
+func NewCertConfig() *CertConfig {
+	return &CertConfig{
+		CertMode: "none",
+	}
 }

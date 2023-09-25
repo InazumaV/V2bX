@@ -1,9 +1,11 @@
 package sing
 
 import (
+	"context"
 	"net"
-	"strings"
 	"sync"
+
+	"github.com/inazumav/sing-box/common/urltest"
 
 	"github.com/InazumaV/V2bX/common/rate"
 
@@ -16,15 +18,18 @@ import (
 )
 
 type HookServer struct {
-	hooker *Hooker
+	logger  log.Logger
+	counter sync.Map
+}
+
+func (h *HookServer) ModeList() []string {
+	return nil
 }
 
 func NewHookServer(logger log.Logger) *HookServer {
 	return &HookServer{
-		hooker: &Hooker{
-			logger:  logger,
-			counter: sync.Map{},
-		},
+		logger:  logger,
+		counter: sync.Map{},
 	}
 }
 
@@ -36,47 +41,108 @@ func (h *HookServer) Close() error {
 	return nil
 }
 
-func (h *HookServer) StatsService() adapter.V2RayStatsService {
-	return h.hooker
+func (h *HookServer) PreStart() error {
+	return nil
 }
 
-func (h *HookServer) Hooker() *Hooker {
-	return h.hooker
-}
-
-type Hooker struct {
-	logger  log.Logger
-	counter sync.Map
-}
-
-func (h *Hooker) RoutedConnection(inbound string, outbound string, user string, conn net.Conn) net.Conn {
-	l, err := limiter.GetLimiter(inbound)
+func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapter.InboundContext, _ adapter.Rule) (net.Conn, adapter.Tracker) {
+	t := &Tracker{l: func() {}}
+	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
-		log.Error("get limiter for ", inbound, " error: ", err)
+		log.Error("get limiter for ", m.Inbound, " error: ", err)
 	}
-	ip, _, _ := strings.Cut(conn.RemoteAddr().String(), ":")
-	if b, r := l.CheckLimit(user, ip, true); r {
+	if l.CheckDomainRule(m.Domain) {
 		conn.Close()
-		h.logger.Error("[", inbound, "] ", "Limited ", user, " by ip or conn")
-		return conn
+		h.logger.Error("[", m.Inbound, "] ",
+			"Limited ", m.User, " access to ", m.Domain, " by domain rule")
+		return conn, t
+	}
+	if l.CheckProtocolRule(m.Protocol) {
+		conn.Close()
+		h.logger.Error("[", m.Inbound, "] ",
+			"Limited ", m.User, " use ", m.Domain, " by protocol rule")
+		return conn, t
+	}
+	ip := m.Source.Addr.String()
+	if b, r := l.CheckLimit(m.User, ip, true); r {
+		conn.Close()
+		h.logger.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
+		return conn, t
 	} else if b != nil {
 		conn = rate.NewConnRateLimiter(conn, b)
 	}
-	if c, ok := h.counter.Load(inbound); ok {
-		return counter.NewConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(user))
+	t.l = func() {
+		l.ConnLimiter.DelConnCount(m.User, ip)
+	}
+	if c, ok := h.counter.Load(m.Inbound); ok {
+		return counter.NewConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(m.User)), t
 	} else {
 		c := counter.NewTrafficCounter()
-		h.counter.Store(inbound, c)
-		return counter.NewConnCounter(conn, c.GetCounter(user))
+		h.counter.Store(m.Inbound, c)
+		return counter.NewConnCounter(conn, c.GetCounter(m.User)), t
 	}
 }
 
-func (h *Hooker) RoutedPacketConnection(inbound string, outbound string, user string, conn N.PacketConn) N.PacketConn {
-	if c, ok := h.counter.Load(inbound); ok {
-		return counter.NewPacketConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(user))
+func (h *HookServer) RoutedPacketConnection(_ context.Context, conn N.PacketConn, m adapter.InboundContext, _ adapter.Rule) (N.PacketConn, adapter.Tracker) {
+	t := &Tracker{
+		l: func() {},
+	}
+	l, err := limiter.GetLimiter(m.Inbound)
+	if err != nil {
+		log.Error("get limiter for ", m.Inbound, " error: ", err)
+	}
+	if l.CheckDomainRule(m.Domain) {
+		conn.Close()
+		h.logger.Error("[", m.Inbound, "] ",
+			"Limited ", m.User, " access to ", m.Domain, " by domain rule")
+		return conn, t
+	}
+	if l.CheckProtocolRule(m.Protocol) {
+		conn.Close()
+		h.logger.Error("[", m.Inbound, "] ",
+			"Limited ", m.User, " use ", m.Domain, " by protocol rule")
+		return conn, t
+	}
+	ip := m.Source.Addr.String()
+	if b, r := l.CheckLimit(m.User, ip, true); r {
+		conn.Close()
+		h.logger.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
+		return conn, &Tracker{l: func() {}}
+	} else if b != nil {
+		conn = rate.NewPacketConnCounter(conn, b)
+	}
+	if c, ok := h.counter.Load(m.Inbound); ok {
+		return counter.NewPacketConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(m.User)), t
 	} else {
 		c := counter.NewTrafficCounter()
-		h.counter.Store(inbound, c)
-		return counter.NewPacketConnCounter(conn, c.GetCounter(user))
+		h.counter.Store(m.Inbound, c)
+		return counter.NewPacketConnCounter(conn, c.GetCounter(m.User)), t
 	}
+}
+
+// not need
+
+func (h *HookServer) Mode() string {
+	return ""
+}
+func (h *HookServer) StoreSelected() bool {
+	return false
+}
+func (h *HookServer) CacheFile() adapter.ClashCacheFile {
+	return nil
+}
+func (h *HookServer) HistoryStorage() *urltest.HistoryStorage {
+	return nil
+}
+
+func (h *HookServer) StoreFakeIP() bool {
+	return false
+}
+
+type Tracker struct {
+	l func()
+}
+
+func (t *Tracker) Leave() {
+	t.l()
 }

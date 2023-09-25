@@ -110,7 +110,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.19'
+          go-version: '1.20'
 
       - name: Get project dependencies
         run: go mod download
@@ -126,13 +126,13 @@ jobs:
         run: |
           echo "version: $version"
           mkdir -p build_assets
-          go build -v -o build_assets/V2bX -tags "xray hy" -trimpath -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=$version' -s -w -buildid="
+          go build -v -o build_assets/V2bX -tags "sing xray with_reality_server with_quic" -trimpath -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=$version' -s -w -buildid="
 
       - name: Build Mips softfloat V2bX
         if: matrix.goarch == 'mips' || matrix.goarch == 'mipsle'
         run: |
           echo "version: $version"
-          GOMIPS=softfloat go build -v -o build_assets/V2bX_softfloat -tags "xray hy" -trimpath -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=$version' -s -w -buildid="
+          GOMIPS=softfloat go build -v -o build_assets/V2bX_softfloat -tags "sing xray with_reality_server with_quic" -trimpath -ldflags "-X 'github.com/InazumaV/V2bX/cmd.version=$version' -s -w -buildid="
       - name: Rename Windows V2bX
         if: matrix.goos == 'windows'
         run: |
@@ -146,8 +146,7 @@ jobs:
           cp ${GITHUB_WORKSPACE}/example/route.json ./build_assets/route.json
           cp ${GITHUB_WORKSPACE}/example/custom_outbound.json ./build_assets/custom_outbound.json
           cp ${GITHUB_WORKSPACE}/example/custom_inbound.json ./build_assets/custom_inbound.json
-          cp ${GITHUB_WORKSPACE}/example/rulelist ./build_assets/rulelist
-          cp ${GITHUB_WORKSPACE}/example/config.yml.example ./build_assets/config.yml
+          cp ${GITHUB_WORKSPACE}/example/config.yml.example ./build_assets/config.json
           LIST=('geoip geoip geoip' 'domain-list-community dlc geosite')
           for i in "${LIST[@]}"
           do

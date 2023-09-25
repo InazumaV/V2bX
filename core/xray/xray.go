@@ -67,7 +67,7 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 			log.WithField("err", err).Panic("Failed to read DNS config file")
 		} else {
 			if err = json.NewDecoder(f).Decode(coreDnsConfig); err != nil {
-				log.WithField("err", err).Panic("Failed to unmarshal DNS config")
+				log.WithField("err", err).Error("Failed to unmarshal DNS config")
 			}
 		}
 		os.Setenv("XRAY_DNS_PATH", c.DnsConfigPath)
@@ -188,8 +188,13 @@ func (c *Core) Close() error {
 
 func (c *Core) Protocols() []string {
 	return []string{
-		"v2ray",
+		"vmess",
+		"vless",
 		"shadowsocks",
 		"trojan",
 	}
+}
+
+func (c *Core) Type() string {
+	return "xray"
 }

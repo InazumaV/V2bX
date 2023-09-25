@@ -1,7 +1,6 @@
 package node
 
 import (
-	"runtime"
 	"strconv"
 
 	"github.com/InazumaV/V2bX/api/panel"
@@ -39,7 +38,6 @@ func (c *Controller) reportUserTrafficTask() (err error) {
 		}
 	}
 	userTraffic = nil
-	runtime.GC()
 	return nil
 }
 

@@ -1,10 +1,8 @@
 package panel
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -12,88 +10,104 @@ import (
 
 	"github.com/InazumaV/V2bX/common/crypt"
 	"github.com/goccy/go-json"
-	log "github.com/sirupsen/logrus"
-	coreConf "github.com/xtls/xray-core/infra/conf"
 )
 
-type CommonNodeRsp struct {
-	Host       string     `json:"host"`
-	ServerPort int        `json:"server_port"`
-	ServerName string     `json:"server_name"`
-	Routes     []Route    `json:"routes"`
-	BaseConfig BaseConfig `json:"base_config"`
+// Security type
+const (
+	None    = 0
+	Tls     = 1
+	Reality = 2
+)
+
+type NodeInfo struct {
+	Id           int
+	Type         string
+	Security     int
+	PushInterval time.Duration
+	PullInterval time.Duration
+	RawDNS       RawDNS
+	Rules        Rules
+
+	// origin
+	VAllss      *VAllssNode
+	Shadowsocks *ShadowsocksNode
+	Trojan      *TrojanNode
+	Hysteria    *HysteriaNode
+	Common      *CommonNode
+}
+
+type CommonNode struct {
+	Host       string      `json:"host"`
+	ServerPort int         `json:"server_port"`
+	ServerName string      `json:"server_name"`
+	Routes     []Route     `json:"routes"`
+	BaseConfig *BaseConfig `json:"base_config"`
 }
 
 type Route struct {
-	Id     int         `json:"id"`
-	Match  interface{} `json:"match"`
-	Action string      `json:"action"`
-	//ActionValue interface{} `json:"action_value"`
+	Id          int         `json:"id"`
+	Match       interface{} `json:"match"`
+	Action      string      `json:"action"`
+	ActionValue string      `json:"action_value"`
 }
 type BaseConfig struct {
 	PushInterval any `json:"push_interval"`
 	PullInterval any `json:"pull_interval"`
 }
 
-type V2rayNodeRsp struct {
-	Tls             int             `json:"tls"`
-	Network         string          `json:"network"`
-	NetworkSettings json.RawMessage `json:"networkSettings"`
-	ServerName      string          `json:"server_name"`
+// VAllssNode is vmess and vless node info
+type VAllssNode struct {
+	CommonNode
+	Tls                 int             `json:"tls"`
+	TlsSettings         TlsSettings     `json:"tls_settings"`
+	TlsSettingsBack     *TlsSettings    `json:"tlsSettings"`
+	Network             string          `json:"network"`
+	NetworkSettings     json.RawMessage `json:"network_settings"`
+	NetworkSettingsBack json.RawMessage `json:"networkSettings"`
+	ServerName          string          `json:"server_name"`
+
+	// vless only
+	Flow          string        `json:"flow"`
+	RealityConfig RealityConfig `json:"-"`
 }
 
-type ShadowsocksNodeRsp struct {
+type TlsSettings struct {
+	ServerName string `json:"server_name"`
+	ServerPort string `json:"server_port"`
+	ShortId    string `json:"short_id"`
+	PrivateKey string `json:"private_key"`
+}
+
+type RealityConfig struct {
+	Xver         uint64 `json:"Xver"`
+	MinClientVer string `json:"MinClientVer"`
+	MaxClientVer string `json:"MaxClientVer"`
+	MaxTimeDiff  string `json:"MaxTimeDiff"`
+}
+
+type ShadowsocksNode struct {
+	CommonNode
 	Cipher    string `json:"cipher"`
 	ServerKey string `json:"server_key"`
 }
 
-type HysteriaNodeRsp struct {
+type TrojanNode CommonNode
+
+type HysteriaNode struct {
+	CommonNode
 	UpMbps   int    `json:"up_mbps"`
 	DownMbps int    `json:"down_mbps"`
 	Obfs     string `json:"obfs"`
 }
 
-type NodeInfo struct {
-	Id              int
-	Type            string
-	Rules           Rules
-	Host            string
-	Port            int
-	Network         string
-	ExtraConfig     V2rayExtraConfig
-	NetworkSettings json.RawMessage
-	Tls             bool
-	ServerName      string
-	UpMbps          int
-	DownMbps        int
-	ServerKey       string
-	Cipher          string
-	HyObfs          string
-	PushInterval    time.Duration
-	PullInterval    time.Duration
+type RawDNS struct {
+	DNSMap  map[string]map[string]interface{}
+	DNSJson []byte
 }
 
 type Rules struct {
 	Regexp   []string
 	Protocol []string
-}
-
-type V2rayExtraConfig struct {
-	EnableVless   string         `json:"EnableVless"`
-	VlessFlow     string         `json:"VlessFlow"`
-	EnableReality string         `json:"EnableReality"`
-	RealityConfig *RealityConfig `json:"RealityConfig"`
-}
-
-type RealityConfig struct {
-	Dest         interface{} `yaml:"Dest" json:"Dest"`
-	Xver         string      `yaml:"Xver" json:"Xver"`
-	ServerNames  []string    `yaml:"ServerNames" json:"ServerNames"`
-	PrivateKey   string      `yaml:"PrivateKey" json:"PrivateKey"`
-	MinClientVer string      `yaml:"MinClientVer" json:"MinClientVer"`
-	MaxClientVer string      `yaml:"MaxClientVer" json:"MaxClientVer"`
-	MaxTimeDiff  string      `yaml:"MaxTimeDiff" json:"MaxTimeDiff"`
-	ShortIds     []string    `yaml:"ShortIds" json:"ShortIds"`
 }
 
 func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
@@ -108,30 +122,90 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 	if r.StatusCode() == 304 {
 		return nil, nil
 	}
-	// parse common params
 	node = &NodeInfo{
 		Id:   c.NodeId,
 		Type: c.NodeType,
+		RawDNS: RawDNS{
+			DNSMap:  make(map[string]map[string]interface{}),
+			DNSJson: []byte(""),
+		},
 	}
-	common := CommonNodeRsp{}
-	err = json.Unmarshal(r.Body(), &common)
-	if err != nil {
-		return nil, fmt.Errorf("decode common params error: %s", err)
+	// parse protocol params
+	var cm *CommonNode
+	switch c.NodeType {
+	case "vmess", "vless":
+		rsp := &VAllssNode{}
+		err = json.Unmarshal(r.Body(), rsp)
+		if err != nil {
+			return nil, fmt.Errorf("decode v2ray params error: %s", err)
+		}
+		if len(rsp.NetworkSettingsBack) > 0 {
+			rsp.NetworkSettings = rsp.NetworkSettingsBack
+			rsp.NetworkSettingsBack = nil
+		}
+		if rsp.TlsSettingsBack != nil {
+			rsp.TlsSettings = *rsp.TlsSettingsBack
+			rsp.TlsSettingsBack = nil
+		}
+		cm = &rsp.CommonNode
+		node.VAllss = rsp
+		node.Security = node.VAllss.Tls
+		if len(rsp.NetworkSettings) > 0 {
+			err = json.Unmarshal(rsp.NetworkSettings, &rsp.RealityConfig)
+			if err != nil {
+				return nil, fmt.Errorf("decode reality config error: %s", err)
+			}
+		}
+		if node.Security == Reality {
+			if rsp.TlsSettings.PrivateKey == "" {
+				key := crypt.GenX25519Private([]byte("vless" + c.Token))
+				rsp.TlsSettings.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
+			}
+		}
+	case "shadowsocks":
+		rsp := &ShadowsocksNode{}
+		err = json.Unmarshal(r.Body(), rsp)
+		if err != nil {
+			return nil, fmt.Errorf("decode v2ray params error: %s", err)
+		}
+		cm = &rsp.CommonNode
+		node.Shadowsocks = rsp
+		node.Security = None
+	case "trojan":
+		rsp := &TrojanNode{}
+		err = json.Unmarshal(r.Body(), rsp)
+		if err != nil {
+			return nil, fmt.Errorf("decode v2ray params error: %s", err)
+		}
+		cm = (*CommonNode)(rsp)
+		node.Trojan = rsp
+		node.Security = Tls
+	case "hysteria":
+		rsp := &HysteriaNode{}
+		err = json.Unmarshal(r.Body(), rsp)
+		if err != nil {
+			return nil, fmt.Errorf("decode v2ray params error: %s", err)
+		}
+		cm = &rsp.CommonNode
+		node.Hysteria = rsp
+		node.Security = Tls
 	}
-	for i := range common.Routes { // parse rules from routes
+
+	// parse rules and dns
+	for i := range cm.Routes {
 		var matchs []string
-		if _, ok := common.Routes[i].Match.(string); ok {
-			matchs = strings.Split(common.Routes[i].Match.(string), ",")
-		} else if _, ok = common.Routes[i].Match.([]string); ok {
-			matchs = common.Routes[i].Match.([]string)
+		if _, ok := cm.Routes[i].Match.(string); ok {
+			matchs = strings.Split(cm.Routes[i].Match.(string), ",")
+		} else if _, ok = cm.Routes[i].Match.([]string); ok {
+			matchs = cm.Routes[i].Match.([]string)
 		} else {
-			temp := common.Routes[i].Match.([]interface{})
+			temp := cm.Routes[i].Match.([]interface{})
 			matchs = make([]string, len(temp))
 			for i := range temp {
 				matchs[i] = temp[i].(string)
 			}
 		}
-		switch common.Routes[i].Action {
+		switch cm.Routes[i].Action {
 		case "block":
 			for _, v := range matchs {
 				if strings.HasPrefix(v, "protocol:") {
@@ -143,90 +217,32 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 				}
 			}
 		case "dns":
+			var domains []string
+			for _, v := range matchs {
+				domains = append(domains, v)
+			}
 			if matchs[0] != "main" {
-				break
-			}
-			dnsPath := os.Getenv("XRAY_DNS_PATH")
-			if dnsPath == "" {
-				break
-			}
-			dns := []byte(strings.Join(matchs[1:], ""))
-			currentData, err := os.ReadFile(dnsPath)
-			if err != nil {
-				log.WithField("err", err).Panic("Failed to read XRAY_DNS_PATH")
-				break
-			}
-			if !bytes.Equal(currentData, dns) {
-				coreDnsConfig := &coreConf.DNSConfig{}
-				if err = json.NewDecoder(bytes.NewReader(dns)).Decode(coreDnsConfig); err != nil {
-					log.WithField("err", err).Panic("Failed to unmarshal DNS config")
+				node.RawDNS.DNSMap[strconv.Itoa(i)] = map[string]interface{}{
+					"address": cm.Routes[i].ActionValue,
+					"domains": domains,
 				}
-				_, err := coreDnsConfig.Build()
-				if err != nil {
-					log.WithField("err", err).Panic("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help")
-					break
-				}
-				if err = os.Truncate(dnsPath, 0); err != nil {
-					log.WithField("err", err).Panic("Failed to clear XRAY DNS PATH file")
-				}
-				if err = os.WriteFile(dnsPath, dns, 0644); err != nil {
-					log.WithField("err", err).Panic("Failed to write DNS to XRAY DNS PATH file")
-				}
-			}
-		}
-	}
-	node.ServerName = common.ServerName
-	node.Host = common.Host
-	node.Port = common.ServerPort
-	node.PullInterval = intervalToTime(common.BaseConfig.PullInterval)
-	node.PushInterval = intervalToTime(common.BaseConfig.PushInterval)
-	// parse protocol params
-	switch c.NodeType {
-	case "v2ray":
-		rsp := V2rayNodeRsp{}
-		err = json.Unmarshal(r.Body(), &rsp)
-		if err != nil {
-			return nil, fmt.Errorf("decode v2ray params error: %s", err)
-		}
-		node.Network = rsp.Network
-		node.NetworkSettings = rsp.NetworkSettings
-		node.ServerName = rsp.ServerName
-		if rsp.Tls == 1 {
-			node.Tls = true
-		}
-		err = json.Unmarshal(rsp.NetworkSettings, &node.ExtraConfig)
-		if err != nil {
-			return nil, fmt.Errorf("decode v2ray extra error: %s", err)
-		}
-		if node.ExtraConfig.EnableReality == "true" {
-			if node.ExtraConfig.RealityConfig == nil {
-				node.ExtraConfig.EnableReality = "false"
 			} else {
-				key := crypt.GenX25519Private([]byte(strconv.Itoa(c.NodeId) + c.NodeType + c.Token +
-					node.ExtraConfig.RealityConfig.PrivateKey))
-				node.ExtraConfig.RealityConfig.PrivateKey = base64.RawURLEncoding.EncodeToString(key)
+				dns := []byte(strings.Join(matchs[1:], ""))
+				node.RawDNS.DNSJson = dns
+				break
 			}
 		}
-	case "shadowsocks":
-		rsp := ShadowsocksNodeRsp{}
-		err = json.Unmarshal(r.Body(), &rsp)
-		if err != nil {
-			return nil, fmt.Errorf("decode v2ray params error: %s", err)
-		}
-		node.ServerKey = rsp.ServerKey
-		node.Cipher = rsp.Cipher
-	case "trojan":
-		node.Tls = true
-	case "hysteria":
-		rsp := HysteriaNodeRsp{}
-		err = json.Unmarshal(r.Body(), &rsp)
-		if err != nil {
-			return nil, fmt.Errorf("decode v2ray params error: %s", err)
-		}
-		node.DownMbps = rsp.DownMbps
-		node.UpMbps = rsp.UpMbps
-		node.HyObfs = rsp.Obfs
 	}
+
+	// set interval
+	node.PushInterval = intervalToTime(cm.BaseConfig.PushInterval)
+	node.PullInterval = intervalToTime(cm.BaseConfig.PullInterval)
+
+	node.Common = cm
+	// clear
+	cm.Routes = nil
+	cm.BaseConfig = nil
+
 	c.nodeEtag = r.Header().Get("ETag")
 	return
 }

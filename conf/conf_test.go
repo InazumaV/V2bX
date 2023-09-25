@@ -1,17 +1,16 @@
 package conf
 
 import (
-	"log"
-	"strings"
 	"testing"
 )
 
 func TestConf_LoadFromPath(t *testing.T) {
 	c := New()
-	t.Log(c.LoadFromPath("../example/config.yml.example"))
+	t.Log(c.LoadFromPath("../example/config.json"), c.NodeConfig)
 }
 
 func TestConf_Watch(t *testing.T) {
-	//c := New()
-	log.Println(strings.Split("aaaa", " "))
+	c := New()
+	t.Log(c.Watch("./1.json", "", func() {}))
+	select {}
 }

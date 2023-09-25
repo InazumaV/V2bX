@@ -4,12 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/inazumav/sing-box/inbound"
 	F "github.com/sagernet/sing/common/format"
@@ -30,59 +30,107 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	if err != nil {
 		return option.Inbound{}, fmt.Errorf("the listen ip not vail")
 	}
-	listen := option.ListenOptions{
-		//ProxyProtocol: true,
-		Listen:     (*option.ListenAddress)(&addr),
-		ListenPort: uint16(info.Port),
+	var domainStrategy option.DomainStrategy
+	if c.SingOptions.EnableDNS {
+		domainStrategy = c.SingOptions.DomainStrategy
 	}
-	tls := option.InboundTLSOptions{
-		Enabled:         info.Tls,
-		CertificatePath: c.CertConfig.CertFile,
-		KeyPath:         c.CertConfig.KeyFile,
-		ServerName:      info.ServerName,
+	listen := option.ListenOptions{
+		Listen:        (*option.ListenAddress)(&addr),
+		ListenPort:    uint16(info.Common.ServerPort),
+		ProxyProtocol: c.SingOptions.EnableProxyProtocol,
+		TCPFastOpen:   c.SingOptions.TCPFastOpen,
+		InboundOptions: option.InboundOptions{
+			SniffEnabled:             c.SingOptions.SniffEnabled,
+			SniffOverrideDestination: c.SingOptions.SniffOverrideDestination,
+			DomainStrategy:           domainStrategy,
+		},
+	}
+	var tls option.InboundTLSOptions
+	switch info.Security {
+	case panel.Tls:
+		if c.CertConfig == nil {
+			return option.Inbound{}, fmt.Errorf("the CertConfig is not vail")
+		}
+		switch c.CertConfig.CertMode {
+		case "none", "":
+			break // disable
+		default:
+			tls.Enabled = true
+			tls.CertificatePath = c.CertConfig.CertFile
+			tls.KeyPath = c.CertConfig.KeyFile
+		}
+	case panel.Reality:
+		tls.Enabled = true
+		v := info.VAllss
+		tls.ServerName = v.TlsSettings.ServerName
+		dest, _ := strconv.Atoi(v.TlsSettings.ServerPort)
+		mtd, _ := time.ParseDuration(v.RealityConfig.MaxTimeDiff)
+		tls.Reality = &option.InboundRealityOptions{
+			Enabled:    true,
+			ShortID:    []string{v.TlsSettings.ShortId},
+			PrivateKey: v.TlsSettings.PrivateKey,
+			Handshake: option.InboundRealityHandshakeOptions{
+				ServerOptions: option.ServerOptions{
+					Server:     tls.ServerName,
+					ServerPort: uint16(dest),
+				},
+			},
+			MaxTimeDifference: option.Duration(mtd),
+		}
 	}
 	in := option.Inbound{
 		Tag: tag,
 	}
 	switch info.Type {
-	case "v2ray":
+	case "vmess", "vless":
+		n := info.VAllss
 		t := option.V2RayTransportOptions{
-			Type: info.Network,
+			Type: n.Network,
 		}
-		switch info.Network {
+		switch n.Network {
 		case "tcp":
 			t.Type = ""
 		case "ws":
-			network := WsNetworkConfig{}
-			err := json.Unmarshal(info.NetworkSettings, &network)
-			if err != nil {
-				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
-			}
-			var u *url.URL
-			u, err = url.Parse(network.Path)
-			if err != nil {
-				return option.Inbound{}, fmt.Errorf("parse path error: %s", err)
-			}
-			ed, _ := strconv.Atoi(u.Query().Get("ed"))
-			h := make(map[string]option.Listable[string], len(network.Headers))
-			for k, v := range network.Headers {
-				h[k] = option.Listable[string]{
-					v,
+			var (
+				path    string
+				ed      int
+				headers map[string]option.Listable[string]
+			)
+			if len(n.NetworkSettings) != 0 {
+				network := WsNetworkConfig{}
+				err := json.Unmarshal(n.NetworkSettings, &network)
+				if err != nil {
+					return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+				}
+				var u *url.URL
+				u, err = url.Parse(network.Path)
+				if err != nil {
+					return option.Inbound{}, fmt.Errorf("parse path error: %s", err)
+				}
+				path = u.Path
+				ed, _ = strconv.Atoi(u.Query().Get("ed"))
+				headers = make(map[string]option.Listable[string], len(network.Headers))
+				for k, v := range network.Headers {
+					headers[k] = option.Listable[string]{
+						v,
+					}
 				}
 			}
 			t.WebsocketOptions = option.V2RayWebsocketOptions{
-				Path:                u.Path,
+				Path:                path,
 				EarlyDataHeaderName: "Sec-WebSocket-Protocol",
 				MaxEarlyData:        uint32(ed),
-				Headers:             h,
+				Headers:             headers,
 			}
 		case "grpc":
-			err := json.Unmarshal(info.NetworkSettings, &t.GRPCOptions)
-			if err != nil {
-				return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+			if len(n.NetworkSettings) != 0 {
+				err := json.Unmarshal(n.NetworkSettings, &t.GRPCOptions)
+				if err != nil {
+					return option.Inbound{}, fmt.Errorf("decode NetworkSettings error: %s", err)
+				}
 			}
 		}
-		if info.ExtraConfig.EnableVless == "true" {
+		if info.Type == "vless" {
 			in.Type = "vless"
 			in.VLESSOptions = option.VLESSInboundOptions{
 				ListenOptions: listen,
@@ -99,27 +147,70 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 		}
 	case "shadowsocks":
 		in.Type = "shadowsocks"
-		p := make([]byte, 32)
-		_, _ = rand.Read(p)
-		randomPasswd := hex.EncodeToString(p)
-		if strings.Contains(info.Cipher, "2022") {
-			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
+		n := info.Shadowsocks
+		var keyLength int
+		switch n.Cipher {
+		case "2022-blake3-aes-128-gcm":
+			keyLength = 16
+		case "2022-blake3-aes-256-gcm":
+			keyLength = 32
+		default:
+			keyLength = 16
 		}
 		in.ShadowsocksOptions = option.ShadowsocksInboundOptions{
 			ListenOptions: listen,
-			Method:        info.Cipher,
-			Password:      info.ServerKey,
-			Users: []option.ShadowsocksUser{
-				{
-					Password: randomPasswd,
-				},
-			},
+			Method:        n.Cipher,
+		}
+		p := make([]byte, keyLength)
+		_, _ = rand.Read(p)
+		randomPasswd := string(p)
+		if strings.Contains(n.Cipher, "2022") {
+			in.ShadowsocksOptions.Password = n.ServerKey
+			randomPasswd = base64.StdEncoding.EncodeToString([]byte(randomPasswd))
+		}
+		in.ShadowsocksOptions.Users = []option.ShadowsocksUser{{
+			Password: randomPasswd,
+		}}
+	case "trojan":
+		in.Type = "trojan"
+		in.TrojanOptions = option.TrojanInboundOptions{
+			ListenOptions: listen,
+			TLS:           &tls,
+		}
+		if c.SingOptions.FallBackConfigs != nil {
+			// fallback handling
+			fallback := c.SingOptions.FallBackConfigs.FallBack
+			fallbackPort, err := strconv.Atoi(fallback.ServerPort)
+			if err == nil {
+				in.TrojanOptions.Fallback = &option.ServerOptions{
+					Server:     fallback.Server,
+					ServerPort: uint16(fallbackPort),
+				}
+			}
+			fallbackForALPNMap := c.SingOptions.FallBackConfigs.FallBackForALPN
+			fallbackForALPN := make(map[string]*option.ServerOptions, len(fallbackForALPNMap))
+			if err := processFallback(c, fallbackForALPN); err == nil {
+				in.TrojanOptions.FallbackForALPN = fallbackForALPN
+			}
+		}
+	case "hysteria":
+		in.Type = "hysteria"
+		in.HysteriaOptions = option.HysteriaInboundOptions{
+			ListenOptions: listen,
+			UpMbps:        info.Hysteria.UpMbps,
+			DownMbps:      info.Hysteria.DownMbps,
+			Obfs:          info.Hysteria.Obfs,
+			TLS:           &tls,
 		}
 	}
 	return in, nil
 }
 
 func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
+	err := updateDNSConfig(info)
+	if err != nil {
+		return fmt.Errorf("build dns error: %s", err)
+	}
 	c, err := getInboundOptions(tag, info, config)
 	if err != nil {
 		return err
@@ -131,11 +222,14 @@ func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) er
 		c,
 		nil,
 	)
-	b.inbounds[tag] = in
+	if err != nil {
+		return fmt.Errorf("init inbound error： %s", err)
+	}
 	err = in.Start()
 	if err != nil {
 		return fmt.Errorf("start inbound error: %s", err)
 	}
+	b.inbounds[tag] = in
 	err = b.router.AddInbound(in)
 	if err != nil {
 		return fmt.Errorf("add inbound error: %s", err)

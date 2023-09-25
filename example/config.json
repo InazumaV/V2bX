@@ -1,0 +1,49 @@
+{
+  "Log": {
+    "Level": "info",
+    "Output": ""
+  },
+  "Cores": [
+    {
+      "Type": "sing",
+      "Log": {
+        "Level": "error",
+        "Timestamp": true
+      },
+      "DnsConfigPath": "/etc/V2bX/dns.json",
+      "NTP": {
+        "Enable": true,
+        "Server": "time.apple.com",
+        "ServerPort": 0
+      }
+    }
+  ],
+  "Nodes": [
+    {
+      "Core": "sing",
+      "ApiHost": "http://127.0.0.1",
+      "ApiKey": "test",
+      "NodeID": 33,
+      "NodeType": "shadowsocks",
+      "Timeout": 30,
+      "ListenIP": "0.0.0.0",
+      "SendIP": "0.0.0.0",
+      "EnableProxyProtocol": false,
+      "EnableDNS": true,
+      "DomainStrategy": "ipv4_only",
+      "LimitConfig": {
+        "EnableRealtime": false,
+        "SpeedLimit": 0,
+        "IPLimit": 0,
+        "ConnLimit": 0,
+        "EnableDynamicSpeedLimit": false,
+        "DynamicSpeedLimitConfig": {
+          "Periodic": 60,
+          "Traffic": 1000,
+          "SpeedLimit": 100,
+          "ExpireTime": 60
+        }
+      }
+    }
+  ]
+}

@@ -6,11 +6,11 @@ import (
 )
 
 type AddUsersParams struct {
-	Tag      string
-	Config   *conf.Options
-	UserInfo []panel.UserInfo
-	NodeInfo *panel.NodeInfo
+	Tag   string
+	Users []panel.UserInfo
+	*panel.NodeInfo
 }
+
 type Core interface {
 	Start() error
 	Close() error
@@ -20,4 +20,5 @@ type Core interface {
 	GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64)
 	DelUsers(users []panel.UserInfo, tag string) error
 	Protocols() []string
+	Type() string
 }

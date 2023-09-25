@@ -1,4 +1,4 @@
-package lego
+package node
 
 import (
 	"log"
@@ -12,7 +12,7 @@ var l *Lego
 
 func init() {
 	var err error
-	l, err = New(&conf.CertConfig{
+	l, err = NewLego(&conf.CertConfig{
 		CertMode:   "dns",
 		Email:      "test@test.com",
 		CertDomain: "test.test.com",

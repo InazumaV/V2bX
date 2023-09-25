@@ -3,6 +3,7 @@ package sing
 import (
 	"context"
 	"fmt"
+	"github.com/goccy/go-json"
 	"io"
 	"os"
 	"runtime/debug"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/InazumaV/V2bX/conf"
 	vCore "github.com/InazumaV/V2bX/core"
-
 	"github.com/inazumav/sing-box/adapter"
 	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/log"
@@ -20,10 +20,15 @@ import (
 	"github.com/sagernet/sing/common"
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
-	"github.com/sagernet/sing/service/pause"
+	"github.com/sagernet/sing/service"
 )
 
 var _ adapter.Service = (*Box)(nil)
+
+type DNSConfig struct {
+	Servers []map[string]interface{} `json:"servers"`
+	Rules   []map[string]interface{} `json:"rules"`
+}
 
 type Box struct {
 	createdAt  time.Time
@@ -42,13 +47,44 @@ func init() {
 
 func New(c *conf.CoreConfig) (vCore.Core, error) {
 	options := option.Options{}
+	if len(c.SingConfig.OriginalPath) != 0 {
+		f, err := os.Open(c.SingConfig.OriginalPath)
+		if err != nil {
+			return nil, fmt.Errorf("open original config error: %s", err)
+		}
+		defer f.Close()
+		err = json.NewDecoder(f).Decode(&options)
+		if err != nil {
+			return nil, fmt.Errorf("decode original config error: %s", err)
+		}
+	}
 	options.Log = &option.LogOptions{
 		Disabled:  c.SingConfig.LogConfig.Disabled,
 		Level:     c.SingConfig.LogConfig.Level,
 		Timestamp: c.SingConfig.LogConfig.Timestamp,
 		Output:    c.SingConfig.LogConfig.Output,
 	}
+	options.NTP = &option.NTPOptions{
+		Enabled:       c.SingConfig.NtpConfig.Enable,
+		WriteToSystem: true,
+		ServerOptions: option.ServerOptions{
+			Server:     c.SingConfig.NtpConfig.Server,
+			ServerPort: c.SingConfig.NtpConfig.ServerPort,
+		},
+	}
+	os.Setenv("SING_DNS_PATH", "")
+	if c.SingConfig.DnsConfigPath != "" {
+		if f, err := os.Open(c.SingConfig.DnsConfigPath); err != nil {
+			log.Error("Failed to read DNS config file")
+		} else {
+			if err = json.NewDecoder(f).Decode(&option.DNSOptions{}); err != nil {
+				log.Error("Failed to unmarshal DNS config")
+			}
+		}
+		os.Setenv("SING_DNS_PATH", c.SingConfig.DnsConfigPath)
+	}
 	ctx := context.Background()
+	ctx = service.ContextWithDefaultRegistry(ctx)
 	ctx = pause.ContextWithDefaultManager(ctx)
 	createdAt := time.Now()
 	experimentalOptions := common.PtrValueOrDefault(options.Experimental)
@@ -131,7 +167,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 	if err != nil {
 		return nil, E.Cause(err, "create v2ray api server")
 	}
-	router.SetV2RayServer(server)
+	router.SetClashServer(server)
 	return &Box{
 		router:     router,
 		inbounds:   inMap,
@@ -265,7 +301,14 @@ func (b *Box) Router() adapter.Router {
 
 func (b *Box) Protocols() []string {
 	return []string{
-		"v2ray",
+		"vmess",
+		"vless",
 		"shadowsocks",
+		"trojan",
+		"hysteria",
 	}
+}
+
+func (b *Box) Type() string {
+	return "sing"
 }
