@@ -493,6 +493,10 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	}
 
 	if handler == nil {
+		handler = d.ohm.GetHandler(inTag)
+	}
+
+	if handler == nil {
 		handler = d.ohm.GetDefaultHandler()
 	}
 
