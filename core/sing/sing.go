@@ -3,14 +3,9 @@ package sing
 import (
 	"context"
 	"fmt"
-	"github.com/goccy/go-json"
-	"io"
-	"os"
-	"runtime/debug"
-	"time"
-
 	"github.com/InazumaV/V2bX/conf"
 	vCore "github.com/InazumaV/V2bX/core"
+	"github.com/goccy/go-json"
 	"github.com/inazumav/sing-box/adapter"
 	"github.com/inazumav/sing-box/inbound"
 	"github.com/inazumav/sing-box/log"
@@ -21,6 +16,11 @@ import (
 	E "github.com/sagernet/sing/common/exceptions"
 	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/service"
+	"github.com/sagernet/sing/service/pause"
+	"io"
+	"os"
+	"runtime/debug"
+	"time"
 )
 
 var _ adapter.Service = (*Box)(nil)
