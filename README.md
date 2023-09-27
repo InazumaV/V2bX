@@ -5,12 +5,12 @@
 A V2board node server based on multi core, modified from XrayR.  
 一个基于多种内核的V2board节点服务端，修改自XrayR，支持V2ay,Trojan,Shadowsocks协议。
 
-**注意：1.1.0将更换为V2board1.7.0之后新增的Api，原Api将被移除，请1.7.0之前的用户使用1.1.0之前的版本。**
+**注意： 本项目需要V2board版本 >= 1.7.0**
 
 ## 特点
 
 * 永久开源且免费。
-* 支持V2ray，Trojan， Shadowsocks多种协议。
+* 支持Vmess/Vless, Trojan， Shadowsocks, Hysteria多种协议。
 * 支持Vless和XTLS等新特性。
 * 支持单实例对接多节点，无需重复启动。
 * 支持限制在线IP。
