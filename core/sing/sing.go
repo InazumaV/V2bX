@@ -31,6 +31,7 @@ type DNSConfig struct {
 }
 
 type Box struct {
+        ctx        context.Context
 	createdAt  time.Time
 	router     adapter.Router
 	inbounds   map[string]adapter.Inbound
@@ -169,6 +170,7 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 	}
 	router.SetClashServer(server)
 	return &Box{
+                ctx:        ctx,
 		router:     router,
 		inbounds:   inMap,
 		outbounds:  outbounds,
