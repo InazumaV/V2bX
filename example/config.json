@@ -10,7 +10,6 @@
         "Level": "error",
         "Timestamp": true
       },
-      "DnsConfigPath": "/etc/V2bX/dns.json",
       "NTP": {
         "Enable": true,
         "Server": "time.apple.com",
