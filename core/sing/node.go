@@ -1,7 +1,6 @@
 package sing
 
 import (
-	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -215,8 +214,9 @@ func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) er
 	if err != nil {
 		return err
 	}
+
 	in, err := inbound.New(
-		context.Background(),
+		b.ctx,
 		b.router,
 		b.logFactory.NewLogger(F.ToString("inbound/", c.Type, "[", tag, "]")),
 		c,

@@ -2,8 +2,6 @@ package panel
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/goccy/go-json"
 )
 
@@ -67,6 +65,5 @@ func (c *Client) ReportUserTraffic(userTraffic []UserTraffic) error {
 	if err != nil {
 		return err
 	}
-	log.Println(r.String())
 	return nil
 }

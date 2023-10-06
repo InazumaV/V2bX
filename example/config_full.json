@@ -185,7 +185,9 @@
     {
       // xray内核
 
+      "Name": "xray_node1",
       "Core": "xray",
+      "CoreName": "",
       "ApiHost": "http://127.0.0.1",
       "ApiKey": "test",
       "NodeID": 33,

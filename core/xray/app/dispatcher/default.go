@@ -164,12 +164,12 @@ func (d *DefaultDispatcher) getLink(ctx context.Context, network net.Network) (*
 	if user != nil && len(user.Email) > 0 {
 		limit, err = limiter.GetLimiter(sessionInbound.Tag)
 		if err != nil {
-			newError("Get limit info error: ", err).AtError().WriteToLog()
+			newError("get limiter ", sessionInbound.Tag, " error: ", err).AtError().WriteToLog()
 			common.Close(outboundLink.Writer)
 			common.Close(inboundLink.Writer)
 			common.Interrupt(outboundLink.Reader)
 			common.Interrupt(inboundLink.Reader)
-			return nil, nil, nil, newError("Get limit info error: ", err)
+			return nil, nil, nil, newError("get limiter ", sessionInbound.Tag, " error: ", err)
 		}
 		// Speed Limit and Device Limit
 		w, reject := limit.CheckLimit(user.Email,
@@ -414,49 +414,48 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	}
 
 	sessionInbound := session.InboundFromContext(ctx)
-	if l != nil {
-		// del connect count
-		if sessionInbound.User != nil {
+	if sessionInbound.User != nil {
+		if l != nil {
+			// del connect count
 			if destination.Network == net.Network_TCP {
 				defer func() {
 					l.ConnLimiter.DelConnCount(sessionInbound.User.Email, sessionInbound.Source.Address.IP().String())
 				}()
 			}
+		} else {
+			var err error
+			l, err = limiter.GetLimiter(sessionInbound.Tag)
+			if err != nil {
+				newError("get limiter ", sessionInbound.Tag, " error: ", err).AtWarning().WriteToLog(session.ExportIDToError(ctx))
+			}
 		}
-	} else {
-		var err error
-		l, err = limiter.GetLimiter(sessionInbound.Tag)
-		if err != nil {
-			newError("get limiter error: ", err).AtError().WriteToLog(session.ExportIDToError(ctx))
-			common.Close(link.Writer)
-			common.Interrupt(link.Reader)
-			return
-		}
-	}
-	var destStr string
-	if destination.Address.Family().IsDomain() {
-		destStr = destination.Address.Domain()
-	} else {
-		destStr = destination.Address.IP().String()
-	}
-	if l.CheckDomainRule(destStr) {
-		newError(fmt.Sprintf(
-			"User %s access domain %s reject by rule",
-			sessionInbound.User.Email,
-			destStr)).AtWarning().WriteToLog(session.ExportIDToError(ctx))
-		common.Close(link.Writer)
-		common.Interrupt(link.Reader)
-		return
-	}
-	if len(protocol) != 0 {
-		if l.CheckProtocolRule(protocol) {
-			newError(fmt.Sprintf(
-				"User %s access protocol %s reject by rule",
-				sessionInbound.User.Email,
-				protocol)).AtWarning().WriteToLog(session.ExportIDToError(ctx))
-			common.Close(link.Writer)
-			common.Interrupt(link.Reader)
-			return
+		if l != nil {
+			var destStr string
+			if destination.Address.Family().IsDomain() {
+				destStr = destination.Address.Domain()
+			} else {
+				destStr = destination.Address.IP().String()
+			}
+			if l.CheckDomainRule(destStr) {
+				newError(fmt.Sprintf(
+					"User %s access domain %s reject by rule",
+					sessionInbound.User.Email,
+					destStr)).AtWarning().WriteToLog(session.ExportIDToError(ctx))
+				common.Close(link.Writer)
+				common.Interrupt(link.Reader)
+				return
+			}
+			if len(protocol) != 0 {
+				if l.CheckProtocolRule(protocol) {
+					newError(fmt.Sprintf(
+						"User %s access protocol %s reject by rule",
+						sessionInbound.User.Email,
+						protocol)).AtWarning().WriteToLog(session.ExportIDToError(ctx))
+					common.Close(link.Writer)
+					common.Interrupt(link.Reader)
+					return
+				}
+			}
 		}
 	}
 
@@ -490,6 +489,10 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 		} else {
 			newError("default route for ", destination).WriteToLog(session.ExportIDToError(ctx))
 		}
+	}
+
+	if handler == nil {
+		handler = d.ohm.GetHandler(inTag)
 	}
 
 	if handler == nil {
