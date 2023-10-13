@@ -112,6 +112,7 @@ func (b *Box) DelUsers(users []panel.UserInfo, tag string) error {
 	}
 	uuids := make([]string, len(users))
 	for i := range users {
+		b.hookServer.ClearConn(tag, users[i].Uuid)
 		uuids[i] = users[i].Uuid
 	}
 	err := del.DelUsers(uuids)

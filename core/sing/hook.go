@@ -2,6 +2,7 @@ package sing
 
 import (
 	"context"
+	"io"
 	"net"
 	"sync"
 
@@ -18,18 +19,49 @@ import (
 )
 
 type HookServer struct {
-	logger  log.Logger
-	counter sync.Map
+	EnableConnClear bool
+	logger          log.Logger
+	counter         sync.Map
+	connClears      sync.Map
+}
+
+type ConnClear struct {
+	lock  sync.RWMutex
+	conns map[int]io.Closer
+}
+
+func (c *ConnClear) AddConn(cn io.Closer) (key int) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	key = len(c.conns)
+	c.conns[key] = cn
+	return
+}
+
+func (c *ConnClear) DelConn(key int) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	delete(c.conns, key)
+}
+
+func (c *ConnClear) ClearConn() {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	for _, c := range c.conns {
+		c.Close()
+	}
 }
 
 func (h *HookServer) ModeList() []string {
 	return nil
 }
 
-func NewHookServer(logger log.Logger) *HookServer {
+func NewHookServer(logger log.Logger, enableClear bool) *HookServer {
 	return &HookServer{
-		logger:  logger,
-		counter: sync.Map{},
+		EnableConnClear: enableClear,
+		logger:          logger,
+		counter:         sync.Map{},
+		connClears:      sync.Map{},
 	}
 }
 
@@ -46,7 +78,7 @@ func (h *HookServer) PreStart() error {
 }
 
 func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapter.InboundContext, _ adapter.Rule) (net.Conn, adapter.Tracker) {
-	t := &Tracker{l: func() {}}
+	t := &Tracker{}
 	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
 		log.Error("get limiter for ", m.Inbound, " error: ", err)
@@ -71,8 +103,23 @@ func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapte
 	} else if b != nil {
 		conn = rate.NewConnRateLimiter(conn, b)
 	}
-	t.l = func() {
+	t.AddLeave(func() {
 		l.ConnLimiter.DelConnCount(m.User, ip)
+	})
+	if h.EnableConnClear {
+		var key int
+		cc := &ConnClear{
+			conns: map[int]io.Closer{
+				0: conn,
+			},
+		}
+		if v, ok := h.connClears.LoadOrStore(m.Inbound+m.User, cc); ok {
+			cc = v.(*ConnClear)
+			key = cc.AddConn(conn)
+		}
+		t.AddLeave(func() {
+			cc.DelConn(key)
+		})
 	}
 	if c, ok := h.counter.Load(m.Inbound); ok {
 		return counter.NewConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(m.User)), t
@@ -84,9 +131,7 @@ func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapte
 }
 
 func (h *HookServer) RoutedPacketConnection(_ context.Context, conn N.PacketConn, m adapter.InboundContext, _ adapter.Rule) (N.PacketConn, adapter.Tracker) {
-	t := &Tracker{
-		l: func() {},
-	}
+	t := &Tracker{}
 	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
 		log.Error("get limiter for ", m.Inbound, " error: ", err)
@@ -107,9 +152,24 @@ func (h *HookServer) RoutedPacketConnection(_ context.Context, conn N.PacketConn
 	if b, r := l.CheckLimit(m.User, ip, true); r {
 		conn.Close()
 		h.logger.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
-		return conn, &Tracker{l: func() {}}
+		return conn, t
 	} else if b != nil {
 		conn = rate.NewPacketConnCounter(conn, b)
+	}
+	if h.EnableConnClear {
+		var key int
+		cc := &ConnClear{
+			conns: map[int]io.Closer{
+				0: conn,
+			},
+		}
+		if v, ok := h.connClears.LoadOrStore(m.Inbound+m.User, cc); ok {
+			cc = v.(*ConnClear)
+			key = cc.AddConn(conn)
+		}
+		t.AddLeave(func() {
+			cc.DelConn(key)
+		})
 	}
 	if c, ok := h.counter.Load(m.Inbound); ok {
 		return counter.NewPacketConnCounter(conn, c.(*counter.TrafficCounter).GetCounter(m.User)), t
@@ -139,10 +199,23 @@ func (h *HookServer) StoreFakeIP() bool {
 	return false
 }
 
+func (h *HookServer) ClearConn(inbound string, user string) {
+	if v, ok := h.connClears.Load(inbound + user); ok {
+		v.(*ConnClear).ClearConn()
+		h.connClears.Delete(inbound + user)
+	}
+}
+
 type Tracker struct {
-	l func()
+	l []func()
+}
+
+func (t *Tracker) AddLeave(f func()) {
+	t.l = append(t.l, f)
 }
 
 func (t *Tracker) Leave() {
-	t.l()
+	for i := range t.l {
+		t.l[i]()
+	}
 }

@@ -3,6 +3,11 @@ package sing
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"runtime/debug"
+	"time"
+
 	"github.com/InazumaV/V2bX/conf"
 	vCore "github.com/InazumaV/V2bX/core"
 	"github.com/goccy/go-json"
@@ -17,10 +22,6 @@ import (
 	F "github.com/sagernet/sing/common/format"
 	"github.com/sagernet/sing/service"
 	"github.com/sagernet/sing/service/pause"
-	"io"
-	"os"
-	"runtime/debug"
-	"time"
 )
 
 var _ adapter.Service = (*Box)(nil)
@@ -31,7 +32,7 @@ type DNSConfig struct {
 }
 
 type Box struct {
-        ctx        context.Context
+	ctx        context.Context
 	createdAt  time.Time
 	router     adapter.Router
 	inbounds   map[string]adapter.Inbound
@@ -164,13 +165,13 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 	if err != nil {
 		return nil, err
 	}
-	server := NewHookServer(logFactory.NewLogger("Hook-Server"))
+	server := NewHookServer(logFactory.NewLogger("Hook-Server"), c.SingConfig.EnableConnClear)
 	if err != nil {
 		return nil, E.Cause(err, "create v2ray api server")
 	}
 	router.SetClashServer(server)
 	return &Box{
-                ctx:        ctx,
+		ctx:        ctx,
 		router:     router,
 		inbounds:   inMap,
 		outbounds:  outbounds,
