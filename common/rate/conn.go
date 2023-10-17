@@ -45,7 +45,7 @@ func NewPacketConnCounter(conn network.PacketConn, l *ratelimit.Bucket) network.
 
 func (p *PacketConnCounter) ReadPacket(buff *buf.Buffer) (destination M.Socksaddr, err error) {
 	pLen := buff.Len()
-	destination, err = p.ReadPacket(buff)
+	destination, err = p.PacketConn.ReadPacket(buff)
 	p.limiter.Wait(int64(buff.Len() - pLen))
 	return
 }
