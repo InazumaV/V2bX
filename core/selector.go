@@ -106,7 +106,7 @@ func (s *Selector) AddNode(tag string, info *panel.NodeInfo, option *conf.Option
 
 func (s *Selector) DelNode(tag string) error {
 	if t, e := s.nodes.Load(tag); e {
-		err := s.cores[t.(string)].DelNode(tag)
+		err := t.(Core).DelNode(tag)
 		if err != nil {
 			return err
 		}
