@@ -81,7 +81,8 @@ func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapte
 	t := &Tracker{}
 	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
-		log.Error("get limiter for ", m.Inbound, " error: ", err)
+		h.logger.Warn("get limiter for ", m.Inbound, " error: ", err)
+		return conn, t
 	}
 	if l.CheckDomainRule(m.Domain) {
 		conn.Close()
@@ -134,7 +135,8 @@ func (h *HookServer) RoutedPacketConnection(_ context.Context, conn N.PacketConn
 	t := &Tracker{}
 	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
-		log.Error("get limiter for ", m.Inbound, " error: ", err)
+		h.logger.Warn("get limiter for ", m.Inbound, " error: ", err)
+		return conn, t
 	}
 	if l.CheckDomainRule(m.Domain) {
 		conn.Close()
