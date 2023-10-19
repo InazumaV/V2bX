@@ -3,12 +3,12 @@ package core
 import (
 	"errors"
 	"fmt"
+	"github.com/hashicorp/go-multierror"
 	"strings"
 	"sync"
 
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
-	"github.com/hashicorp/go-multierror"
 )
 
 type Selector struct {
@@ -51,7 +51,10 @@ func (s *Selector) Start() error {
 func (s *Selector) Close() error {
 	var errs error
 	for i := range s.cores {
-		errs = multierror.Append(errs, s.cores[i].Close())
+		err := s.cores[i].Close()
+		if err != nil {
+			errs = multierror.Append(errs, err)
+		}
 	}
 	return errs
 }
