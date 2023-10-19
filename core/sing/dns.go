@@ -12,7 +12,11 @@ import (
 func updateDNSConfig(node *panel.NodeInfo) (err error) {
 	dnsPath := os.Getenv("SING_DNS_PATH")
 	if len(node.RawDNS.DNSJson) != 0 {
-		err = saveDnsConfig(node.RawDNS.DNSJson, dnsPath)
+		var prettyJSON bytes.Buffer
+		if err := json.Indent(&prettyJSON, node.RawDNS.DNSJson, "", " "); err != nil {
+			return err
+		}
+		err = saveDnsConfig(prettyJSON.Bytes(), dnsPath)
 	} else if len(node.RawDNS.DNSMap) != 0 {
 		dnsConfig := DNSConfig{
 			Servers: []map[string]interface{}{

@@ -6,13 +6,20 @@ import (
 	"github.com/goccy/go-json"
 	log "github.com/sirupsen/logrus"
 	coreConf "github.com/xtls/xray-core/infra/conf"
+	"net"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func updateDNSConfig(node *panel.NodeInfo) (err error) {
 	dnsPath := os.Getenv("XRAY_DNS_PATH")
 	if len(node.RawDNS.DNSJson) != 0 {
-		err = saveDnsConfig(node.RawDNS.DNSJson, dnsPath)
+		var prettyJSON bytes.Buffer
+		if err := json.Indent(&prettyJSON, node.RawDNS.DNSJson, "", " "); err != nil {
+			return err
+		}
+		err = saveDnsConfig(prettyJSON.Bytes(), dnsPath)
 	} else if len(node.RawDNS.DNSMap) != 0 {
 		dnsConfig := DNSConfig{
 			Servers: []interface{}{
@@ -21,7 +28,21 @@ func updateDNSConfig(node *panel.NodeInfo) (err error) {
 			Tag: "dns_inbound",
 		}
 		for _, value := range node.RawDNS.DNSMap {
+			address := value["address"].(string)
+			if strings.Contains(address, ":") && !strings.Contains(address, "/") {
+				host, port, err := net.SplitHostPort(address)
+				if err != nil {
+					return err
+				}
+				var uint16Port uint16
+				if port, err := strconv.ParseUint(port, 10, 16); err == nil {
+					uint16Port = uint16(port)
+				}
+				value["address"] = host
+				value["port"] = uint16Port
+			}
 			dnsConfig.Servers = append(dnsConfig.Servers, value)
+
 		}
 		dnsConfigJSON, err := json.MarshalIndent(dnsConfig, "", "  ")
 		if err != nil {

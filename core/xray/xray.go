@@ -1,6 +1,7 @@
 package xray
 
 import (
+	"fmt"
 	"os"
 	"sync"
 
@@ -63,12 +64,14 @@ func getCore(c *conf.XrayConfig) *core.Instance {
 	coreDnsConfig := &coreConf.DNSConfig{}
 	os.Setenv("XRAY_DNS_PATH", "")
 	if c.DnsConfigPath != "" {
-		if f, err := os.Open(c.DnsConfigPath); err != nil {
-			log.WithField("err", err).Panic("Failed to read DNS config file")
-		} else {
-			if err = json.NewDecoder(f).Decode(coreDnsConfig); err != nil {
-				log.WithField("err", err).Error("Failed to unmarshal DNS config")
-			}
+		f, err := os.OpenFile(c.DnsConfigPath, os.O_RDWR|os.O_CREATE, 0755)
+		if err != nil {
+			log.Error("Failed to open or create xray dns config file: %v", err)
+		}
+		defer f.Close()
+		if err := json.NewDecoder(f).Decode(coreDnsConfig); err != nil {
+			log.Error(fmt.Sprintf("Failed to unmarshal xray dns config from file '%v': %v. Using default DNS options.", f.Name(), err))
+			coreDnsConfig = &coreConf.DNSConfig{}
 		}
 		os.Setenv("XRAY_DNS_PATH", c.DnsConfigPath)
 	}

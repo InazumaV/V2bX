@@ -3,6 +3,9 @@ package sing
 import (
 	"context"
 	"fmt"
+	"github.com/inazumav/sing-box/constant"
+	"github.com/inazumav/sing-box/log"
+	vlog "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"runtime/debug"
@@ -75,13 +78,16 @@ func New(c *conf.CoreConfig) (vCore.Core, error) {
 		},
 	}
 	os.Setenv("SING_DNS_PATH", "")
+	options.DNS = &option.DNSOptions{}
 	if c.SingConfig.DnsConfigPath != "" {
-		if f, err := os.Open(c.SingConfig.DnsConfigPath); err != nil {
-			log.Error("Failed to read DNS config file")
-		} else {
-			if err = json.NewDecoder(f).Decode(&option.DNSOptions{}); err != nil {
-				log.Error("Failed to unmarshal DNS config")
-			}
+		f, err := os.OpenFile(c.SingConfig.DnsConfigPath, os.O_RDWR|os.O_CREATE, 0755)
+		if err != nil {
+			log.Error("Failed to open or create sing dns config file: %s", err)
+		}
+		defer f.Close()
+		if err := json.NewDecoder(f).Decode(options.DNS); err != nil {
+			log.Error(fmt.Sprintf("Failed to unmarshal sing dns config from file '%v': %v. Using default DNS options.", f.Name(), err))
+			options.DNS = &option.DNSOptions{}
 		}
 		os.Setenv("SING_DNS_PATH", c.SingConfig.DnsConfigPath)
 	}
@@ -230,6 +236,7 @@ func (b *Box) preStart() error {
 }
 
 func (b *Box) start() error {
+	vlog.Info("Sing Core Version: ", constant.Version)
 	err := b.preStart()
 	if err != nil {
 		return err
