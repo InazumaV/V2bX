@@ -27,6 +27,13 @@ func init() {
 }
 
 func showVersion() {
+	fmt.Println(` 
+  _/      _/    _/_/    _/        _/      _/   
+ _/      _/  _/    _/  _/_/_/      _/  _/      
+_/      _/      _/    _/    _/      _/         
+ _/  _/      _/      _/    _/    _/  _/        
+  _/      _/_/_/_/  _/_/_/    _/      _/        
+                                                `)
 	fmt.Printf("%s %s (%s) \n", codename, version, intro)
 	fmt.Printf("Supported cores: %s\n", strings.Join(vCore.RegisteredCore(), ", "))
 	// Warning
