@@ -10,13 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/inazumav/sing-box/inbound"
-	F "github.com/sagernet/sing/common/format"
-
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
 	"github.com/goccy/go-json"
-	"github.com/inazumav/sing-box/option"
+	"github.com/sagernet/sing-box/inbound"
+	"github.com/sagernet/sing-box/option"
+	F "github.com/sagernet/sing/common/format"
 )
 
 type WsNetworkConfig struct {
@@ -205,7 +204,7 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 	return in, nil
 }
 
-func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
+func (b *Sing) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
 	err := updateDNSConfig(info)
 	if err != nil {
 		return fmt.Errorf("build dns error: %s", err)
@@ -237,7 +236,7 @@ func (b *Box) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) er
 	return nil
 }
 
-func (b *Box) DelNode(tag string) error {
+func (b *Sing) DelNode(tag string) error {
 	err := b.inbounds[tag].Close()
 	if err != nil {
 		return fmt.Errorf("close inbound error: %s", err)

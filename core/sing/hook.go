@@ -6,21 +6,20 @@ import (
 	"net"
 	"sync"
 
-	"github.com/inazumav/sing-box/common/urltest"
+	"github.com/sagernet/sing-box/common/urltest"
 
 	"github.com/InazumaV/V2bX/common/rate"
 
 	"github.com/InazumaV/V2bX/limiter"
 
 	"github.com/InazumaV/V2bX/common/counter"
-	"github.com/inazumav/sing-box/adapter"
-	"github.com/inazumav/sing-box/log"
+	"github.com/sagernet/sing-box/adapter"
+	"github.com/sagernet/sing-box/log"
 	N "github.com/sagernet/sing/common/network"
 )
 
 type HookServer struct {
 	EnableConnClear bool
-	logger          log.Logger
 	counter         sync.Map
 	connClears      sync.Map
 }
@@ -56,10 +55,9 @@ func (h *HookServer) ModeList() []string {
 	return nil
 }
 
-func NewHookServer(logger log.Logger, enableClear bool) *HookServer {
+func NewHookServer(enableClear bool) *HookServer {
 	return &HookServer{
 		EnableConnClear: enableClear,
-		logger:          logger,
 		counter:         sync.Map{},
 		connClears:      sync.Map{},
 	}
@@ -81,25 +79,25 @@ func (h *HookServer) RoutedConnection(_ context.Context, conn net.Conn, m adapte
 	t := &Tracker{}
 	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
-		h.logger.Warn("get limiter for ", m.Inbound, " error: ", err)
+		log.Warn("get limiter for ", m.Inbound, " error: ", err)
 		return conn, t
 	}
 	if l.CheckDomainRule(m.Domain) {
 		conn.Close()
-		h.logger.Error("[", m.Inbound, "] ",
+		log.Error("[", m.Inbound, "] ",
 			"Limited ", m.User, " access to ", m.Domain, " by domain rule")
 		return conn, t
 	}
 	if l.CheckProtocolRule(m.Protocol) {
 		conn.Close()
-		h.logger.Error("[", m.Inbound, "] ",
+		log.Error("[", m.Inbound, "] ",
 			"Limited ", m.User, " use ", m.Domain, " by protocol rule")
 		return conn, t
 	}
 	ip := m.Source.Addr.String()
 	if b, r := l.CheckLimit(m.User, ip, true); r {
 		conn.Close()
-		h.logger.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
+		log.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
 		return conn, t
 	} else if b != nil {
 		conn = rate.NewConnRateLimiter(conn, b)
@@ -135,25 +133,25 @@ func (h *HookServer) RoutedPacketConnection(_ context.Context, conn N.PacketConn
 	t := &Tracker{}
 	l, err := limiter.GetLimiter(m.Inbound)
 	if err != nil {
-		h.logger.Warn("get limiter for ", m.Inbound, " error: ", err)
+		log.Warn("get limiter for ", m.Inbound, " error: ", err)
 		return conn, t
 	}
 	if l.CheckDomainRule(m.Domain) {
 		conn.Close()
-		h.logger.Error("[", m.Inbound, "] ",
+		log.Error("[", m.Inbound, "] ",
 			"Limited ", m.User, " access to ", m.Domain, " by domain rule")
 		return conn, t
 	}
 	if l.CheckProtocolRule(m.Protocol) {
 		conn.Close()
-		h.logger.Error("[", m.Inbound, "] ",
+		log.Error("[", m.Inbound, "] ",
 			"Limited ", m.User, " use ", m.Domain, " by protocol rule")
 		return conn, t
 	}
 	ip := m.Source.Addr.String()
 	if b, r := l.CheckLimit(m.User, ip, true); r {
 		conn.Close()
-		h.logger.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
+		log.Error("[", m.Inbound, "] ", "Limited ", m.User, " by ip or conn")
 		return conn, t
 	} else if b != nil {
 		conn = rate.NewPacketConnCounter(conn, b)

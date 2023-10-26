@@ -7,11 +7,11 @@ import (
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/common/counter"
 	"github.com/InazumaV/V2bX/core"
-	"github.com/inazumav/sing-box/inbound"
-	"github.com/inazumav/sing-box/option"
+	"github.com/sagernet/sing-box/inbound"
+	"github.com/sagernet/sing-box/option"
 )
 
-func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
+func (b *Sing) AddUsers(p *core.AddUsersParams) (added int, err error) {
 	switch p.NodeInfo.Type {
 	case "vmess", "vless":
 		if p.NodeInfo.Type == "vless" {
@@ -67,7 +67,7 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 				AuthString: p.Users[i].Uuid,
 			}
 		}
-		err = b.inbounds[p.Tag].(*inbound.Hysteria).AddUsers(us)
+		err = b.inbounds[p.Tag].(*inbound.HysteriaM).AddUsers(us)
 	}
 	if err != nil {
 		return 0, err
@@ -75,7 +75,7 @@ func (b *Box) AddUsers(p *core.AddUsersParams) (added int, err error) {
 	return len(p.Users), err
 }
 
-func (b *Box) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
+func (b *Sing) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
 	if v, ok := b.hookServer.counter.Load(tag); ok {
 		c := v.(*counter.TrafficCounter)
 		up = c.GetUpCount(uuid)
@@ -92,7 +92,7 @@ type UserDeleter interface {
 	DelUsers(uuid []string) error
 }
 
-func (b *Box) DelUsers(users []panel.UserInfo, tag string) error {
+func (b *Sing) DelUsers(users []panel.UserInfo, tag string) error {
 	var del UserDeleter
 	if i, ok := b.inbounds[tag]; ok {
 		switch i.Type() {
@@ -105,7 +105,7 @@ func (b *Box) DelUsers(users []panel.UserInfo, tag string) error {
 		case "trojan":
 			del = i.(*inbound.Trojan)
 		case "hysteria":
-			del = i.(*inbound.Hysteria)
+			del = i.(*inbound.HysteriaM)
 		}
 	} else {
 		return errors.New("the inbound not found")

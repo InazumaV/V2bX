@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"github.com/inazumav/sing-box/option"
+	"github.com/sagernet/sing-box/option"
 )
 
 type SingConfig struct {

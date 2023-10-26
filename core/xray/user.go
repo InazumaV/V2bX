@@ -11,7 +11,7 @@ import (
 	"github.com/xtls/xray-core/proxy"
 )
 
-func (c *Core) GetUserManager(tag string) (proxy.UserManager, error) {
+func (c *Xray) GetUserManager(tag string) (proxy.UserManager, error) {
 	handler, err := c.ihm.GetHandler(context.Background(), tag)
 	if err != nil {
 		return nil, fmt.Errorf("no such inbound tag: %s", err)
@@ -27,7 +27,7 @@ func (c *Core) GetUserManager(tag string) (proxy.UserManager, error) {
 	return userManager, nil
 }
 
-func (c *Core) DelUsers(users []panel.UserInfo, tag string) error {
+func (c *Xray) DelUsers(users []panel.UserInfo, tag string) error {
 	userManager, err := c.GetUserManager(tag)
 	if err != nil {
 		return fmt.Errorf("get user manager error: %s", err)
@@ -47,7 +47,7 @@ func (c *Core) DelUsers(users []panel.UserInfo, tag string) error {
 	return nil
 }
 
-func (c *Core) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
+func (c *Xray) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int64) {
 	upName := "user>>>" + format.UserTag(tag, uuid) + ">>>traffic>>>uplink"
 	downName := "user>>>" + format.UserTag(tag, uuid) + ">>>traffic>>>downlink"
 	upCounter := c.shm.GetCounter(upName)
@@ -70,7 +70,7 @@ func (c *Core) GetUserTraffic(tag, uuid string, reset bool) (up int64, down int6
 	return up, down
 }
 
-func (c *Core) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
+func (c *Xray) AddUsers(p *vCore.AddUsersParams) (added int, err error) {
 	users := make([]*protocol.User, 0, len(p.Users))
 	switch p.NodeInfo.Type {
 	case "vmess":

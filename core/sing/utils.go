@@ -2,9 +2,10 @@ package sing
 
 import (
 	"fmt"
-	"github.com/InazumaV/V2bX/conf"
-	"github.com/inazumav/sing-box/option"
 	"strconv"
+
+	"github.com/InazumaV/V2bX/conf"
+	"github.com/sagernet/sing-box/option"
 )
 
 func processFallback(c *conf.Options, fallbackForALPN map[string]*option.ServerOptions) error {

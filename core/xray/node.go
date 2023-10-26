@@ -3,6 +3,7 @@ package xray
 import (
 	"context"
 	"fmt"
+
 	"github.com/InazumaV/V2bX/api/panel"
 	"github.com/InazumaV/V2bX/conf"
 	"github.com/xtls/xray-core/core"
@@ -15,7 +16,7 @@ type DNSConfig struct {
 	Tag     string        `json:"tag"`
 }
 
-func (c *Core) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
+func (c *Xray) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) error {
 	err := updateDNSConfig(info)
 	if err != nil {
 		return fmt.Errorf("build dns error: %s", err)
@@ -39,7 +40,7 @@ func (c *Core) AddNode(tag string, info *panel.NodeInfo, config *conf.Options) e
 	return nil
 }
 
-func (c *Core) addInbound(config *core.InboundHandlerConfig) error {
+func (c *Xray) addInbound(config *core.InboundHandlerConfig) error {
 	rawHandler, err := core.CreateObject(c.Server, config)
 	if err != nil {
 		return err
@@ -54,7 +55,7 @@ func (c *Core) addInbound(config *core.InboundHandlerConfig) error {
 	return nil
 }
 
-func (c *Core) addOutbound(config *core.OutboundHandlerConfig) error {
+func (c *Xray) addOutbound(config *core.OutboundHandlerConfig) error {
 	rawHandler, err := core.CreateObject(c.Server, config)
 	if err != nil {
 		return err
@@ -69,7 +70,7 @@ func (c *Core) addOutbound(config *core.OutboundHandlerConfig) error {
 	return nil
 }
 
-func (c *Core) DelNode(tag string) error {
+func (c *Xray) DelNode(tag string) error {
 	err := c.removeInbound(tag)
 	if err != nil {
 		return fmt.Errorf("remove in error: %s", err)
@@ -81,11 +82,11 @@ func (c *Core) DelNode(tag string) error {
 	return nil
 }
 
-func (c *Core) removeInbound(tag string) error {
+func (c *Xray) removeInbound(tag string) error {
 	return c.ihm.RemoveHandler(context.Background(), tag)
 }
 
-func (c *Core) removeOutbound(tag string) error {
+func (c *Xray) removeOutbound(tag string) error {
 	err := c.ohm.RemoveHandler(context.Background(), tag)
 	return err
 }
