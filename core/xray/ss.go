@@ -40,7 +40,9 @@ func buildSSUser(tag string, userInfo *panel.UserInfo, cypher string, serverKey 
 			keyLength = 32
 		}
 		ssAccount := &shadowsocks_2022.User{
-			Key: base64.StdEncoding.EncodeToString([]byte(userInfo.Uuid[:keyLength])),
+			Level: 0,
+			Email: format.UserTag(tag, userInfo.Uuid),
+			Key:   base64.StdEncoding.EncodeToString([]byte(userInfo.Uuid[:keyLength])),
 		}
 		return &protocol.User{
 			Level:   0,
