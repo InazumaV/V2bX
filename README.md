@@ -7,6 +7,9 @@ A V2board node server based on multi core, modified from XrayR.
 
 **注意： 本项目需要V2board版本 >= 1.7.0**
 
+**由于本人身体欠佳，导致此项目搁置已久，且由于多内核的原因导致项目臃肿以及各种依赖问题层出不穷，并且已有仍在持续维护的分支项目存在，因此本项目将不再进行维护。**  
+作为V2bX的继任者的[Ratte](https://github.com/InazumaV/Ratte)仍在构思及逐步实现中，该项目尝试通过基于RPC的插件化去解决项目臃肿以及依赖问题，但由于本人身体原因，进展缓慢。
+
 ## 特点
 
 * 永久开源且免费。
